@@ -6,7 +6,7 @@
   <title>Chatbot</title>
   <style>
     /* ──────────────────────────────────────────────
-       ▶ Chatbot Container
+       Chatbot Container
     ────────────────────────────────────────────── */
     #chatbot {
       position: fixed;
@@ -38,7 +38,7 @@
     }
 
     /* ──────────────────────────────────────────────
-       ▶ Chat Sections
+      Chat Sections
     ────────────────────────────────────────────── */
     #chatbot fieldset {
       border: none;
