@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.house.model.dao.MemberDao">
+    <!-- 1. 회원가입 -->
+    <insert id="insert" parameterType="Member" useGeneratedKeys="true" keyProperty="mno"> 
+        insert into member(name, email, password)
+        values(#{name}, #{email}, #{password}) 
+    </insert>
+
+    <!-- 2. 회원정보 수정 -->
+    <update id="update"> 
+        update member 
+        set name=#{name}, password=#{password}
+        where email=#{email} 
+    </update>
+
+    <!-- 3. 회원탈퇴 -->
+    <delete id="delete">
+        delete from member
+        where mno=#{mno} 
+    </delete>
+
+    <!-- 4. 회원정보 조회 -->
+    <select id="selectByEmail" resultType="Member">
+        select *
+        from member
+        where email=#{email} 
+    </select>
+
+    <!-- 5. 전체 회원 조회 -->
+    <select id="selectAll" resultType="Member"> 
+        select * 
+        from member
+    </select>
+
+    <!-- 6. 로그인 -->
+    <select id="findByIdAndPassword" resultType="Member">
+        select name, email, password
+        from member
+        where email=#{email} and password=#{password}
+    </select>
+
+    <select id="getTotalCount">
+        select count(mno) from member
+        <include refid="searchCondition"></include>
+    </select>
+
+    <sql id="searchCondition">
+        <where>
+            <if test="key=='name' and word != null">
+                name like concat('%', #{word}, '%')
+            </if>
+            <if test="key=='email' and word != null">
+                email like concat('%', #{word}, '%')
+            </if>
+        </where>
+    </sql>
+    <select id="search">
+        select * from member
+        <include refid="searchCondition"></include>
+        order by mno desc limit #{offset}, #{itemsPerPage}
+    </select>
+</mapper>
