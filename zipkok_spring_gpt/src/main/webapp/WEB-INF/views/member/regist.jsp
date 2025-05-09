@@ -1,0 +1,88 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<html lang="ko">
+
+<head>
+<title>SSAFY Home Web</title>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<link rel="stylesheet"
+	href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,700,900|Roboto+Mono:300,400,500">
+<link rel="stylesheet" href="/fonts/icomoon/style.css">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/magnific-popup.css">
+<link rel="stylesheet" href="/css/jquery-ui.css">
+<link rel="stylesheet" href="/css/owl.carousel.min.css">
+<link rel="stylesheet" href="/css/owl.theme.default.min.css">
+<link rel="stylesheet" href="/css/bootstrap-datepicker.css">
+<link rel="stylesheet" href="/css/mediaelementplayer.css">
+<link rel="stylesheet" href="/css/animate.css">
+<link rel="stylesheet" href="/fonts/flaticon/font/flaticon.css">
+<link rel="stylesheet" href="/css/fl-bigmug-line.css">
+<link rel="stylesheet" href="/css/aos.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+	<div class="site-loader"></div>
+	<div class="site-wrap">
+		<!-- 네비게이션 바 -->
+		<%@ include file="/WEB-INF/views/fragments/navbar.jsp"%>
+	</div>
+
+	<!-- 회원가입 폼 -->
+	<div class="site-blocks-cover overlay"
+		style="background-image: url(/img/hero_bg_1.jpg); height: 100vh;"
+		data-aos="fade" data-stellar-background-ratio="0.5">
+		<div class="container h-100">
+			<div class="row align-items-center justify-content-center h-100">
+				<div class="col-md-6 col-lg-5 bg-white border p-5 rounded shadow"
+					style="position: relative; z-index: 10;">
+					<h3 class="text-center mb-4">회원가입</h3>
+					<form action="/member/regist" method="post">
+						<div class="form-group">
+							<label class="font-weight-bold" for="name">이름</label> <input
+								type="text" id="name" name="name" class="form-control"
+								placeholder="이름 입력" required>
+						</div>
+						<div class="form-group">
+							<label class="font-weight-bold" for="email">이메일</label> <input
+								type="email" id="email" name="email" class="form-control"
+								placeholder="이메일 입력" required>
+						</div>
+						<div class="form-group">
+							<label class="font-weight-bold" for="password">비밀번호</label> <input
+								type="password" id="password" name="password"
+								class="form-control" placeholder="비밀번호 입력" required>
+						</div>
+						<div class="form-group">
+							<label class="font-weight-bold" for="confirm_password">비밀번호
+								확인</label> <input type="password" id="confirm_password"
+								name="confirm_password" class="form-control"
+								placeholder="비밀번호 재입력" required>
+						</div>
+						<div class="form-group text-center">
+							<input type="submit" value="회원가입"
+								class="btn btn-success text-white btn-block rounded-0">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- JavaScript -->
+	
+	<script src="/js/jquery-3.3.1.min.js"></script>
+	<script src="/js/jquery-migrate-3.0.1.min.js"></script>
+	<script src="/js/jquery-ui.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/owl.carousel.min.js"></script>
+	<script src="/js/jquery.magnific-popup.min.js"></script>
+	<script src="/js/aos.js"></script>
+	<script src="/js/main.js"></script>
+</body>
+</html>
