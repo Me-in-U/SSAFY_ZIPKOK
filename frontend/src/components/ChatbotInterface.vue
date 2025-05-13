@@ -251,91 +251,47 @@ const messages = ref([
 ])
 const isTyping = ref(false)
 const messagesContainer = ref(null)
+async function sendMessage() {
+  const userText = inputMessage.value.trim()
+  if (!userText) return
 
-const suggestedQuestions = [
-  '서울 강남 아파트 시세 어때?',
-  '투자하기 좋은 지역 추천해줘',
-  '전세 vs 월세 어떤 게 투자에 유리해?',
-  '부동산 투자 초보자 팁 알려줘',
-  '지금이 매수 타이밍일까?',
-]
-
-const botResponses = [
-  {
-    keywords: ['강남', '시세'],
-    response: '현재 서울 강남 지역의 아파트 시세는 평균 3.2% 상승했습니다...',
-    options: ['재건축 단지 정보 알려줘', '강남 투자 추천 매물 보여줘'],
-  },
-  {
-    keywords: ['투자', '추천', '지역'],
-    response: '현재 투자 수익률이 높은 지역으로는 판교, 송파, 하남 등이 있습니다...',
-    options: ['판교 매물 보여줘', '하남 개발 계획 자세히'],
-  },
-  {
-    keywords: ['전세', '월세'],
-    response: '전세와 월세는 투자 목적에 따라 선택이 달라집니다...',
-    options: ['월세 수익률 높은 매물 추천', '전세 대출 조건 알려줘'],
-  },
-  {
-    keywords: ['초보', '팁', '조언'],
-    response: '부동산 투자 초보자라면 다음 사항을 고려하세요...',
-    options: ['입지 선택 팁 더 알려줘', '대출 관련 조언 부탁해'],
-  },
-  {
-    keywords: ['매수', '타이밍'],
-    response: '부동산 시장은 현재 금리 인상과 정부 정책 변화로 조정기에 있습니다...',
-    options: ['실수요 지역 추천해줘', '금리 전망은 어때?'],
-  },
-  {
-    keywords: ['시장', '동향'],
-    response: '최근 부동산 시장은 금리 상승으로 인해 전반적으로 거래량이 감소했습니다...',
-    options: ['재개발 지역 알려줘', '신도시 투자 전망은?'],
-  },
-]
-
-function sendMessage() {
-  if (!inputMessage.value.trim()) return
-
-  messages.value.push({
-    content: inputMessage.value,
-    sender: 'user',
-    timestamp: new Date(),
-  })
-
-  nextTick(scrollToBottom)
-
-  const userText = inputMessage.value
+  messages.value.push({ content: userText, sender: 'user' })
   inputMessage.value = ''
+  nextTick(scrollToBottom)
   isTyping.value = true
 
-  setTimeout(() => {
-    isTyping.value = false
+  try {
+    const payload = { message: userText }
 
-    const lower = userText.toLowerCase()
-    let match = botResponses.find((r) => r.keywords.some((k) => lower.includes(k)))
+    console.log('[Request Payload]', payload)
 
-    if (!match) {
-      match = {
-        response:
-          '해당 질문에 대한 정보를 찾아보겠습니다. 부동산 투자와 관련하여 더 구체적인 질문이 있으시면 말씀해주세요.',
-        options: ['투자 추천 매물 보여줘', '요즘 부동산 시장 어때?', '투자 수익률 높은 지역은?'],
-      }
-    }
-
-    messages.value.push({
-      content: match.response,
-      sender: 'bot',
-      timestamp: new Date(),
-      options: match.options,
+    const res = await fetch('http://localhost:8080/ai/member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userText }),
     })
 
-    nextTick(scrollToBottom)
-  }, 1000)
-}
+    console.log('[Response Status]', res.status)
 
-function quickReply(text) {
-  inputMessage.value = text
-  sendMessage()
+    if (!res.ok) {
+      throw new Error(`서버 응답 실패: ${res.status} ${res.statusText}`)
+    }
+
+    const result = await res.json()
+    console.log('[Parsed Result]', result)
+
+    const botReply = result.data.message // ← 여기 주의!
+    messages.value.push({ content: botReply, sender: 'bot' })
+  } catch (error) {
+    console.error('[Chat Error]', error)
+    messages.value.push({
+      content: '❗ 서버 오류가 발생했습니다. 콘솔을 확인해주세요.',
+      sender: 'bot',
+    })
+  } finally {
+    isTyping.value = false
+    nextTick(scrollToBottom)
+  }
 }
 
 function clearChat() {
