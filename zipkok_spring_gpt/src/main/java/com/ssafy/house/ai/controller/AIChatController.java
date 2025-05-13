@@ -1,10 +1,7 @@
 package com.ssafy.house.ai.controller;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
-import org.springframework.ai.chat.client.ChatClient.AdvisorSpec;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/ai")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = { "http://localhost:5173", "https://ssafy.blog" })
 public class AIChatController implements RestControllerHelper {
 
     private final AiChatService chatService;
