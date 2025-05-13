@@ -6,10 +6,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 import re
 import pymysql
+import argparse
+import math
 
 # ─ MySQL 연결 설정 ─────────────────────────────
 conn = pymysql.connect(
@@ -221,31 +223,28 @@ def parse_schools(html: str):
     ]
 
 
-def search_apartment(name: str):
+def search_apartment(driver, name: str):
     """이름으로 검색 후 (단지정보, 매물리스트, 이미지) 반환, 오류·타임아웃 시 (None,None,None)"""
-    time.sleep(1)
-    opts = Options()
-    opts.add_argument("--headless")  # 헤드리스 모드
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--window-size=400,300")  # 소형 창
-    # 이미지 로딩 비활성화
-    prefs = {"profile.managed_default_content_settings.images": 2}
-    opts.add_experimental_option("prefs", prefs)
-    opts.add_argument("--log-level=3")  # INFO 이하 로그 숨김
-    opts.add_experimental_option("excludeSwitches", ["enable-logging"])
-    driver = webdriver.Chrome(options=opts)
     try:
         driver.get("https://new.land.naver.com/")
+        WebDriverWait(driver, 20).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+
         w = WebDriverWait(driver, 10)
         inp = w.until(EC.presence_of_element_located((By.ID, "land_search")))
         inp.clear()
         inp.send_keys(name, Keys.ENTER)
         time.sleep(2)
+        # ENTER 후, '검색결과 없음' 또는 매물 리스트 둘 중 하나가 뜰 때까지 최대 10초 대기
         try:
-            w.until(
+            WebDriverWait(driver, 20).until(
                 EC.any_of(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, ".item_list--search .no_data_area_inner")
+                    ),
+                    EC.presence_of_all_elements_located(
+                        (By.CSS_SELECTOR, ".item_list--search .item_inner")
                     ),
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, ".list_fixed .result_search")
@@ -255,44 +254,101 @@ def search_apartment(name: str):
                 )
             )
         except TimeoutException:
+            print("[DEBUG] 검색 결과 로딩 타임아웃")
             return None, None, None, None
-        # 검색결과 없음
+
+        # '검색결과 없음' 창이 보이면 리턴
         if driver.find_elements(
             By.CSS_SELECTOR, ".item_list--search .no_data_area_inner"
         ):
+            print("[DEBUG] 검색 결과 없음")
             return None, None, None, None
-        # 선택 단계 (아파트 우선 → 오피스텔)
-        if driver.find_elements(By.CSS_SELECTOR, ".list_fixed .result_search"):
-            its = driver.find_elements(By.CSS_SELECTOR, ".item_list--search .item")
 
-            def click_kind(k):
-                for it in its:
-                    try:
-                        t = it.find_element(By.CSS_SELECTOR, ".info_area .type").text
-                    except:
-                        t = ""
-                    if t == k:
+        # '검색결과' 헤더가 보이면
+        if driver.find_elements(By.CSS_SELECTOR, ".list_fixed .result_search"):
+            print("[DEBUG] 검색결과 헤더 감지")  # 디버그
+
+            # 1) 로딩 스피너 사라질 때까지
+            WebDriverWait(driver, 20).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".loading"))
+            )
+            print("[DEBUG] .loading 스피너 사라짐")  # 디버그
+
+            # 2) 실제 매물 항목들 로드될 때까지
+            WebDriverWait(driver, 20).until(
+                EC.presence_of_all_elements_located(
+                    (By.CSS_SELECTOR, ".item_list--search .item_inner")
+                )
+            )
+            print("[DEBUG] 모든 .item_inner 로드 완료")  # 디버그
+
+            # 3) info_area가 있는 항목만 필터
+            raw_items = driver.find_elements(
+                By.CSS_SELECTOR, ".item_list--search .item_inner"
+            )
+            items = [
+                el
+                for el in raw_items
+                if el.find_elements(By.CSS_SELECTOR, ".info_area")
+            ]
+            print(
+                f"[DEBUG] 전체 항목 {len(raw_items)}개, 유효 항목 {len(items)}개"
+            )  # 디버그
+
+            # 4) 아파트→오피스텔 클릭
+            for prefer in ("아파트", "오피스텔"):
+                print(f"[DEBUG] 우선순위: {prefer}")  # 디버그
+                for it in items:
+                    t = it.find_element(By.CSS_SELECTOR, ".info_area .type").text
+                    print(
+                        f"[DEBUG] 항목 제목='{it.find_element(By.CSS_SELECTOR,'.title').text}', 타입='{t}'"
+                    )  # 디버그
+                    if t == prefer:
+                        print(f"[DEBUG] 클릭 대상 → {t}")  # 디버그
                         try:
                             it.click()
                         except:
                             driver.execute_script("arguments[0].click();", it)
-                        return True
-                return False
+                        WebDriverWait(driver, 5).until(EC.staleness_of(it))
+                        print("[DEBUG] 클릭 완료, DOM 교체 감지")  # 디버그
+                        time.sleep(2)
+                        break
+                else:
+                    print(f"[DEBUG] {prefer} 항목 없음")  # 디버그
+                    continue
+                break
 
-            click_kind("아파트") or click_kind("오피스텔")
-            time.sleep(1)
+        try:
+            WebDriverWait(driver, 20).until(
+                EC.any_of(
+                    EC.presence_of_element_located((By.ID, "summaryInfo")),
+                    EC.presence_of_element_located((By.ID, "articleListArea")),
+                )
+            )
+        except TimeoutException:
+            print("[DEBUG] summaryInfo 혹은 articleListArea 로딩 실패")
+            return None, None, None, None
 
         # 단지정보 버튼 클릭
         try:
-            btn = driver.find_element(
-                By.CSS_SELECTOR, ".complex_detail_link .complex_link"
+            btn = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable(
+                    (By.CSS_SELECTOR, ".complex_detail_link .complex_link")
+                )
             )
             if btn.text.strip() == "단지정보":
                 btn.click()
-                time.sleep(1)
-        except:
-            # 클릭 실패해도 무시
+                # 클릭 후 단지요약(#summaryInfo) 로딩될 때까지 최대 10초 대기
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.ID, "summaryInfo"))
+                )
+            time.sleep(2)
+        except TimeoutException:
+            # 단지정보 버튼이나 summaryInfo 로딩 실패 시 무시
             pass
+        html = driver.page_source
+        complex_info = parse_complex_info(html)
+        listings = parse_listings(html)
 
         # 사진 탭 클릭
         try:
@@ -301,130 +357,132 @@ def search_apartment(name: str):
                 "//a[contains(@class,'tab_item') and normalize-space(.)='사진']",
             )
             tab.click()
-            time.sleep(1)
-        except:
-            # 사진 탭이 없으면 images=None 처리
+            # ── 명시적 대기: 사진 컨테이너(.detail_box--photo)가 나타날 때까지 최대 10초
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".detail_box--photo"))
+            )
+            time.sleep(2)
+        except (TimeoutException, NoSuchElementException):
+            print("[DEBUG] 사진 탭 없음 또는 로딩 실패")
             pass
-
         html = driver.page_source
-        complex_info = parse_complex_info(html)
-        listings = parse_listings(html)
         images = parse_images(html)
+
         # 학군정보 탭 클릭
         try:
-            tab = driver.find_element(
-                By.XPATH,
-                "//a[contains(@class,'tab_item') and normalize-space(.)='학군정보']",
+            tab = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable(
+                    (
+                        By.XPATH,
+                        "//a[contains(@class,'tab_item') and normalize-space(.)='학군정보']",
+                    )
+                )
             )
             tab.click()
-            time.sleep(1)
-        except:
-            # 없으면 무시
+            # 클릭 후 .detail_box--school(학군정보 박스) 로드될 때까지 최대 10초 대기
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".detail_box--school"))
+            )
+            time.sleep(2)
+        except (TimeoutException, NoSuchElementException):
+            print("[DEBUG] 학군정보 탭 없음 또는 로딩 실패")
             pass
-        html_sch = driver.page_source
-        schools = parse_schools(html_sch)
+        html = driver.page_source
+        schools = parse_schools(html)
 
         return complex_info, listings, images, schools
     except Exception:
         return None, None, None, None
-    finally:
-        driver.quit()
 
 
 if __name__ == "__main__":
-    # TEST = 25
+    # 1) 파라미터 정의
+    p = argparse.ArgumentParser()
+    p.add_argument(
+        "--chunk-size", type=int, default=0, help="한 번에 처리할 항목 개수 (0: 전체)"
+    )
+    p.add_argument(
+        "--chunk-index", type=int, default=1, help="처리할 청크 번호 (1부터 시작)"
+    )
+    args = p.parse_args()
+
+    # 2) 드라이버 초기화
+    opts = Options()
+    opts.add_argument("--headless")
+    opts.add_argument("--disable-gpu")
+    # opts.add_argument("--window-size=1200,800")
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    opts.add_experimental_option("prefs", prefs)
+    opts.add_argument("--log-level=3")
+    opts.add_experimental_option("excludeSwitches", ["enable-logging"])
+    driver = webdriver.Chrome(options=opts)
+    wait = WebDriverWait(driver, 20)
+
+    # 3) 입력 파일 로드
     with open("apartments.txt", "r", encoding="utf-8") as f:
         lines = [L.strip() for L in f if L.strip()]
-    # lines = lines[:TEST]
+
     apt_seqs = [L.split("\t", 1)[0] for L in lines]
     raw_names = [L.split("\t", 1)[1] for L in lines]
-    names = [
-        re.sub(r"\d+동", "", n.replace("(", " ").replace(")", " ")).strip()
-        for n in raw_names
-    ]
+    names = [re.sub(r"\([^)]*\)|\d+동|아파트", "", n).strip() for n in raw_names]
     total = len(apt_seqs)
-    # apt_seqs = ["11110-101"]
-    # names = ["종로구 평창동 크래스빌"]
 
-    results = {}
-    future_to_meta = {}
+    # 4) 청크 계산
+    if args.chunk_size > 0:
+        num_chunks = math.ceil(total / args.chunk_size)
+        if not (1 <= args.chunk_index <= num_chunks):
+            raise SystemExit(f"chunk-index는 1~{num_chunks} 사이여야 합니다.")
+        start = (args.chunk_index - 1) * args.chunk_size
+        end = min(total, args.chunk_index * args.chunk_size)
+        apt_seqs = apt_seqs[start:end]
+        names = names[start:end]
+        print(
+            f"[INFO] 전체 {total}건 중 {args.chunk_index}/{num_chunks} 구간 ({start+1}~{end}) 처리"
+        )
+    else:
+        print(f"[INFO] 전체 {total}건 처리")
 
-    with ThreadPoolExecutor(max_workers=25) as ex:
-        for idx, (seq, name) in enumerate(zip(apt_seqs, names), start=1):
-            print(f"[{idx}/{total}] '{name}' 크롤링 시작…", flush=True)
-            fut = ex.submit(search_apartment, name)
-            future_to_meta[fut] = seq
-            time.sleep(0.5)
-
-        # 작업이 끝날 때까지 기다린 후 결과 수집
-        for fut in as_completed(future_to_meta):
-            seq = future_to_meta[fut]
-            ci, lst, imgs, schools = fut.result()
-            results[seq] = {
-                "complex": ci,
-                "list": lst,
-                "images": imgs,
-                "schools": schools,
-            }
-
-    # 3) 정보 출력
-    for seq in apt_seqs:
-        info = results.get(seq, {})
-        name = info.get("name")
-        ci = info.get("complex")
-        lst = info.get("list") or []
-        imgs = info.get("images") or []
-        schools = info.get("schools") or []
-
-        # print(f"\n===== [{seq}] {name} =====")
-        # if ci is None:
-        # print("  → 오류나 결과 없음으로 건너뜀")
-        # continue
-
-        # 단지정보
-        # print("단지정보:")
-        # for k, v in ci.items():
-        #     print(f"  {k}: {v}")
-
-        # 매물리스트
-        # print("\n매물리스트:")
-        # if not lst:
-        # print("  정보 없음")
-        # else:
-        #     for idx, d in enumerate(lst, 1):
-        #         print(f"  --- 매물 {idx} ---")
-        #         for kk, vv in d.items():
-        #             print(f"    {kk}: {vv}")
-        # 이미지
-        # print("\n이미지:")
-        # if not imgs:
-        #     print("  정보 없음")
-        # else:
-        #     for idx, img in enumerate(imgs, 1):
-        #         print(f"  --- 이미지 {idx} ---")
-        #         print(f"    url: {img['url']}")
-        #         print(f"    label: {img['label']}")
-
-    # ─ DB 삽입 ─────────────────────────
+    # 5) 메인 루프 (청크 적용됨)
     with conn:
         with conn.cursor() as cur:
-            for seq, info in results.items():
-                ci = info["complex"]
+            for idx, (seq, name) in enumerate(zip(apt_seqs, names), start=1):
+                print(f"[{idx}/{len(apt_seqs)}] '{name}' 크롤링 시작…", flush=True)
+                ci, lst, imgs, schools = search_apartment(driver, name)
+
+                # 바로 출력
+                print(f"\n===== [{seq}] {name} =====")
                 if ci is None:
+                    print("  → 오류나 결과 없음")
                     continue
-                lst = info["list"] or []
+                else:
+                    print("단지정보:")
+                    for k, v in ci.items():
+                        print(f"  {k}: {v}")
 
-                # 면적 최소·최대
+                    print("\n매물리스트:")
+                    if not lst:
+                        print("  정보 없음")
+                    else:
+                        for i, d in enumerate(lst, 1):
+                            print(f"  --- 매물 {i} ---")
+                            for kk, vv in d.items():
+                                print(f"    {kk}: {vv}")
+
+                    print("\n이미지:")
+                    if not imgs:
+                        print("  정보 없음")
+                    else:
+                        for i, img in enumerate(imgs, 1):
+                            print(f"  --- 이미지 {i} ---")
+                            print(f"    url:   {img['url']}")
+                            print(f"    label: {img['label']}")
+
+                # ─ DB 삽입 ─
+                # 1) house_detail
                 a_min, a_max = parse_area_range(ci.get("면적", ""))
-
-                # 매매가·전세가 최소·최대
                 tp_min, tp_max = split_price_range(ci.get("매매가", ""))
                 jp_min, jp_max = split_price_range(ci.get("전세가", ""))
-
-                # 거래 상세
                 last_detail = ci.get("상세")
-
-                # house_detail 업데이트
                 cur.execute(
                     """
                     INSERT INTO house_detail
@@ -441,26 +499,16 @@ if __name__ == "__main__":
                       jeonse_price_min=VALUES(jeonse_price_min),
                       jeonse_price_max=VALUES(jeonse_price_max),
                       last_trade_detail=VALUES(last_trade_detail)
-                """,
-                    (
-                        seq,
-                        a_min,
-                        a_max,
-                        tp_min,
-                        tp_max,
-                        jp_min,
-                        jp_max,
-                        last_detail,
-                    ),
+                    """,
+                    (seq, a_min, a_max, tp_min, tp_max, jp_min, jp_max, last_detail),
                 )
 
-                # house_deal 업데이트
-                for d in lst:
+                # 2) house_deal
+                for d in lst or []:
                     m = re.search(r"(\d{2})\.(\d{2})\.(\d{2})", d.get("conf", ""))
                     confirmed_at = (
                         f"20{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None
                     )
-
                     cur.execute(
                         """
                         INSERT INTO house_deal
@@ -473,7 +521,7 @@ if __name__ == "__main__":
                           deposit=VALUES(deposit),
                           monthly_rent=VALUES(monthly_rent),
                           confirmed_at=VALUES(confirmed_at)
-                    """,
+                        """,
                         (
                             seq,
                             d["name"],
@@ -487,33 +535,31 @@ if __name__ == "__main__":
                             confirmed_at,
                         ),
                     )
-                # ─ 이미지 테이블 업데이트 ─────────────────────────
-                imgs = info.get("images") or []
-                for img in imgs:
+
+                # 3) house_image
+                for img in imgs or []:
                     cur.execute(
                         """
                         INSERT INTO house_image
-                        (apt_seq, img_path, description)
-                        VALUES (%s, %s, %s)
+                          (apt_seq, img_path, description)
+                        VALUES (%s,%s,%s)
                         ON DUPLICATE KEY UPDATE
-                        img_path=VALUES(img_path),
-                        description=VALUES(description)
+                          img_path=VALUES(img_path),
+                          description=VALUES(description)
                         """,
                         (seq, img["url"], img["label"]),
                     )
-                # ─ 학군정보 저장 ────────────────────────────────
-                schools = info.get("schools") or []
-                for sch in schools:
-                    # 1) school_detail upsert
+
+                # 4) school_detail + house_school
+                for sch in schools or []:
                     cur.execute(
                         """
                         INSERT INTO school_detail
-                        (school_name, school_type, address, phone,
-                        established, office, teacher_count,
-                        student_count, homepage)
+                          (school_name, school_type, address, phone,
+                           established, office, teacher_count,
+                           student_count, homepage)
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                        ON DUPLICATE KEY UPDATE
-                        id=LAST_INSERT_ID(id)
+                        ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)
                         """,
                         (
                             sch["name"],
@@ -528,12 +574,10 @@ if __name__ == "__main__":
                         ),
                     )
                     school_id = cur.lastrowid
-
-                    # 2) house_school 매핑 테이블에 관계 저장
                     cur.execute(
                         """
                         INSERT IGNORE INTO house_school
-                        (apt_seq, school_id, district, assignment_detail, distance)
+                          (apt_seq, school_id, district, assignment_detail, distance)
                         VALUES (%s,%s,%s,%s,%s)
                         """,
                         (
@@ -545,4 +589,7 @@ if __name__ == "__main__":
                         ),
                     )
 
-            conn.commit()
+                conn.commit()
+                print(f"[DB DEBUG] [{seq}] 커밋 완료")
+
+    driver.quit()
