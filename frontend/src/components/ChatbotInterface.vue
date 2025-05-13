@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full bg-white rounded-lg shadow flex flex-col">
+  <div class="h-full flex flex-col bg-white rounded-lg shadow">
     <!-- 헤더 -->
-    <div class="p-4 border-b flex flex-row items-center justify-between">
+    <div class="p-4 border-b flex items-center justify-between flex-none">
       <div class="flex items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +47,7 @@
             <line x1="14" x2="14" y1="11" y2="17" />
           </svg>
         </button>
-        <button @click="isMinimized = !isMinimized">
+        <button @click="isMinimized = !isMinimized" class="flex-1 flex flex-col">
           <svg
             v-if="isMinimized"
             xmlns="http://www.w3.org/2000/svg"
@@ -88,9 +88,12 @@
       </div>
     </div>
 
-    <div v-if="!isMinimized" class="flex-1 flex flex-col">
-      <!-- 메시지 영역 -->
-      <div class="flex-1 overflow-auto p-4 space-y-4" ref="messagesContainer">
+    <!-- 메시지 영역 -->
+    <div v-if="!isMinimized" class="flex-1 flex flex-col overflow-hidden">
+      <div
+        ref="messagesContainer"
+        class="flex-1 overflow-y-auto min-h-0 p-4 space-y-4 bg-gray-50 scroll-smooth"
+      >
         <div
           v-for="(message, index) in messages"
           :key="index"
@@ -146,7 +149,16 @@
               </svg>
               <span class="text-xs">{{ message.sender === 'user' ? '나' : 'AI 어시스턴트' }}</span>
             </div>
-            <p>{{ message.content }}</p>
+
+            <!-- Bot 또는 사용자 메시지 구분 -->
+            <BotTypingMessage
+              v-if="message.sender === 'bot'"
+              :text="message.content"
+              @done="scrollToBottom"
+            />
+
+            <p v-else>{{ message.content }}</p>
+
             <div
               v-if="message.sender === 'bot' && message.options && message.options.length > 0"
               class="mt-2 flex flex-wrap gap-2"
@@ -162,6 +174,7 @@
             </div>
           </div>
         </div>
+
         <div v-if="isTyping" class="flex justify-start">
           <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
             <div class="flex space-x-1">
@@ -173,7 +186,7 @@
         </div>
       </div>
 
-      <!-- 추천 질문 (처음에만 표시) -->
+      <!-- 추천 질문 -->
       <div v-if="messages.length <= 1 && !isTyping" class="px-4 py-2 border-t">
         <p class="text-sm text-gray-500 mb-2">추천 질문:</p>
         <div class="flex flex-wrap gap-2">
@@ -188,9 +201,9 @@
         </div>
       </div>
 
-      <!-- 입력 영역 -->
-      <div class="p-4 border-t">
-        <div class="flex w-full items-center gap-2">
+      <!-- 입력창 -->
+      <div class="p-4 border-t flex-none bg-white">
+        <div class="flex items-center gap-2">
           <input
             type="text"
             placeholder="질문을 입력하세요..."
@@ -225,6 +238,7 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import BotTypingMessage from './BotTypingMessage.vue'
 
 const isMinimized = ref(false)
 const inputMessage = ref('')
@@ -238,7 +252,6 @@ const messages = ref([
 const isTyping = ref(false)
 const messagesContainer = ref(null)
 
-// 추천 질문
 const suggestedQuestions = [
   '서울 강남 아파트 시세 어때?',
   '투자하기 좋은 지역 추천해줘',
@@ -247,81 +260,62 @@ const suggestedQuestions = [
   '지금이 매수 타이밍일까?',
 ]
 
-// 봇 응답 목록
 const botResponses = [
   {
     keywords: ['강남', '시세'],
-    response:
-      '현재 서울 강남 지역의 아파트 시세는 평균 3.2% 상승했습니다. 특히 압구정, 청담 지역은 재건축 이슈로 5% 이상 상승했습니다. 더 자세한 정보가 필요하신가요?',
+    response: '현재 서울 강남 지역의 아파트 시세는 평균 3.2% 상승했습니다...',
     options: ['재건축 단지 정보 알려줘', '강남 투자 추천 매물 보여줘'],
   },
   {
     keywords: ['투자', '추천', '지역'],
-    response:
-      '현재 투자 수익률이 높은 지역으로는 판교, 송파, 하남 등이 있습니다. 특히 교통 인프라 개발이 예정된 하남시는 향후 가치 상승이 기대됩니다. 특정 지역에 관심이 있으신가요?',
+    response: '현재 투자 수익률이 높은 지역으로는 판교, 송파, 하남 등이 있습니다...',
     options: ['판교 매물 보여줘', '하남 개발 계획 자세히'],
   },
   {
     keywords: ['전세', '월세'],
-    response:
-      '전세와 월세는 투자 목적에 따라 선택이 달라집니다. 전세는 초기 자본이 많이 필요하지만 안정적이고, 월세는 현금 흐름이 중요한 투자자에게 적합합니다. 현재 시장에서는 월세 수익률이 평균 4~5%로 전세 대비 유리한 편입니다.',
+    response: '전세와 월세는 투자 목적에 따라 선택이 달라집니다...',
     options: ['월세 수익률 높은 매물 추천', '전세 대출 조건 알려줘'],
   },
   {
     keywords: ['초보', '팁', '조언'],
-    response:
-      '부동산 투자 초보자라면 다음 사항을 고려하세요: 1) 교통과 편의시설이 좋은 입지 선택 2) 총 자산의 30% 이상 투자하지 않기 3) 대출 상환 계획 세우기 4) 세금 및 관리비 계산하기 5) 장기적 관점으로 접근하기. 더 구체적인 조언이 필요하신가요?',
+    response: '부동산 투자 초보자라면 다음 사항을 고려하세요...',
     options: ['입지 선택 팁 더 알려줘', '대출 관련 조언 부탁해'],
   },
   {
     keywords: ['매수', '타이밍'],
-    response:
-      '부동산 시장은 현재 금리 인상과 정부 정책 변화로 조정기에 있습니다. 하지만 지역과 매물에 따라 상황이 다릅니다. 장기 투자 관점에서는 실수요 지역의 우량 매물은 지금도 좋은 매수 기회가 될 수 있습니다. 특정 지역에 관심이 있으신가요?',
+    response: '부동산 시장은 현재 금리 인상과 정부 정책 변화로 조정기에 있습니다...',
     options: ['실수요 지역 추천해줘', '금리 전망은 어때?'],
   },
   {
     keywords: ['시장', '동향'],
-    response:
-      '최근 부동산 시장은 금리 상승으로 인해 전반적으로 거래량이 감소했습니다. 그러나 역세권, 학군이 좋은 지역, 재개발 예정 지역은 여전히 수요가 있습니다. 특히 서울 외곽과 신도시 지역의 가격 조정폭이 커서 투자 기회가 생기고 있습니다.',
+    response: '최근 부동산 시장은 금리 상승으로 인해 전반적으로 거래량이 감소했습니다...',
     options: ['재개발 지역 알려줘', '신도시 투자 전망은?'],
   },
 ]
 
-// 메시지 전송
 function sendMessage() {
   if (!inputMessage.value.trim()) return
 
-  // 사용자 메시지 추가
   messages.value.push({
     content: inputMessage.value,
     sender: 'user',
     timestamp: new Date(),
   })
 
-  const userMessage = inputMessage.value
-  inputMessage.value = ''
+  nextTick(scrollToBottom)
 
-  // 타이핑 효과
+  const userText = inputMessage.value
+  inputMessage.value = ''
   isTyping.value = true
 
-  // 봇 응답 생성 (실제로는 AI API 호출)
   setTimeout(() => {
     isTyping.value = false
 
-    // 키워드 기반 응답 찾기
-    const userMessageLower = userMessage.toLowerCase()
-    let foundResponse = null
+    const lower = userText.toLowerCase()
+    let match = botResponses.find((r) => r.keywords.some((k) => lower.includes(k)))
 
-    for (const response of botResponses) {
-      if (response.keywords.some((keyword) => userMessageLower.includes(keyword))) {
-        foundResponse = response
-        break
-      }
-    }
-
-    // 적절한 응답이 없으면 기본 응답
-    if (!foundResponse) {
-      foundResponse = {
+    if (!match) {
+      match = {
         response:
           '해당 질문에 대한 정보를 찾아보겠습니다. 부동산 투자와 관련하여 더 구체적인 질문이 있으시면 말씀해주세요.',
         options: ['투자 추천 매물 보여줘', '요즘 부동산 시장 어때?', '투자 수익률 높은 지역은?'],
@@ -329,24 +323,21 @@ function sendMessage() {
     }
 
     messages.value.push({
-      content: foundResponse.response,
+      content: match.response,
       sender: 'bot',
       timestamp: new Date(),
-      options: foundResponse.options,
+      options: match.options,
     })
 
-    // 스크롤 맨 아래로
-    scrollToBottom()
-  }, 1500)
+    nextTick(scrollToBottom)
+  }, 1000)
 }
 
-// 빠른 응답
-function quickReply(question) {
-  inputMessage.value = question
+function quickReply(text) {
+  inputMessage.value = text
   sendMessage()
 }
 
-// 채팅 내역 지우기
 function clearChat() {
   messages.value = [
     {
@@ -357,11 +348,8 @@ function clearChat() {
   ]
 }
 
-// 메시지 추가될 때마다 스크롤 아래로
 watch(messages, () => {
-  nextTick(() => {
-    scrollToBottom()
-  })
+  nextTick(scrollToBottom)
 })
 
 function scrollToBottom() {
