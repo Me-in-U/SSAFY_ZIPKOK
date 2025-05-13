@@ -265,7 +265,7 @@ async function sendMessage() {
 
     console.log('[Request Payload]', payload)
 
-    const res = await fetch('http://localhost:8080/ai/member', {
+    const res = await fetch('https://ssafy.blog/ai/member', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userText }),
