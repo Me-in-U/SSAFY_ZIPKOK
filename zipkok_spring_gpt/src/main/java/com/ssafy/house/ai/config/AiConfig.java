@@ -66,7 +66,7 @@ public class AiConfig {
     VectorStore vectorStore(EmbeddingModel embeddingModel,
             @Value("${spring.ai.vectorstore.redis.index}") String index,
             @Value("${spring.ai.vectorstore.redis.prefix}") String prefix) {
-        RedisVectorStore vs = RedisVectorStore.builder(new JedisPooled("localhost", 6379), embeddingModel)
+        RedisVectorStore vs = RedisVectorStore.builder(new JedisPooled("ssafy.blog", 6379), embeddingModel)
                 .indexName(index)
                 .prefix(prefix)
                 .metadataFields( // Optional: filtering을 위한 metadata field 설정
