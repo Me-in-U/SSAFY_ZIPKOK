@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.ssafy.house</groupId>
 	<artifactId>ZIPKOK</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.2</version>
 	<name>ZIPKOK</name>
 	<description>집사기 프로젝트</description>
 	<!-- <packaging>war</packaging> -->
