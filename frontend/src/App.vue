@@ -4,72 +4,35 @@
     <header class="bg-white shadow-sm">
       <div class="container mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-emerald-600 mr-2"
-          >
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-          <h1 class="text-xl font-bold text-gray-800">부동산 투자 AI</h1>
+          <img src="/favicon.ico" alt="Logo" class="w-6 h-6 mr-2" />
+          <h1 class="text-xl font-bold text-gray-800">집콕(ZIPKOK)</h1>
         </div>
         <nav class="hidden md:flex items-center space-x-6">
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">홈</a>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
-          <a
-            href="#"
-            class="text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="showRecommendedModal = true"
-            >추천 매물</a
-          >
+          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="showRecommendedModal = true">추천 매물</a>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
-          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">내 계정</a>
+          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium" @click.prevent="showLoginModal =true">로그인</a>
         </nav>
-        <button class="md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="4" x2="20" y1="12" y2="12" />
-            <line x1="4" x2="20" y1="6" y2="6" />
-            <line x1="4" x2="20" y1="18" y2="18" />
-          </svg>
-        </button>
+        <button class=" md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" x2="20" y1="12" y2="12" />
+              <line x1="4" x2="20" y1="6" y2="6" />
+              <line x1="4" x2="20" y1="18" y2="18" />
+            </svg>
+            </button>
       </div>
       <!-- 모바일 메뉴 -->
       <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
         <div class="container mx-auto px-4 py-2 space-y-2">
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">홈</a>
+          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            >투자 분석</a
-          >
-          <a
-            href="#"
-            class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="showRecommendedModal = true"
-            >추천 매물</a
-          >
-          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            >시장 동향</a
-          >
-          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            >내 계정</a
-          >
+            @click.prevent="showRecommendedModal = true">추천 매물</a>
+          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
+          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">내 계정</a>
         </div>
       </div>
     </header>
@@ -83,11 +46,8 @@
           <PropertyFilters @filter-change="handleFilterChange" />
 
           <!-- 지도 (더 크게 표시) -->
-          <MapComponent
-            :properties="filteredProperties"
-            @select-property="handleSelectProperty"
-            class="h-[calc(100vh-12rem)]"
-          />
+          <MapComponent :properties="filteredProperties" @select-property="handleSelectProperty"
+            class="h-[calc(100vh-12rem)]" />
         </div>
 
         <!-- 오른쪽: 챗봇 (1/4 너비) -->
@@ -98,18 +58,20 @@
     </main>
 
     <!-- 추천 매물 모달 -->
-    <RecommendedPropertiesModal
-      :show="showRecommendedModal"
-      :properties="properties"
-      @close="showRecommendedModal = false"
-    />
+    <RecommendedPropertiesModal :show="showRecommendedModal" :properties="properties"
+      @close="showRecommendedModal = false" />
 
     <!-- 속성 세부 정보 사이드바 (왼쪽에서 애니메이션으로 나타남) -->
-    <PropertyDetailsSidebar
-      :property="selectedProperty"
-      :is-open="showPropertyDetails"
-      @close="showPropertyDetails = false"
-    />
+    <PropertyDetailsSidebar :property="selectedProperty" :is-open="showPropertyDetails"
+      @close="showPropertyDetails = false" />
+
+    <!-- 로그인 모달 -->
+    <div v-if="showLoginModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
+      <div class=" bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
+        <LoginForm @close="showLoginModal = false" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -121,12 +83,14 @@ import MapComponent from './components/MapComponent.vue'
 import ChatbotInterface from './components/ChatbotInterface.vue'
 import RecommendedPropertiesModal from './components/RecommendedPropertiesModal.vue'
 import PropertyDetailsSidebar from './components/PropertyDetailsSidebar.vue'
+import LoginForm from './components/LoginForm.vue';
 
 // 모바일 메뉴 상태
 const mobileMenuOpen = ref(false)
 
 // 모달 및 사이드바 상태
 const showRecommendedModal = ref(false)
+const showLoginModal = ref(false)
 const showPropertyDetails = ref(false)
 const selectedProperty = ref(null)
 
