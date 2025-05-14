@@ -3,10 +3,10 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 rem — 환경에 맞게 수정 —
-set PYTHON=C:\Users\Zoe_Lowell\Documents\GitHub\ssafy_home\.venv2\Scripts\python.exe
-set SCRIPT=C:\Users\Zoe_Lowell\Documents\GitHub\ssafy_home\크롤링.py
+set PYTHON=C:\Users\SSAFY\Documents\GitHub\ssafy_home\.venv\Scripts\python.exe
+set SCRIPT=C:\Users\SSAFY\Documents\GitHub\ssafy_home\크롤링.py
 set TOTAL=40448
-set DIVS=8
+set DIVS=16
 
 rem CHUNKSIZE 계산 (올림)
 set /A CHUNKSIZE=(TOTAL + DIVS - 1) / DIVS
