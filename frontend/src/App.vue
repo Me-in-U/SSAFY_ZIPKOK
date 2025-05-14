@@ -5,34 +5,34 @@
       <div class="container mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center">
           <img src="/favicon.ico" alt="Logo" class="w-6 h-6 mr-2" />
-          <h1 class="text-xl font-bold text-gray-800">집콕(ZIPKOK)</h1>
+          <h1 class="text-xl font-bold text-gray-800"><a href="/">집콕(ZIPKOK)</a></h1>
         </div>
         <nav class="hidden md:flex items-center space-x-6">
-          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">홈</a>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
             @click.prevent="showRecommendedModal = true">추천 매물</a>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
-          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium" @click.prevent="showLoginModal =true">로그인</a>
+          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="showLoginModal =true">로그인</a>
         </nav>
         <button class=" md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" x2="20" y1="12" y2="12" />
-              <line x1="4" x2="20" y1="6" y2="6" />
-              <line x1="4" x2="20" y1="18" y2="18" />
-            </svg>
-            </button>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" x2="20" y1="12" y2="12" />
+            <line x1="4" x2="20" y1="6" y2="6" />
+            <line x1="4" x2="20" y1="18" y2="18" />
+          </svg>
+        </button>
       </div>
       <!-- 모바일 메뉴 -->
       <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
         <div class="container mx-auto px-4 py-2 space-y-2">
-          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">홈</a>
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
             @click.prevent="showRecommendedModal = true">추천 매물</a>
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
-          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">내 계정</a>
+          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="showLoginModal = true">로그인</a>
         </div>
       </div>
     </header>
@@ -69,7 +69,14 @@
     <div v-if="showLoginModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
       <div class=" bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
-        <LoginForm @close="showLoginModal = false" />
+        <LoginForm @close="showLoginModal = false" @open-register="showLoginModal = false; showRegisterModal = true" />
+      </div>
+    </div>
+    <!-- 회원가입 모달 -->
+    <div v-if="showRegisterModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
+      <div class=" bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
+        <RegisterForm @close="showRegisterModal = false" />
       </div>
     </div>
   </div>
@@ -84,6 +91,7 @@ import ChatbotInterface from './components/ChatbotInterface.vue'
 import RecommendedPropertiesModal from './components/RecommendedPropertiesModal.vue'
 import PropertyDetailsSidebar from './components/PropertyDetailsSidebar.vue'
 import LoginForm from './components/LoginForm.vue';
+import RegisterForm from './components/RegisterForm.vue';
 
 // 모바일 메뉴 상태
 const mobileMenuOpen = ref(false)
@@ -91,6 +99,7 @@ const mobileMenuOpen = ref(false)
 // 모달 및 사이드바 상태
 const showRecommendedModal = ref(false)
 const showLoginModal = ref(false)
+const showRegisterModal = ref(false)
 const showPropertyDetails = ref(false)
 const selectedProperty = ref(null)
 

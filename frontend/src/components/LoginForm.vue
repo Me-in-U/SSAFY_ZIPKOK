@@ -1,19 +1,23 @@
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <!-- relative 추가 -->
+    <div class="relative max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        <!-- 닫기 X 버튼 -->
+        <button type="button" @click="emit('close')"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600" aria-label="닫기">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
         <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
             <!-- 로고 및 헤더 -->
             <div class="text-center">
                 <div class="flex justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="text-emerald-600">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
+                    <img src="/favicon.ico" alt="Logo" class="w-6 h-6 mr-2" />
                 </div>
                 <h2 class="mt-4 text-3xl font-extrabold text-gray-900">부동산 투자 AI</h2>
                 <p class="mt-2 text-sm text-gray-600">
-                    계정에 로그인하고 맞춤형 부동산 투자 정보를 받아보세요
+                    계정에 로그인하고 <br>맞춤형 부동산 투자 정보를 받아보세요
                 </p>
             </div>
 
@@ -54,9 +58,9 @@
                                 <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
                                 <line x1="2" x2="22" y1="2" y2="22" />
                             </svg>
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                                 <circle cx="12" cy="12" r="3" />
                             </svg>
@@ -69,8 +73,8 @@
                     <button type="submit" :disabled="isLoading"
                         class="group relative w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span v-if="isLoading" class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor"
@@ -81,10 +85,18 @@
                         {{ isLoading ? '로그인 중...' : '로그인' }}
                     </button>
                 </div>
+                <!-- 회원가입 버튼 -->
+                <div class="mt-2">
+                    <button type="button" @click="emit('open-Register')"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-emerald-600 rounded-md shadow-sm text-sm font-medium text-emerald-600 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                        회원가입
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue';
@@ -95,11 +107,13 @@ import axios from 'axios';
 const router = useRouter();
 
 // 로그인 폼 상태
+const emit = defineEmits(['close', 'open-Register']);
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
 const isLoading = ref(false);
 const error = ref('');
+
 
 // 로그인 처리 함수 - 백엔드 API 호출
 const handleLogin = async () => {

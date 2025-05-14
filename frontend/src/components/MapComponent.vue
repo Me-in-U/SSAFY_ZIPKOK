@@ -99,12 +99,20 @@ function initMap() {
 }
 
 function setMapType(type) {
-  selectedMapType.value = type
   if (!mapInstance.value) return
+  // const MapTypeId = window.kakao.maps.MapTypeId
+  // const mapTypeId = type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.HYBRID
+  // mapInstance.value.setMapTypeId(mapTypeId)
+  const { MapTypeId } = window.kakao.maps
 
-  const MapTypeId = window.kakao.maps.MapTypeId
-  const mapTypeId = type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.HYBRID
-  mapInstance.value.setMapTypeId(mapTypeId)
+  if (type === 'roadmap') {
+    mapInstance.value.setMapTypeId(MapTypeId.ROADMAP)
+  } else {
+    mapInstance.value.setMapTypeId(MapTypeId.SKYVIEW)
+  }
+
+  selectedMapType.value = type
+
 }
 
 function zoomIn() {
