@@ -50,6 +50,11 @@ public class SecurityConfig {
                                 "/", "/index",
                                 "/member/mvLogin", "/member/mvRegist")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/ai/tool",
+                                "/ai/member",
+                                "/ai/advised")
+                        .permitAll()
                         .requestMatchers(
                                 "/css/**", "/js/**", "/img/**", "/fonts/**")
                         .permitAll()
