@@ -1,6 +1,5 @@
 package com.ssafy.house.config;
 
-import com.ssafy.house.Security.CustomUserDetailsService;
 import com.ssafy.house.Security.JwtAuthenticationFilter;
 import com.ssafy.house.Security.JwtUtil;
 

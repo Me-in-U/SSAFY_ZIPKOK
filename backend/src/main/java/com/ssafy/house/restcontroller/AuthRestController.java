@@ -1,7 +1,6 @@
 package com.ssafy.house.restcontroller;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,13 +27,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/members")
-@CrossOrigin(origins = { "http://localhost:5173", "https://ssafy.blog", "http://192.168.204.108:5173/",
+@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174", "https://ssafy.blog",
+        "http://192.168.204.108:5173/",
         "http://172.22.16.1:5173/", "http://localhost:8080/" })
 @Tag(name = "AuthRestController", description = "로그인 인증 관련 기능 제공")
 public class AuthRestController implements RestControllerHelper {
