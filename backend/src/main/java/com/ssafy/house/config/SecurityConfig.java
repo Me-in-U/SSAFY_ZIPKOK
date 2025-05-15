@@ -55,7 +55,7 @@ public class SecurityConfig {
                                 "/api/v1/members/login",
                                 "/api/v1/members")
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST,
+                        .requestMatchers(HttpMethod.GET,
                                 "/api/v1/house/recommend",
                                 "/api/v1/house/recent",
                                 "/api/v1/house/most",

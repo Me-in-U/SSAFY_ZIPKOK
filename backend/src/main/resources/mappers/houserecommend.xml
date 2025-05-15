@@ -1,100 +1,143 @@
-<!-- src/main/resources/wrappers/house.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.ssafy.house.model.dao.HouseRecommendDao">
 
-  <!-- 1) 최근 거래 매물 apt_seq -->
-  <select id="selectRecentAptSeqs"
+  <!-- 1) 최근 거래 매물: 최근 confirmed_at 기준, 상위 6개 -->
+  <select id="selectRecentProperties"
           parameterType="int"
-          resultType="string">
-    SELECT DISTINCT apt_seq
-    FROM ssafyproj.house_deals_done
-    ORDER BY deal_year DESC,
-             deal_month DESC,
-             deal_day DESC
-    LIMIT #{limit}
-  </select>
-
-  <!-- 2) 최다 거래 매물 apt_seq -->
-  <select id="selectMostTradedAptSeqs"
-          parameterType="int"
-          resultType="string">
-    SELECT t.apt_seq
+          resultType="com.ssafy.house.model.dto.HouseRecommend">
+    SELECT
+      p.apt_seq        AS aptSeq,
+      hi.img_path      AS imgPath,
+      d.listing_name   AS listingName,
+      d.price          AS price,
+      d.spec           AS spec,
+      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description
     FROM (
+      -- apt_seq 별로 마지막 거래일만 뽑아서 정렬
       SELECT
         apt_seq,
-        COUNT(*) AS cnt
-      FROM ssafyproj.house_deals_done
+        MAX(confirmed_at) AS last_date
+      FROM ssafyproj.house_deal
+      WHERE price IS NOT NULL
       GROUP BY apt_seq
-      ORDER BY cnt DESC
+      ORDER BY last_date DESC
       LIMIT #{limit}
-    ) t
+    ) p
+    JOIN (
+      -- apt_seq 별 대표 이미지 하나만
+      SELECT apt_seq, MIN(img_path) AS img_path
+      FROM ssafyproj.house_image
+      GROUP BY apt_seq
+    ) hi ON hi.apt_seq = p.apt_seq
+    JOIN ssafyproj.house_deal d
+      ON d.apt_seq = p.apt_seq
+     AND d.confirmed_at = p.last_date
+    ORDER BY p.last_date DESC
   </select>
 
-  <!-- 3) 종합점수 기반 추천 매물 apt_seq -->
-  <select id="selectRecommendedCompositeApts"
+  <!-- 2) 최다 거래 매물: 과거 거래 건수 기준, 상위 6개 -->
+  <select id="selectMostTradedProperties"
+          resultType="map">
+    SELECT
+      p.apt_seq        AS aptSeq,
+      hi.img_path      AS imgPath,
+      d.listing_name   AS listingName,
+      d.price          AS price,
+      d.spec           AS spec,
+      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description
+    FROM (
+      -- apt_seq 별 거래 건수 집계
+      SELECT apt_seq
+      FROM (
+        SELECT
+          apt_seq,
+          COUNT(*) AS cnt
+        FROM ssafyproj.house_deal
+        WHERE price IS NOT NULL
+        GROUP BY apt_seq
+        ORDER BY cnt DESC
+        LIMIT #{limit}
+      ) t
+    ) p
+    JOIN (
+      SELECT apt_seq, MIN(img_path) AS img_path
+      FROM ssafyproj.house_image
+      GROUP BY apt_seq
+    ) hi ON hi.apt_seq = p.apt_seq
+    JOIN (
+      -- apt_seq 별 최신 거래 한 건만
+      SELECT hd1.apt_seq, hd1.listing_name, hd1.price, hd1.spec, hd1.description
+      FROM ssafyproj.house_deal hd1
+      JOIN (
+        SELECT apt_seq, MAX(confirmed_at) AS max_date
+        FROM ssafyproj.house_deal
+        WHERE price IS NOT NULL
+        GROUP BY apt_seq
+      ) hd2 
+        ON hd1.apt_seq = hd2.apt_seq
+       AND hd1.confirmed_at = hd2.max_date
+    ) d ON d.apt_seq = p.apt_seq
+    ORDER BY (
+      SELECT COUNT(*) 
+      FROM ssafyproj.house_deal dd
+      WHERE dd.apt_seq = p.apt_seq
+        AND dd.price IS NOT NULL
+    ) DESC
+  </select>
+
+  <!-- 3) 종합추천 매물: 1년 시세상승률 기준, 상위 6개 -->
+  <select id="selectRecommendedCompositeProperties"
           parameterType="int"
-          resultType="string">
-    WITH
-    yield_cte AS (
+          resultType="com.ssafy.house.model.dto.HouseRecommend">
+    SELECT
+      p.apt_seq        AS aptSeq,
+      hi.img_path      AS imgPath,
+      d.listing_name   AS listingName,
+      d.price          AS price,
+      d.spec           AS spec,
+      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description
+    FROM (
+      -- 1년 전 대비 상승률 계산 후 상위 순으로 apt_seq 선택
       SELECT
-        apt_seq,
-        AVG(monthly_rent * 12.0 / NULLIF(price,0)) AS value_yield
-      FROM ssafyproj.house_deal
-      WHERE monthly_rent IS NOT NULL
+        a.apt_seq,
+        (a.price_now - a.price_1y_ago) / NULLIF(a.price_1y_ago,0) AS score
+      FROM (
+        SELECT
+          apt_seq,
+          MAX(CASE WHEN DATE_FORMAT(confirmed_at,'%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m') THEN price END)            AS price_now,
+          MAX(CASE WHEN DATE_FORMAT(confirmed_at,'%Y-%m') = DATE_FORMAT(DATE_SUB(CURDATE(),INTERVAL 12 MONTH),'%Y-%m') THEN price END) AS price_1y_ago
+        FROM ssafyproj.house_deal
+        WHERE price IS NOT NULL
+        GROUP BY apt_seq
+      ) a
+      WHERE a.price_now   IS NOT NULL
+        AND a.price_1y_ago IS NOT NULL
+      ORDER BY score DESC
+      LIMIT #{limit}
+    ) p
+    JOIN (
+      SELECT apt_seq, MIN(img_path) AS img_path
+      FROM ssafyproj.house_image
       GROUP BY apt_seq
-    ),
-    liqu_cte AS (
-      SELECT
-        apt_seq,
-        COUNT(*) AS value_liquidity
-      FROM ssafyproj.house_deals_done
-      WHERE STR_TO_DATE(
-              CONCAT(deal_year,'-',LPAD(deal_month,2,'0'),'-',LPAD(deal_day,2,'0')),
-              '%Y-%m-%d'
-            ) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-      GROUP BY apt_seq
-    ),
-    appr_cte AS (
-      SELECT
-        apt_seq,
-        (MAX(CASE WHEN CONCAT(deal_year,'-',LPAD(deal_month,2,'0')) = DATE_FORMAT(CURDATE(), '%Y-%m')
-                  THEN price END)
-         - MAX(CASE WHEN CONCAT(deal_year,'-',LPAD(deal_month,2,'0')) = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
-                  THEN price END)
-        ) /
-        NULLIF(MAX(CASE WHEN CONCAT(deal_year,'-',LPAD(deal_month,2,'0')) = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
-                  THEN price END),0)
-        AS value_appreciation
-      FROM ssafyproj.house_deals_done
-      GROUP BY apt_seq
-    ),
-    stats AS (
-      SELECT
-        MIN(y.value_yield)        AS min_y,
-        MAX(y.value_yield)        AS max_y,
-        MIN(l.value_liquidity)    AS min_l,
-        MAX(l.value_liquidity)    AS max_l,
-        MIN(a.value_appreciation) AS min_a,
-        MAX(a.value_appreciation) AS max_a
-      FROM yield_cte y
-      JOIN liqu_cte l USING(apt_seq)
-      JOIN appr_cte a USING(apt_seq)
-    ),
-    combined AS (
-      SELECT
-        y.apt_seq,
-        ((y.value_yield       - s.min_y)/(s.max_y - s.min_y) * 0.5)
-      + ((l.value_liquidity  - s.min_l)/(s.max_l - s.min_l) * 0.3)
-      + ((a.value_appreciation - s.min_a)/(s.max_a - s.min_a) * 0.2)
-        AS score
-      FROM yield_cte y
-      JOIN liqu_cte l USING(apt_seq)
-      JOIN appr_cte a USING(apt_seq)
-      CROSS JOIN stats s
-    )
-    SELECT apt_seq
-    FROM combined
-    ORDER BY score DESC
-    LIMIT #{limit}
+    ) hi ON hi.apt_seq = p.apt_seq
+    JOIN (
+      -- apt_seq 별 최신 거래 한 건만
+      SELECT hd1.apt_seq, hd1.listing_name, hd1.price, hd1.spec, hd1.description
+      FROM ssafyproj.house_deal hd1
+      JOIN (
+        SELECT apt_seq, MAX(confirmed_at) AS max_date
+        FROM ssafyproj.house_deal
+        WHERE price IS NOT NULL
+        GROUP BY apt_seq
+      ) hd2
+        ON hd1.apt_seq = hd2.apt_seq
+       AND hd1.confirmed_at = hd2.max_date
+    ) d ON d.apt_seq = p.apt_seq
+    ORDER BY p.score DESC
   </select>
 
 </mapper>

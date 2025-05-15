@@ -15,26 +15,16 @@
             메인화면
           </router-link> -->
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
-          <a
-            href="#"
-            class="text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="openRecommendedModal()"
-            >추천 매물</a
-          >
+          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="openRecommendedModal">추천 매물</a>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
           <!-- 인증 상태 분기 -->
           <template v-if="!user">
             <!-- 로그아웃 상태 -->
-            <button
-              class="text-gray-600 hover:text-emerald-600 font-medium"
-              @click="showLoginModal = true"
-            >
+            <button class="text-gray-600 hover:text-emerald-600 font-medium" @click="showLoginModal = true">
               로그인
             </button>
-            <router-link
-              to="/member/mvRegist"
-              class="text-gray-600 hover:text-emerald-600 font-medium"
-            >
+            <router-link to="/member/mvRegist" class="text-gray-600 hover:text-emerald-600 font-medium">
               회원가입
             </router-link>
           </template>
@@ -50,17 +40,8 @@
           </template>
         </nav>
         <button class="md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" x2="20" y1="12" y2="12" />
             <line x1="4" x2="20" y1="6" y2="6" />
             <line x1="4" x2="20" y1="18" y2="18" />
@@ -68,14 +49,11 @@
         </button>
       </div>
       <!-- 모바일 메뉴 -->
-      <!-- 모바일 메뉴 -->
       <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
         <div class="container mx-auto px-4 py-2 space-y-2">
           <!-- 추천 매물, 시장 동향 -->
-          <button
-            class="block w-full text-left py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="openRecommendedModal()"
-          >
+          <button class="block w-full text-left py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="openRecommendedModal">
             추천 매물
           </button>
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">
@@ -84,30 +62,20 @@
 
           <!-- 인증 상태 분기 -->
           <template v-if="!user">
-            <button
-              class="block w-full text-left py-2 text-gray-600 hover:text-emerald-600 font-medium"
-              @click="showLoginModal = true"
-            >
+            <button class="block w-full text-left py-2 text-gray-600 hover:text-emerald-600 font-medium"
+              @click="showLoginModal = true">
               로그인
             </button>
-            <router-link
-              to="/member/mvRegist"
-              class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            >
+            <router-link to="/member/mvRegist" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">
               회원가입
             </router-link>
           </template>
           <template v-else>
-            <router-link
-              to="/member/mypage"
-              class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            >
+            <router-link to="/member/mypage" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">
               마이페이지
             </router-link>
-            <button
-              class="block w-full text-left py-2 text-gray-600 hover:text-emerald-600 font-medium"
-              @click="handleLogout"
-            >
+            <button class="block w-full text-left py-2 text-gray-600 hover:text-emerald-600 font-medium"
+              @click="handleLogout">
               로그아웃
             </button>
           </template>
@@ -118,29 +86,17 @@
     <!-- 메인 영역: 화면 전체 너비 사용 -->
     <main class="container mx-auto px-4 mt-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-4">
       <!-- 사이드바 (조건부 = w-1/3, 숨김이면 w-0) -->
-      <div
-        :class="showPropertyDetails ? 'w-1/3 rounded-lg bg-white shadow-lg' : 'w-0'"
-        class="transition-[width] duration-300 ease-in-out overflow-hidden"
-      >
-        <PropertyDetailsSidebar
-          v-if="showPropertyDetails"
-          :property="selectedProperty"
-          :isOpen="showPropertyDetails"
-          @close="showPropertyDetails = false"
-        />
+      <div :class="showPropertyDetails ? 'w-1/3 rounded-lg bg-white shadow-lg' : 'w-0'"
+        class="transition-[width] duration-300 ease-in-out overflow-hidden">
+        <PropertyDetailsSidebar v-if="showPropertyDetails" :property="selectedProperty" :isOpen="showPropertyDetails"
+          @close="showPropertyDetails = false" />
       </div>
 
       <!-- 지도 (사이드바 열리면 w-2/3, 아니면 w-full) -->
-      <section
-        :class="showPropertyDetails ? 'w-2/3' : 'w-full'"
-        class="transition-all duration-300 ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5"
-      >
+      <section :class="showPropertyDetails ? 'w-2/3' : 'w-full'"
+        class="transition-all duration-300 ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5">
         <PropertyFilters @filter-change="handleFilterChange" />
-        <MapComponent
-          :properties="filteredProperties"
-          @select-property="handleSelectProperty"
-          class="flex-1"
-        />
+        <MapComponent :properties="filteredProperties" @select-property="handleSelectProperty" class="flex-1" />
       </section>
 
       <!-- 3) 오른쪽 챗봇 -->
@@ -150,32 +106,25 @@
     </main>
 
     <!-- 추천 매물 모달 -->
-    <RecommendedPropertiesModal
-      :show="showRecommendedModal"
-      :recentProperties="recentProperties"
-      :mostProperties="mostProperties"
-      :recommendedProperties="recommendedProperties"
-      @close="showRecommendedModal = false"
-    />
+    
+    <RecommendedPropertiesModal  
+    :show="showRecommendedModal"  
+    :recentProperties="recentProperties" 
+      :mostProperties="mostProperties"  
+      :recommendedProperties="recommendedProperties" 
+      @close="showRecommendedModal = false"  />
 
     <!-- 로그인 모달 -->
-    <div
-      v-if="showLoginModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50"
-    >
+    <div v-if="showLoginModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
       <div class="rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
-        <LoginForm
-          @close="showLoginModal = false"
-          @login-success="onLoginSuccess"
-          @open-register="((showLoginModal = false), (showRegisterModal = true))"
-        />
+        <LoginForm @close="showLoginModal = false" @login-success="onLoginSuccess"
+          @open-register="((showLoginModal = false), (showRegisterModal = true))" />
       </div>
     </div>
     <!-- 회원가입 모달 -->
-    <div
-      v-if="showRegisterModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50"
-    >
+    <div v-if="showRegisterModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
       <div class="bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
         <RegisterForm @close="showRegisterModal = false" />
       </div>
@@ -217,27 +166,33 @@ const activeFilters = ref({
   dealType: '',
 })
 
-// 새로 추가할 상태
+// **추천 매물용 상태 추가**
 const recentProperties = ref([])
 const mostProperties = ref([])
 const recommendedProperties = ref([])
 const properties = ref([])
 // 추천 매물 버튼 클릭 시 백엔드 호출
 async function openRecommendedModal() {
-  try {
-    // 동시 요청
-    const [resRecent, resMost, resRec] = await Promise.all([
-      axios.get('/api/v1/house/recent?limit=6'),
-      axios.get('/api/v1/house/most?limit=6'),
-      axios.get('/api/v1/house/recommended?limit=6'),
-    ])
-    recentProperties.value = resRecent.data
-    mostProperties.value = resMost.data
-    recommendedProperties.value = resRec.data
+  // 이미 데이터를 가져온 적이 있으면 바로 모달만 열어주고 리턴
+  if (recentProperties.value.length > 0) {
     showRecommendedModal.value = true
-    console.log('▶ recent:', recentProperties.value)
-    console.log('▶ most:', mostProperties.value)
-    console.log('▶ recommended:', recommendedProperties.value)
+    return
+  }
+  try {
+    const [r, m, c] = await Promise.all([
+      axios.get('http://localhost:8080/api/v1/house/recommend/recent?limit=6'),
+      axios.get('http://localhost:8080/api/v1/house/recommend/most?limit=6'),
+      axios.get('http://localhost:8080/api/v1/house/recommend/composite?limit=6'),
+    ])
+    recentProperties.value = r.data
+    mostProperties.value = m.data
+    recommendedProperties.value = c.data
+      // → 여기서 찍어보면 App.vue 쪽 상태가 정확히 무엇인지 알 수 있습니다.
+      console.log('[App.vue] recentProperties', JSON.stringify(recentProperties.value, null, 2))
+      console.log('[App.vue] mostProperties', JSON.stringify(mostProperties.value, null, 2))
+      console.log('[App.vue] recommendedProperties', JSON.stringify(recommendedProperties.value, null, 2))
+
+    showRecommendedModal.value = true
   } catch (err) {
     console.error('추천 매물 불러오기 실패', err)
   }
