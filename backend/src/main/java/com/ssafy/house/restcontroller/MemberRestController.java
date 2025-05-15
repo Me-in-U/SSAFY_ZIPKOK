@@ -32,9 +32,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174", "https://ssafy.blog",
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://ssafy.blog",
+        "https://api.ssafy.blog",
+        "http://api.ssafy.blog",
         "http://192.168.204.108:5173/",
-        "http://172.22.16.1:5173/", "http://localhost:8080/" })
+        "http://172.22.16.1:5173/" })
 @Tag(name = "MemberRestController", description = "멤버 관련 기능 제공")
 public class MemberRestController implements RestControllerHelper {
 

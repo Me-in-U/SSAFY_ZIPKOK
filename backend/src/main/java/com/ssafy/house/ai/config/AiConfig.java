@@ -40,7 +40,8 @@ public class AiConfig {
     // VectorStore vectorStore(EmbeddingModel embeddingModel,
     // @Value("${spring.ai.vectorstore.redis.index}") String index,
     // @Value("${spring.ai.vectorstore.redis.prefix}") String prefix) {
-    // RedisVectorStore vs = RedisVectorStore.builder(new JedisPooled("ssafy.blog",
+    // RedisVectorStore vs = RedisVectorStore.builder(new
+    // JedisPooled("api.ssafy.blog",
     // 6379), embeddingModel)
     // .indexName(index)
     // .prefix(prefix)

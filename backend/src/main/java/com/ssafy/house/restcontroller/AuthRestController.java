@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/members")
 @CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174", "https://ssafy.blog",
+        "http://api.ssafy.blog",
         "http://192.168.204.108:5173/",
         "http://172.22.16.1:5173/", "http://localhost:8080/" })
 @Tag(name = "AuthRestController", description = "로그인 인증 관련 기능 제공")
