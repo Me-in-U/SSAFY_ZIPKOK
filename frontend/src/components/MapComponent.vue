@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full bg-white rounded-lg shadow overflow-hidden">
+  <div class="relative w-full rounded-lg shadow overflow-hidden">
     <!-- Kakao Maps -->
     <div ref="mapContainer" id="map" class="w-full h-full relative overflow-hidden z-0"></div>
 
@@ -63,6 +63,9 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+// 부모로 보낼 이벤트 정의
+const emit = defineEmits(['select-property'])
+
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const selectedMapType = ref('roadmap')
@@ -95,12 +98,13 @@ function loadKakaoMap() {
 
 function initMap() {
   const options = {
-    center: new window.kakao.maps.LatLng(33.450701, 126.570667),
-    level: 3,
+    center: new window.kakao.maps.LatLng(37.543361625522714, 127.01908556679024),
+    level: 5,
   }
   mapInstance.value = new window.kakao.maps.Map(mapContainer.value, options)
   setMapType(selectedMapType.value)
 
+  fetchByBounds()
   // 1) idle 이벤트 등록: 범위 요청
   window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchByBounds)
 }
@@ -108,9 +112,8 @@ function initMap() {
 // 2) bounds 계산 & 서버 요청
 function fetchByBounds() {
   const level = mapInstance.value.getLevel()
-  if (level > 6) {
-    markers.value.forEach((m) => m.setMap(null))
-    markers.value = []
+  if (level > 5) {
+    hideMarkers()
     return
   }
 
@@ -124,6 +127,9 @@ function fetchByBounds() {
     minLng: sw.getLng(),
     maxLng: ne.getLng(),
   }
+
+  // TODO: 배포시 URL 변경
+  // https://api.ssafy.blog/api/v1/house/search
   axios
     .get('http://localhost:8080/api/v1/house/search', { params })
     .then((res) => {
@@ -138,19 +144,53 @@ function fetchByBounds() {
             : []
 
       // 기존 마커 제거
-      markers.value.forEach((m) => m.setMap(null))
-      markers.value = []
+      hideMarkers()
 
-      // 새 마커 그리기
+      // 새 마커 + 텍스트(CustomOverlay) 그리기
       list.forEach((house) => {
+        const position = new window.kakao.maps.LatLng(house.latitude, house.longitude)
+
+        // 1) 기본 마커
         const marker = new window.kakao.maps.Marker({
-          position: new window.kakao.maps.LatLng(house.latitude, house.longitude),
+          position,
+          clickable: true,
         })
         marker.setMap(mapInstance.value)
-        markers.value.push(marker)
+
+        // 2) 텍스트 오버레이
+        const overlay = new window.kakao.maps.CustomOverlay({
+          position,
+          content: `<div style="
+            padding:2px 4px;
+            background:rgba(255,255,255,0.8);
+            border:1px solid #777;
+            border-radius:4px;
+            font-size:12px;
+            white-space:nowrap;
+          ">${house.aptNm}</div>`,
+          yAnchor: 2, // 마커 아이콘 위쪽에 위치
+        })
+        overlay.setMap(mapInstance.value)
+
+        // 클릭 시 사이드바 열기
+        window.kakao.maps.event.addListener(marker, 'click', () => {
+          emit('select-property', house)
+        })
+
+        // 상태 관리용 배열에 함께 저장
+        markers.value.push({ marker, overlay })
       })
     })
     .catch((err) => console.error(err))
+}
+
+// 마커와 오버레이를 모두 지도에서 제거하고 배열까지 비우는 함수
+function hideMarkers() {
+  markers.value.forEach(({ marker, overlay }) => {
+    marker.setMap(null)
+    overlay.setMap(null)
+  })
+  markers.value = []
 }
 
 function setMapType(type) {

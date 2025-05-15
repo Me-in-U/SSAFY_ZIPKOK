@@ -9,15 +9,32 @@
         </div>
         <nav class="hidden md:flex items-center space-x-6">
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
-          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="openRecommendedModal()">추천 매물</a>
+          <a
+            href="#"
+            class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="openRecommendedModal()"
+            >추천 매물</a
+          >
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
-          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="showLoginModal =true">로그인</a>
+          <a
+            href="#"
+            class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="showLoginModal = true"
+            >로그인</a
+          >
         </nav>
-        <button class=" md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="4" x2="20" y1="12" y2="12" />
             <line x1="4" x2="20" y1="6" y2="6" />
             <line x1="4" x2="20" y1="18" y2="18" />
@@ -27,59 +44,93 @@
       <!-- 모바일 메뉴 -->
       <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
         <div class="container mx-auto px-4 py-2 space-y-2">
-          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">투자 분석</a>
+          <a
+            href="#"
+            class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="openRecommendedModal()"
+            >추천 매물</a
+          >
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="openRecommendedModal()">추천 매물</a>
-          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
-          <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium"
-            @click.prevent="showLoginModal = true">로그인</a>
+            >시장 동향</a
+          >
+          <a
+            href="#"
+            class="text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="showLoginModal = true"
+            >로그인</a
+          >
         </div>
       </div>
     </header>
 
-    <!-- 메인 콘텐츠 -->
-    <main class="container mx-auto px-4 py-6">
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- 왼쪽: 지도와 UI 요소 (3/4 너비) -->
-        <div class="w-full lg:w-3/4 space-y-6">
-          <!-- 검색 및 필터 -->
-          <PropertyFilters @filter-change="handleFilterChange" />
-
-          <!-- 지도 (더 크게 표시) -->
-          <MapComponent :properties="filteredProperties" @select-property="handleSelectProperty"
-            class="h-[calc(100vh-12rem)]" />
-        </div>
-
-        <!-- 오른쪽: 챗봇 (1/4 너비) -->
-        <div class="w-full lg:w-1/4 h-[calc(100vh-6rem)] flex flex-col">
-          <ChatbotInterface class="h-full" />
-        </div>
+    <!-- 메인 영역: 화면 전체 너비 사용 -->
+    <main class="container mx-auto px-4 mt-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-4">
+      <!-- 사이드바 (조건부 = w-1/3, 숨김이면 w-0) -->
+      <div
+        :class="showPropertyDetails ? 'w-1/3 rounded-lg bg-white shadow-lg' : 'w-0'"
+        class="transition-[width] duration-300 ease-in-out overflow-hidden"
+      >
+        <PropertyDetailsSidebar
+          v-if="showPropertyDetails"
+          :property="selectedProperty"
+          :isOpen="showPropertyDetails"
+          @close="showPropertyDetails = false"
+        />
       </div>
+
+      <!-- 지도 (사이드바 열리면 w-2/3, 아니면 w-full) -->
+      <section
+        :class="showPropertyDetails ? 'w-2/3' : 'w-full'"
+        class="transition-all duration-300 ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5"
+      >
+        <PropertyFilters @filter-change="handleFilterChange" />
+        <MapComponent
+          :properties="filteredProperties"
+          @select-property="handleSelectProperty"
+          class="flex-1"
+        />
+      </section>
+
+      <!-- 3) 오른쪽 챗봇 -->
+      <aside class="flex-shrink-0 w-1/4 overflow-auto shadow-lg">
+        <ChatbotInterface class="h-full" />
+      </aside>
     </main>
 
     <!-- 추천 매물 모달 -->
-    <RecommendedPropertiesModal 
-    :show="showRecommendedModal" 
-    :recentProperties="recentProperties"
-    :mostProperties="mostProperties" 
-    :recommendedProperties="recommendedProperties"
-      @close="showRecommendedModal = false" />
+    <RecommendedPropertiesModal
+      :show="showRecommendedModal"
+      :recentProperties="recentProperties"
+      :mostProperties="mostProperties"
+      :recommendedProperties="recommendedProperties"
+      @close="showRecommendedModal = false"
+    />
 
     <!-- 속성 세부 정보 사이드바 (왼쪽에서 애니메이션으로 나타남) -->
-    <PropertyDetailsSidebar :property="selectedProperty" :is-open="showPropertyDetails"
-      @close="showPropertyDetails = false" />
+    <PropertyDetailsSidebar
+      :property="selectedProperty"
+      :is-open="showPropertyDetails"
+      @close="showPropertyDetails = false"
+    />
 
     <!-- 로그인 모달 -->
-    <div v-if="showLoginModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
-      <div class=" bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
-        <LoginForm @close="showLoginModal = false" @open-register="showLoginModal = false; showRegisterModal = true" />
+    <div
+      v-if="showLoginModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50"
+    >
+      <div class="rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
+        <LoginForm
+          @close="showLoginModal = false"
+          @open-register="((showLoginModal = false), (showRegisterModal = true))"
+        />
       </div>
     </div>
     <!-- 회원가입 모달 -->
-    <div v-if="showRegisterModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50">
-      <div class=" bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
+    <div
+      v-if="showRegisterModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-hidden z-50"
+    >
+      <div class="bg-black rounded-lg shadow-lg w-full max-w-md max-h-[160vh] overflow-y-auto">
         <RegisterForm @close="showRegisterModal = false" />
       </div>
     </div>
@@ -95,8 +146,8 @@ import MapComponent from './components/MapComponent.vue'
 import ChatbotInterface from './components/ChatbotInterface.vue'
 import RecommendedPropertiesModal from './components/RecommendedPropertiesModal.vue'
 import PropertyDetailsSidebar from './components/PropertyDetailsSidebar.vue'
-import LoginForm from './components/LoginForm.vue';
-import RegisterForm from './components/RegisterForm.vue';
+import LoginForm from './components/LoginForm.vue'
+import RegisterForm from './components/RegisterForm.vue'
 
 // 모바일 메뉴 상태
 const mobileMenuOpen = ref(false)
