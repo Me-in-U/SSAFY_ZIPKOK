@@ -61,10 +61,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const selectedMapType = ref('roadmap')
+
+// 화면에 표시할 마커 리스트
+const markers = ref([])
 
 onMounted(() => {
   loadKakaoMap()
@@ -96,13 +100,61 @@ function initMap() {
   }
   mapInstance.value = new window.kakao.maps.Map(mapContainer.value, options)
   setMapType(selectedMapType.value)
+
+  // 1) idle 이벤트 등록: 범위 요청
+  window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchByBounds)
+}
+
+// 2) bounds 계산 & 서버 요청
+function fetchByBounds() {
+  const level = mapInstance.value.getLevel()
+  if (level > 6) {
+    markers.value.forEach((m) => m.setMap(null))
+    markers.value = []
+    return
+  }
+
+  const bounds = mapInstance.value.getBounds()
+  const sw = bounds.getSouthWest()
+  const ne = bounds.getNorthEast()
+
+  const params = {
+    minLat: sw.getLat(),
+    maxLat: ne.getLat(),
+    minLng: sw.getLng(),
+    maxLng: ne.getLng(),
+  }
+  axios
+    .get('http://localhost:8080/api/v1/house/search', { params })
+    .then((res) => {
+      console.log('응답 전체:', res.data)
+      // 실제 데이터 리스트가 있는 필드명(houses, list 등)을 확인하세요.
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data.houses)
+          ? res.data.houses
+          : Array.isArray(res.data.list)
+            ? res.data.list
+            : []
+
+      // 기존 마커 제거
+      markers.value.forEach((m) => m.setMap(null))
+      markers.value = []
+
+      // 새 마커 그리기
+      list.forEach((house) => {
+        const marker = new window.kakao.maps.Marker({
+          position: new window.kakao.maps.LatLng(house.latitude, house.longitude),
+        })
+        marker.setMap(mapInstance.value)
+        markers.value.push(marker)
+      })
+    })
+    .catch((err) => console.error(err))
 }
 
 function setMapType(type) {
   if (!mapInstance.value) return
-  // const MapTypeId = window.kakao.maps.MapTypeId
-  // const mapTypeId = type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.HYBRID
-  // mapInstance.value.setMapTypeId(mapTypeId)
   const { MapTypeId } = window.kakao.maps
 
   if (type === 'roadmap') {
@@ -112,7 +164,6 @@ function setMapType(type) {
   }
 
   selectedMapType.value = type
-
 }
 
 function zoomIn() {
