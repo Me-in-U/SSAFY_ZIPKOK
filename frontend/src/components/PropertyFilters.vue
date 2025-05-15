@@ -66,8 +66,8 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-cols-4 gap-4">
-          <!-- 1) 시·도 -->
+        <div class="grid gap-4 items-end" style="grid-template-columns: repeat(3, 1fr) auto">
+          <!-- 시·도 -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">시·도</label>
             <select
@@ -76,13 +76,11 @@
               class="w-full p-2 border rounded-md focus:ring-emerald-500"
             >
               <option value="">시·도 선택</option>
-              <option v-for="s in sidoList" :key="s" :value="s">
-                {{ s }}
-              </option>
+              <option v-for="s in sidoList" :key="s" :value="s">{{ s }}</option>
             </select>
           </div>
 
-          <!-- 2) 구·군 -->
+          <!-- 구·군 -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">구·군</label>
             <select
@@ -92,13 +90,11 @@
               class="w-full p-2 border rounded-md focus:ring-emerald-500 disabled:opacity-50"
             >
               <option value="">구·군 선택</option>
-              <option v-for="g in gugunList" :key="g" :value="g">
-                {{ g }}
-              </option>
+              <option v-for="g in gugunList" :key="g" :value="g">{{ g }}</option>
             </select>
           </div>
 
-          <!-- 3) 읍·면·동 -->
+          <!-- 읍·면·동 -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">읍·면·동</label>
             <select
@@ -107,21 +103,21 @@
               class="w-full p-2 border rounded-md focus:ring-emerald-500 disabled:opacity-50"
             >
               <option value="">읍·면·동 선택</option>
-              <option v-for="d in dongList" :key="d" :value="d">
-                {{ d }}
-              </option>
+              <option v-for="d in dongList" :key="d" :value="d">{{ d }}</option>
             </select>
           </div>
-          <div class="space-y-2">
-            <!-- 여기로 “이동” 버튼 추가 -->
+
+          <!-- 이동 버튼 -->
+          <div class="flex justify-end">
             <button
-              class="mt-1 px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 text-sm"
+              class="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition"
               :disabled="!filters.dong"
               @click="onMove"
             >
               이동
             </button>
           </div>
+
           <!-- 매물 유형 -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">매물 유형</label>
@@ -188,7 +184,7 @@
             </select>
           </div>
 
-          <!-- 추가 필터 버튼 -->
+          <!-- 추가 필터 토글 -->
           <div class="flex items-end">
             <button
               class="px-4 py-2 border border-emerald-600 text-emerald-600 rounded-md hover:bg-emerald-50"
@@ -199,7 +195,7 @@
           </div>
         </div>
 
-        <!-- 추가 필터 -->
+        <!-- 추가 필터 섹션 -->
         <div
           v-if="showMoreFilters"
           class="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -251,7 +247,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
-import VueSlider from 'vue-slider-component' // 실제 프로젝트에선 npm install 해주세요
+import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
 const emit = defineEmits(['filter-change', 'move-to'])
@@ -260,7 +256,6 @@ const searchQuery = ref('')
 const showAdvanced = ref(false)
 const showMoreFilters = ref(false)
 
-// cascade selectors
 const sidoList = ref([])
 const gugunList = ref([])
 const dongList = ref([])
@@ -277,6 +272,7 @@ const filters = reactive({
   household: '',
   availableIn: '',
 })
+
 function onMove() {
   emit('move-to', { address: `${filters.dong} ${filters.gugun} ${filters.sido}` })
 }
@@ -284,8 +280,8 @@ function onMove() {
 async function loadSido() {
   const res = await axios.get('http://localhost:8080/api/v1/sidogungu/sido')
   sidoList.value = res.data
-  console.log('sidoList', sidoList.value)
 }
+
 async function onSidoChange() {
   filters.gugun = ''
   filters.dong = ''
@@ -296,8 +292,8 @@ async function onSidoChange() {
   }
   const res = await axios.get(`http://localhost:8080/api/v1/sidogungu/gugun/${filters.sido}`)
   gugunList.value = res.data
-  console.log('gugunList', gugunList.value)
 }
+
 async function onGugunChange() {
   filters.dong = ''
   if (!filters.gugun) {
@@ -308,15 +304,12 @@ async function onGugunChange() {
     `http://localhost:8080/api/v1/sidogungu/dong/${filters.sido}/${filters.gugun}`,
   )
   dongList.value = res.data
-  console.log('dongList', dongList.value)
 }
 
 function applyFilters() {
-  emit('filter-change', {
-    searchQuery: searchQuery.value,
-    ...filters,
-  })
+  emit('filter-change', { searchQuery: searchQuery.value, ...filters })
 }
+
 function resetFilters() {
   searchQuery.value = ''
   Object.assign(filters, {
@@ -346,5 +339,4 @@ onMounted(loadSido)
 .rounded-lg {
   border-radius: 0.5rem;
 }
-/* 필요에 따라 추가 스타일 조정하세요 */
 </style>
