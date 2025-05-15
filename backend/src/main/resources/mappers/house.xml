@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.house.model.dao.HouseDao">
+
+    <!-- 1. 아파트 기본 정보 조회 -->
+    <resultMap id="HouseDetailResult" type="HouseDetail">
+        <id     column="apt_seq"     property="aptSeq"/>
+        <result column="apt_name"    property="aptName"/>
+        <result column="dong"        property="dong"/>
+        <result column="lat"         property="lat"/>
+        <result column="lng"         property="lng"/>
+        <result column="build_year"  property="buildYear"/>
+    </resultMap>
+
+    <select id="selectHouseDetail"
+            parameterType="string"
+            resultMap="HouseDetailResult">
+        SELECT
+            apt_seq,
+            apt_name,
+            dong,
+            lat,
+            lng,
+            build_year
+        FROM house_detail
+        WHERE apt_seq = #{aptSeq}
+    </select>
+
+    <!-- 2. 현재 매물 조회 (최근 1개월) -->
+    <select id="selectCurrentDeals"
+            parameterType="string"
+            resultType="HouseDeal">
+        SELECT
+            deal_id,
+            apt_seq,
+            price,
+            floor,
+            deal_date
+        FROM house_deal
+        WHERE apt_seq = #{aptSeq}
+          AND deal_date &gt;= CURDATE() - INTERVAL 1 MONTH
+        ORDER BY deal_date DESC
+    </select>
+
+    <!-- 3. 과거 거래 내역 조회 -->
+    <select id="selectPastDeals"
+            parameterType="string"
+            resultType="HouseDealsDone">
+        SELECT
+            done_id,
+            apt_seq,
+            price,
+            floor,
+            deal_year,
+            deal_month,
+            deal_day
+        FROM house_deals_done
+        WHERE apt_seq = #{aptSeq}
+        ORDER BY deal_year DESC, deal_month DESC, deal_day DESC
+    </select>
+
+    <!-- 4. 이미지 목록 조회 -->
+    <select id="selectImages"
+            parameterType="string"
+            resultType="HouseImage">
+        SELECT
+            img_id,
+            apt_seq,
+            img_url,
+            description
+        FROM house_image
+        WHERE apt_seq = #{aptSeq}
+    </select>
+
+    <!-- 5. 학군 요약 정보 조회 -->
+    <select id="selectSchoolInfos"
+            parameterType="string"
+            resultType="HouseSchool">
+        SELECT
+            school_id,
+            apt_seq,
+            school_name,
+            distance
+        FROM house_school
+        WHERE apt_seq = #{aptSeq}
+    </select>
+
+    <!-- 6. 학군 상세 정보 조회 -->
+    <select id="selectSchoolDetails"
+            parameterType="string"
+            resultType="SchoolDetail">
+        SELECT
+            detail_id,
+            school_id,
+            rating,
+            address,
+            contact
+        FROM school_detail
+        WHERE school_id = #{schoolId}
+    </select>
+
+</mapper>
