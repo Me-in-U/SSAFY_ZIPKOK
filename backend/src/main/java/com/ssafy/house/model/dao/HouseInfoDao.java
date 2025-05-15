@@ -1,5 +1,6 @@
 package com.ssafy.house.model.dao;
 
+import java.sql.SQLException;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.ssafy.house.model.dto.HouseInfo;
@@ -26,4 +27,6 @@ public interface HouseInfoDao {
 
     // 삭제
     int deleteHouseInfo(@Param("aptSeq") String aptSeq) throws Exception;
+
+    List<HouseInfo> searchByAptName(String partialName) throws SQLException;
 }

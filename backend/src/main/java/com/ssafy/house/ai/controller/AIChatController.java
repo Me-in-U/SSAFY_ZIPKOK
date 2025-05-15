@@ -67,4 +67,19 @@ public class AIChatController implements RestControllerHelper {
         Object result = chatService.memberToolGeneration(userInput.get("message"));
         return handleSuccess(Map.of("message", result));
     }
+
+    @PostMapping("/house")
+    @Operation(summary = "회원 정보를 관리하는 AI TOOL Chat API", description = "회원 정보를 관리하는 Chat API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원 도구 생성 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    ResponseEntity<?> toolHouseGeneration(@RequestBody Map<String, String> userInput) {
+        Map<String, Object> result = chatService.houseToolGeneration(userInput.get("message"));
+        return handleSuccess(Map.of(
+                "message", result.get("message"),
+                "houses", result.get("houses")));
+    }
+
 }

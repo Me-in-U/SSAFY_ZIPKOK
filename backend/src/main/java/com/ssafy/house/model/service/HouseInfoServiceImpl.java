@@ -1,5 +1,6 @@
 package com.ssafy.house.model.service;
 
+import java.sql.SQLException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,4 +43,10 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     public boolean removeHouseInfo(String aptSeq) throws Exception {
         return dao.deleteHouseInfo(aptSeq) == 1;
     }
+
+    @Override
+    public List<HouseInfo> searchByAptName(String partialName) throws SQLException {
+        return dao.searchByAptName("%" + partialName + "%"); // 양쪽 wildcard
+    }
+
 }
