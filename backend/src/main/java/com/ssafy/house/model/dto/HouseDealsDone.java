@@ -3,21 +3,22 @@ package com.ssafy.house.model.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 /**
- * 주택 거래 정보
+ * 아파트 이전 거래 정보
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HouseDeals {
-    // Auto-increment PK
-    private Integer no;
+public class HouseDealsDone {
+    // PK
+    private int no;
     private String aptSeq;
-    private String aptDong;
+    private String aptDong; 
     private String floor;
-    private Integer dealYear;
-    private Integer dealMonth;
-    private Integer dealDay;
-    private Integer excluUseAr;
+    private int dealYear;
+    private int dealMonth;
+    private int dealDay;
+    private double excluUseAr;
     private String dealAmount;
 }
