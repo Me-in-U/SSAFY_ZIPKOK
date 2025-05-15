@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ZipkokApplication<ZIPKOK>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ssafy.house.ZipkokApplication",
+            "projectName": "ZIPKOK",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
