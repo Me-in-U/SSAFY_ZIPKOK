@@ -1,147 +1,206 @@
 <template>
-    <!-- relative 추가 -->
-    <div class="relative max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <!-- 닫기 X 버튼 -->
-        <button type="button" @click="emit('close')"
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600" aria-label="닫기">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-        <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-            <!-- 로고 및 헤더 -->
-            <div class="text-center">
-                <div class="flex justify-center">
-                    <img src="/favicon.ico" alt="Logo" class="w-6 h-6 mr-2" />
-                </div>
-                <h2 class="mt-4 text-3xl font-extrabold text-gray-900">부동산 투자 AI</h2>
-                <p class="mt-2 text-sm text-gray-600">
-                    계정에 로그인하고 <br>맞춤형 부동산 투자 정보를 받아보세요
-                </p>
-            </div>
+  <div class="relative max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+    <!-- 닫기 버튼 -->
+    <button
+      type="button"
+      @click="emit('close')"
+      class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+      aria-label="닫기"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
 
-            <!-- 로그인 폼 -->
-            <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-                <!-- 에러 메시지 -->
-                <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                    {{ error }}
-                </div>
-
-                <!-- 이메일 입력 -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
-                    <div class="mt-1">
-                        <input id="email" name="email" type="email" autocomplete="email" required v-model="email"
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                            placeholder="name@example.com" />
-                    </div>
-                </div>
-
-                <!-- 비밀번호 입력 -->
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">비밀번호</label>
-                    <div class="mt-1 relative">
-                        <input id="password" name="password" :type="showPassword ? 'text' : 'password'"
-                            autocomplete="current-password" required v-model="password"
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                            placeholder="••••••••" />
-                        <button type="button"
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
-                            @click="showPassword = !showPassword">
-                            <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                                <path
-                                    d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                                <line x1="2" x2="22" y1="2" y2="22" />
-                            </svg>
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 로그인 버튼 -->
-                <div>
-                    <button type="submit" :disabled="isLoading"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span v-if="isLoading" class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </span>
-                        {{ isLoading ? '로그인 중...' : '로그인' }}
-                    </button>
-                </div>
-                <!-- 회원가입 버튼 -->
-                <div class="mt-2">
-                    <button type="button" @click="emit('open-Register')"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-emerald-600 rounded-md shadow-sm text-sm font-medium text-emerald-600 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        회원가입
-                    </button>
-                </div>
-            </form>
-        </div>
+    <!-- 헤더 -->
+    <div class="text-center mb-6">
+      <img src="/favicon.ico" alt="Logo" class="mx-auto w-8 h-8" />
+      <h2 class="mt-4 text-3xl font-extrabold text-gray-900">부동산 투자 AI</h2>
+      <p class="mt-2 text-sm text-gray-600">
+        계정에 로그인하고<br />맞춤형 부동산 투자 정보를 받아보세요
+      </p>
     </div>
+
+    <!-- 에러 메시지 -->
+    <div
+      v-if="error"
+      class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-4 text-sm"
+    >
+      {{ error }}
+    </div>
+
+    <!-- 로그인 폼 -->
+    <form class="space-y-6" @submit.prevent="handleLogin">
+      <!-- 이메일 -->
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
+        <input
+          id="email"
+          v-model="email"
+          type="email"
+          required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+          placeholder="name@example.com"
+        />
+      </div>
+
+      <!-- 비밀번호 -->
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+        <div class="mt-1 relative">
+          <input
+            :type="showPassword ? 'text' : 'password'"
+            id="password"
+            v-model="password"
+            required
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+            @click="showPassword = !showPassword"
+          >
+            <svg
+              v-if="showPassword"
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+              <path
+                d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16
+                       13.16 0 0 1-1.67 2.68"
+              />
+              <path
+                d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74
+                       0 0 0 5.39-1.61"
+              />
+              <line x1="2" y1="2" x2="22" y2="22" />
+            </svg>
+            <svg
+              v-else
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 로그인 버튼 -->
+      <div>
+        <button
+          type="submit"
+          :disabled="isLoading"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed relative"
+        >
+          <span v-if="isLoading" class="absolute inset-y-0 left-0 pl-3 flex items-center">
+            <svg
+              class="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2
+                       5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824
+                       3 7.938l3-2.647z"
+              />
+            </svg>
+          </span>
+          {{ isLoading ? '로그인 중...' : '로그인' }}
+        </button>
+      </div>
+
+      <!-- 회원가입 이동 -->
+      <div>
+        <button
+          type="button"
+          @click="emit('open-Register')"
+          class="w-full flex justify-center py-2 px-4 border border-emerald-600 rounded-md shadow-sm text-sm font-medium text-emerald-600 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+        >
+          회원가입
+        </button>
+      </div>
+    </form>
+  </div>
 </template>
 
-
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref } from 'vue'
+import axios from 'axios'
 
-// 라우터 초기화
-const router = useRouter();
+// 부모 컴포넌트로 이벤트 emit
+const emit = defineEmits(['close', 'open-Register'])
 
-// 로그인 폼 상태
-const emit = defineEmits(['close', 'open-Register']);
-const email = ref('');
-const password = ref('');
-const showPassword = ref(false);
-const isLoading = ref(false);
-const error = ref('');
+// 폼 상태
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const isLoading = ref(false)
+const error = ref('')
 
-
-// 로그인 처리 함수 - 백엔드 API 호출
-const handleLogin = async () => {
-    try {
-        isLoading.value = true;
-        error.value = '';
-
-        // 백엔드 API 호출 (실제 구현 시 URL 변경 필요)
-        const response = await axios.post('/api/auth/login', {
-            email: email.value,
-            password: password.value
-        });
-
-        // 로그인 성공 처리
-        if (response.data.success) {
-            // 토큰 저장
-            localStorage.setItem('token', response.data.token);
-
-            // 메인 페이지로 리다이렉트
-            router.push('/');
-        } else {
-            error.value = response.data.message || '로그인에 실패했습니다.';
-        }
-    } catch (err) {
-        console.error('로그인 에러:', err);
-        error.value = err.response?.data?.message || '이메일 또는 비밀번호가 올바르지 않습니다.';
-    } finally {
-        isLoading.value = false;
+// 로그인 처리
+async function handleLogin() {
+  error.value = ''
+  isLoading.value = true
+  try {
+    const res = await axios.post('https://api.ssafy.blog/api/v1/members/login', {
+      email: email.value,
+      password: password.value,
+    })
+    // 백엔드 성공 구조: { status: 'SUCCESS', data: { token, user } }
+    if (res.data.status === 'SUCCESS') {
+      const { token, user } = res.data.data
+      // JWT 토큰 저장
+      localStorage.setItem('jwtToken', token)
+      // Axios 기본 헤더 설정
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      // 2) 부모에게 알리기
+      emit('login-success', user)
+      // 모달 닫기
+      emit('close')
+    } else {
+      error.value = res.data.message || '로그인에 실패했습니다.'
     }
-};
+  } catch (e) {
+    console.error(e)
+    error.value = e.response?.data?.error || '이메일 또는 비밀번호가 올바르지 않습니다.'
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
