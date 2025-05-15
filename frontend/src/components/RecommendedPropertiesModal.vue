@@ -14,6 +14,7 @@
             </div>
 
             <div class="p-4">
+                <!-- 뷰 모드 버튼 -->
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <button class="px-3 py-1 text-sm rounded-md"
@@ -29,6 +30,7 @@
                     </div>
                 </div>
 
+                <!-- 탭 -->
                 <div class="border-b mb-4">
                     <div class="flex">
                         <button v-for="tab in tabs" :key="tab.id" class="px-4 py-2 flex-1"
@@ -39,80 +41,35 @@
                     </div>
                 </div>
 
-                <div v-if="activeTab === 'recommended'">
-                    <div
-                        :class="view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'">
-                        <div v-for="property in properties" :key="property.id"
-                            class="border rounded-lg overflow-hidden">
-                            <div :class="view === 'grid' ? '' : 'flex'">
-                                <div :class="view === 'grid' ? 'w-full' : 'w-1/3'">
-                                    <img :src="property.image || '/placeholder.svg'" :alt="property.title"
-                                        class="w-full h-full object-cover" />
+                <!-- 매물 카드 -->
+                <div :class="view === 'grid'
+                    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+                    : 'space-y-4'">
+                    <div v-for="property in currentProperties" :key="property.info.aptSeq"
+                        class="border rounded-lg overflow-hidden">
+                        <div :class="view === 'grid' ? '' : 'flex'">
+                            <!-- 이미지: imgPath 로 변경 -->
+                            <div :class="view === 'grid' ? 'w-full h-48' : 'w-1/3 h-32'">
+                                <img :src="property.images?.[0]?.imgPath || '/placeholder.svg'"
+                                    class="w-full h-full object-cover" alt="아파트 이미지" />
+                            </div>
+                            <!-- 주요 정보 -->
+                            <div :class="view === 'grid' ? 'p-4' : 'p-4 w-2/3'">
+                                <h3 class="font-semibold text-lg mb-1">
+                                    {{ property.deals?.[0]?.listingName || '정보 없음' }}
+                                </h3>
+                                <div class="text-sm text-gray-700 mb-2">
+                                    <span class="font-medium">{{ formatNumber(property.deals?.[0]?.price) }}원</span>
                                 </div>
-                                <div :class="view === 'grid' ? 'p-4' : 'p-4 w-2/3'">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <h3 class="font-semibold">{{ property.title }}</h3>
-                                            <div class="flex items-center text-sm text-gray-500 mt-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                    class="lucide lucide-map-pin mr-1">
-                                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                                    <circle cx="12" cy="10" r="3" />
-                                                </svg>
-                                                {{ property.location }}
-                                            </div>
-                                        </div>
-                                        <span class="px-2 py-1 bg-gray-100 text-xs rounded-md">{{ property.type
-                                        }}</span>
-                                    </div>
-
-                                    <div class="mt-4 grid grid-cols-2 gap-2">
-                                        <div>
-                                            <div class="text-sm text-gray-500">가격</div>
-                                            <div class="font-medium">{{ property.price }}</div>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm text-gray-500">면적</div>
-                                            <div class="font-medium">{{ property.size }}</div>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm text-gray-500">예상 수익률</div>
-                                            <div class="font-medium flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                    class="lucide lucide-trending-up mr-1 text-green-500">
-                                                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                                                    <polyline points="16 7 22 7 22 13" />
-                                                </svg>
-                                                {{ property.roi }}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm text-gray-500">가격 변동</div>
-                                            <div class="font-medium text-green-500">{{ property.priceChange }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-4 flex justify-end">
-                                        <button class="px-3 py-1 border rounded-md text-sm mr-2">상세 보기</button>
-                                        <button class="px-3 py-1 bg-primary text-white rounded-md text-sm">투자
-                                            분석</button>
-                                    </div>
+                                <div class="text-sm text-gray-500 mb-2">
+                                    {{ property.deals?.[0]?.spec || '스펙 정보 없음' }}
                                 </div>
+                                <p class="text-sm text-gray-600 line-clamp-3">
+                                    {{ property.deals?.[0]?.description || '설명 없음' }}
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div v-else-if="activeTab === 'highRoi'" class="flex items-center justify-center h-32 text-gray-500">
-                    수익률 높은 매물 목록이 여기에 표시됩니다
-                </div>
-
-                <div v-else-if="activeTab === 'trending'" class="flex items-center justify-center h-32 text-gray-500">
-                    상승세 매물 목록이 여기에 표시됩니다
                 </div>
             </div>
         </div>
@@ -120,32 +77,49 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, computed, defineProps, defineEmits, watch } from 'vue';
 
-// eslint-disable-next-line no-unused-vars
 const props = defineProps({
-    show: {
-        type: Boolean,
-        default: false
-    },
-    properties: {
-        type: Array,
-        required: true
-    }
+    show: Boolean,
+    recentProperties: { type: Array, default: () => [] },
+    mostProperties: { type: Array, default: () => [] },
+    recommendedProperties: { type: Array, default: () => [] },
 });
-
 defineEmits(['close']);
 
 const view = ref('grid');
-const activeTab = ref('recommended');
-
+const activeTab = ref('recent');
 const tabs = [
+    { id: 'recent', name: '최근 거래 매물' },
+    { id: 'most', name: '최다 거래 매물' },
     { id: 'recommended', name: '추천 매물' },
-    { id: 'highRoi', name: '수익률 높은 매물' },
-    { id: 'trending', name: '상승세 매물' }
 ];
+
+const currentProperties = computed(() => {
+    if (activeTab.value === 'recent') return props.recentProperties;
+    else if (activeTab.value === 'most') return props.mostProperties;
+    else return props.recommendedProperties;
+});
+
+// debug: currentProperties 변화를 콘솔에 찍어보기
+watch(
+    currentProperties,
+    (val) => console.log('▶ currentProperties:', val),
+    { immediate: true }
+);
+
+// 숫자 천단위 콤마 함수
+const formatNumber = (value) => {
+    if (value == null) return '';
+    return value.toLocaleString();
+};
 </script>
 
 <style scoped>
-/* No !important declarations found in this file */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 </style>
