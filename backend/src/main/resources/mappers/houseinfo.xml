@@ -74,4 +74,11 @@
         DELETE FROM house_info
          WHERE apt_seq = #{aptSeq}
     </delete>
+
+    <!-- 이름 일부로 검색 -->
+    <select id="searchByAptName" parameterType="string" resultMap="houseInfoMap">
+    SELECT * FROM house_info
+     WHERE apt_nm LIKE #{partialName}
+    </select>
+
 </mapper>

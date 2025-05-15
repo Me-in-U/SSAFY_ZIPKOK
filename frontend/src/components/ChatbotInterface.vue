@@ -226,8 +226,8 @@ async function sendMessage() {
     const payload = { message: userText }
 
     console.log('[Request Payload]', payload)
-
-    const res = await fetch('https://api.ssafy.blog/ai/member', {
+    //  const res = await fetch('https://api.ssafy.blog/ai/member', {
+    const res = await fetch('http://localhost:8080/ai/house', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userText }),
@@ -242,8 +242,38 @@ async function sendMessage() {
     const result = await res.json()
     console.log('[Parsed Result]', result)
 
-    const botReply = result.data.message // ← 여기 주의!
+    const botReply = result.data.message || '응답이 없습니다.'
     messages.value.push({ content: botReply, sender: 'bot' })
+    // ✅ 지도 데이터가 있을 경우에만 마커 표시
+    if (Array.isArray(result.data.houses)) {
+      result.data.houses.forEach((apt) => {
+        const lat = parseFloat(apt.latitude)
+        const lng = parseFloat(apt.longitude)
+        const name = apt.aptNm
+        console.log('[Map Data]', lat, lng, name)
+        // if (!isNaN(lat) && !isNaN(lng)) {
+        //   const marker = new kakao.maps.Marker({
+        //     map: window.map, // ❗ 반드시 전역 map 객체 존재해야 함
+        //     position: new kakao.maps.LatLng(lat, lng),
+        //     title: name,
+        //   })
+
+        //   // 💡 마커 클릭 시 간단한 인포윈도우 열기
+        //   const infowindow = new kakao.maps.InfoWindow({
+        //     content: `<div style="padding:5px;font-size:12px;">${name}</div>`,
+        //   })
+        //   kakao.maps.event.addListener(marker, 'click', function () {
+        //     infowindow.open(window.map, marker)
+        //   })
+        // }
+      })
+
+      // 지도 중심을 첫 번째 마커 위치로 이동
+      // const first = result.data.houses[0]
+      // if (first) {
+      //   window.map.setCenter(new kakao.maps.LatLng(first.latitude, first.longitude))
+      // }
+    }
   } catch (error) {
     console.error('[Chat Error]', error)
     messages.value.push({

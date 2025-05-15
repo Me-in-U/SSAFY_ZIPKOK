@@ -1,5 +1,6 @@
 package com.ssafy.house.model.service;
 
+import java.sql.SQLException;
 import java.util.List;
 import com.ssafy.house.model.dto.HouseInfo;
 
@@ -15,4 +16,6 @@ public interface HouseInfoService {
     boolean modifyHouseInfo(HouseInfo info) throws Exception;
 
     boolean removeHouseInfo(String aptSeq) throws Exception;
+
+    List<HouseInfo> searchByAptName(String partialName) throws SQLException;
 }
