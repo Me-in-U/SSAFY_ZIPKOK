@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.house.model.dao.SidogunguDao">
+
+  <!-- 1) 시·도 목록 -->
+  <select id="selectDistinctSido" resultType="string">
+    SELECT DISTINCT sido_name
+      AS name
+    FROM dong_code
+    ORDER BY name
+  </select>
+
+  <!-- 2) 구·군 목록 (for a given sido_name) -->
+  <select id="selectDistinctGugun" parameterType="string" resultType="string">
+    SELECT DISTINCT gugun_name
+      AS name
+    FROM dong_code
+    WHERE sido_name = #{sidoName}
+    AND gugun_name IS NOT NULL
+    ORDER BY name
+  </select>
+
+  <!-- 3) 읍·면·동 목록 (for a given sido_name + gugun_name) -->
+  <select id="selectDistinctDong" parameterType="map" resultType="string">
+    SELECT DISTINCT dong_name
+      AS name
+    FROM dong_code
+    WHERE sido_name  = #{sidoName}
+      AND gugun_name = #{gugunName}
+      AND gugun_name IS NOT NULL
+      AND dong_name IS NOT NULL
+    ORDER BY name
+  </select>
+</mapper>

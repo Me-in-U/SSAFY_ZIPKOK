@@ -85,7 +85,7 @@ function loadKakaoMap() {
 
   const script = document.createElement('script')
   script.src =
-    'https://dapi.kakao.com/v2/maps/sdk.js?appkey=622cf4d5b80a1ab21c638844092e7856&autoload=false'
+    'https://dapi.kakao.com/v2/maps/sdk.js?appkey=622cf4d5b80a1ab21c638844092e7856&autoload=false&libraries=services'
   script.async = true
   document.head.appendChild(script)
 
@@ -218,6 +218,21 @@ function zoomOut() {
     mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
   }
 }
+
+// 부모에서 호출 가능한 메서드
+function panToAddress(address) {
+  const geocoder = new window.kakao.maps.services.Geocoder()
+  geocoder.addressSearch(address, (result, status) => {
+    if (status === window.kakao.maps.services.Status.OK) {
+      const { y, x } = result[0]
+      const newCenter = new window.kakao.maps.LatLng(y, x)
+      mapInstance.value.panTo(newCenter)
+      // 원한다면 zoom 레벨도 조정 가능
+      mapInstance.value.setLevel(5)
+    }
+  })
+}
+defineExpose({ panToAddress })
 </script>
 
 <style scoped>

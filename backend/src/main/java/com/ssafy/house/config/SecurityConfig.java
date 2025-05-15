@@ -56,15 +56,10 @@ public class SecurityConfig {
                                 "/api/v1/members")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,
-                                "/api/v1/house/recommend",
-                                "/api/v1/house/recent",
-                                "/api/v1/house/most",
-                                "/api/v1/house/composite")
+                                "/api/v1/house/**")
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/v1/locations/sido",
-                                "/api/v1/locations/gugun",
-                                "/api/v1/locations/dong")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/sidogungu/**")
                         .permitAll()
 
                         // allow your JSP views
