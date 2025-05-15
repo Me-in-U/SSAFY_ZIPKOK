@@ -142,7 +142,7 @@
                 </li>
                 <li class="flex justify-between">
                   <span class="text-gray-500">입주 가능일</span>
-                  <span>즉시 입주</span>
+                  <span>{{ property.possibleDay }}</span>
                 </li>
               </ul>
             </div>
