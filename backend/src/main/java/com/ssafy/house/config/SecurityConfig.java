@@ -61,6 +61,9 @@ public class SecurityConfig {
                                                                 "/", "/index",
                                                                 "/member/mvLogin", "/member/mvRegist")
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/api/v1/house/**")
+                                                .permitAll()
 
                                                 // allow AI endpoints
                                                 .requestMatchers(HttpMethod.POST,
