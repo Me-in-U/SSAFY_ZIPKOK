@@ -5,27 +5,41 @@
 
 <mapper namespace="com.ssafy.house.model.dao.HouseDao">
 
-    <!-- 1. 아파트 기본 정보 조회 -->
-    <resultMap id="HouseDetailResult" type="HouseDetail">
-        <id     column="apt_seq"     property="aptSeq"/>
-        <result column="apt_name"    property="aptName"/>
-        <result column="dong"        property="dong"/>
-        <result column="lat"         property="lat"/>
-        <result column="lng"         property="lng"/>
-        <result column="build_year"  property="buildYear"/>
+    <!-- 1. HouseInfo 매핑 (아파트 기본 정보) -->
+    <resultMap id="HouseInfoResult" type="com.ssafy.house.model.dto.HouseInfo">
+        <id     column="apt_seq"         property="aptSeq"/>
+        <result column="sgg_cd"          property="sggCd"/>
+        <result column="umd_cd"          property="umdCd"/>
+        <result column="umd_nm"          property="umdNm"/>
+        <result column="jibun"           property="jibun"/>
+        <result column="road_nm_sgg_cd"  property="roadNmSggCd"/>
+        <result column="road_nm"         property="roadNm"/>
+        <result column="road_nm_bonbun"  property="roadNmBonbun"/>
+        <result column="road_nm_bubun"   property="roadNmBubun"/>
+        <result column="apt_nm"          property="aptNm"/>
+        <result column="build_year"      property="buildYear"/>
+        <result column="latitude"        property="latitude"/>
+        <result column="longitude"       property="longitude"/>
     </resultMap>
 
-    <select id="selectHouseDetail"
+    <select id="selectHouseInfo"
             parameterType="string"
-            resultMap="HouseDetailResult">
+            resultMap="HouseInfoResult">
         SELECT
-            apt_seq,
-            apt_name,
-            dong,
-            lat,
-            lng,
-            build_year
-        FROM house_detail
+        apt_seq,
+        sgg_cd,
+        umd_cd,
+        umd_nm,
+        jibun,
+        road_nm_sgg_cd,
+        road_nm,
+        road_nm_bonbun,
+        road_nm_bubun,
+        apt_nm,
+        build_year,
+        latitude,
+        longitude
+        FROM house_info
         WHERE apt_seq = #{aptSeq}
     </select>
 
