@@ -1,4 +1,4 @@
-package com.ssafy.house.dao;
+package com.ssafy.house.model.dao;
 
 import com.ssafy.house.model.dto.*;
 import java.util.List;
