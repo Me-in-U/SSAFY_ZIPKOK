@@ -1,0 +1,100 @@
+<!-- src/main/resources/wrappers/house.xml -->
+<mapper namespace="com.ssafy.house.model.dao.HouseRecommendDao">
+
+  <!-- 1) 최근 거래 매물 apt_seq -->
+  <select id="selectRecentAptSeqs"
+          parameterType="int"
+          resultType="string">
+    SELECT DISTINCT apt_seq
+    FROM ssafyproj.house_deals_done
+    ORDER BY deal_year DESC,
+             deal_month DESC,
+             deal_day DESC
+    LIMIT #{limit}
+  </select>
+
+  <!-- 2) 최다 거래 매물 apt_seq -->
+  <select id="selectMostTradedAptSeqs"
+          parameterType="int"
+          resultType="string">
+    SELECT t.apt_seq
+    FROM (
+      SELECT
+        apt_seq,
+        COUNT(*) AS cnt
+      FROM ssafyproj.house_deals_done
+      GROUP BY apt_seq
+      ORDER BY cnt DESC
+      LIMIT #{limit}
+    ) t
+  </select>
+
+  <!-- 3) 종합점수 기반 추천 매물 apt_seq -->
+  <select id="selectRecommendedCompositeApts"
+          parameterType="int"
+          resultType="string">
+    WITH
+    yield_cte AS (
+      SELECT
+        apt_seq,
+        AVG(monthly_rent * 12.0 / NULLIF(price,0)) AS value_yield
+      FROM ssafyproj.house_deal
+      WHERE monthly_rent IS NOT NULL
+      GROUP BY apt_seq
+    ),
+    liqu_cte AS (
+      SELECT
+        apt_seq,
+        COUNT(*) AS value_liquidity
+      FROM ssafyproj.house_deals_done
+      WHERE STR_TO_DATE(
+              CONCAT(deal_year,'-',LPAD(deal_month,2,'0'),'-',LPAD(deal_day,2,'0')),
+              '%Y-%m-%d'
+            ) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+      GROUP BY apt_seq
+    ),
+    appr_cte AS (
+      SELECT
+        apt_seq,
+        (MAX(CASE WHEN CONCAT(deal_year,'-',LPAD(deal_month,2,'0')) = DATE_FORMAT(CURDATE(), '%Y-%m')
+                  THEN price END)
+         - MAX(CASE WHEN CONCAT(deal_year,'-',LPAD(deal_month,2,'0')) = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
+                  THEN price END)
+        ) /
+        NULLIF(MAX(CASE WHEN CONCAT(deal_year,'-',LPAD(deal_month,2,'0')) = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
+                  THEN price END),0)
+        AS value_appreciation
+      FROM ssafyproj.house_deals_done
+      GROUP BY apt_seq
+    ),
+    stats AS (
+      SELECT
+        MIN(y.value_yield)        AS min_y,
+        MAX(y.value_yield)        AS max_y,
+        MIN(l.value_liquidity)    AS min_l,
+        MAX(l.value_liquidity)    AS max_l,
+        MIN(a.value_appreciation) AS min_a,
+        MAX(a.value_appreciation) AS max_a
+      FROM yield_cte y
+      JOIN liqu_cte l USING(apt_seq)
+      JOIN appr_cte a USING(apt_seq)
+    ),
+    combined AS (
+      SELECT
+        y.apt_seq,
+        ((y.value_yield       - s.min_y)/(s.max_y - s.min_y) * 0.5)
+      + ((l.value_liquidity  - s.min_l)/(s.max_l - s.min_l) * 0.3)
+      + ((a.value_appreciation - s.min_a)/(s.max_a - s.min_a) * 0.2)
+        AS score
+      FROM yield_cte y
+      JOIN liqu_cte l USING(apt_seq)
+      JOIN appr_cte a USING(apt_seq)
+      CROSS JOIN stats s
+    )
+    SELECT apt_seq
+    FROM combined
+    ORDER BY score DESC
+    LIMIT #{limit}
+  </select>
+
+</mapper>

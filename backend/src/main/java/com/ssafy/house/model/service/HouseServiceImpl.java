@@ -1,4 +1,4 @@
-package com.ssafy.house.service;
+package com.ssafy.house.model.service;
 
 import com.ssafy.house.model.dao.HouseDao;
 import com.ssafy.house.model.dto.*;
