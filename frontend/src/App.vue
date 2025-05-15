@@ -106,13 +106,6 @@
       @close="showRecommendedModal = false"
     />
 
-    <!-- 속성 세부 정보 사이드바 (왼쪽에서 애니메이션으로 나타남) -->
-    <PropertyDetailsSidebar
-      :property="selectedProperty"
-      :is-open="showPropertyDetails"
-      @close="showPropertyDetails = false"
-    />
-
     <!-- 로그인 모달 -->
     <div
       v-if="showLoginModal"
@@ -370,8 +363,33 @@ function handleFilterChange(filters) {
   activeFilters.value = { ...filters }
 }
 
-function handleSelectProperty(property) {
-  selectedProperty.value = property
+function handleSelectProperty(house) {
+  selectedProperty.value = {
+    // 사이드바가 <h3>{{ property.title }}</h3> 를 그리니까
+    title: house.aptNm,
+
+    // 사이드바에서 주소를 {{ property.address }} 로 기대하니
+    address: `${house.roadNm} ${house.roadNmBonbun}${house.roadNmBubun}`,
+
+    // 사이드바의 "준공년도"
+    builtYear: house.buildYear,
+
+    // 나머지 사이드바 컴포넌트에서 사용되는 필드들
+    type: house.propertyType || '데이터 없음', // API에 없으면 기본값
+    dealType: house.dealType || '데이터 없음', // 월세/전세/매매 정보가 API에 있으면
+    price: house.priceText || '데이터 없음',
+    priceValue: house.priceValue || 0,
+    size: house.sizeText || '데이터 없음',
+    sizeValue: house.sizeValue || 0,
+    location: house.umdNm,
+    roi: house.roi || '데이터 없음',
+    priceChange: house.priceChange || '데이터 없음',
+    image: house.imageUrl || '/placeholder.svg',
+    description: house.description || '',
+    amenities: house.amenities || [],
+    possibleDay: house.possibleDay || '데이터 없음',
+  }
+
   showPropertyDetails.value = true
 }
 </script>

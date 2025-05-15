@@ -174,6 +174,7 @@ function fetchByBounds() {
 
         // 클릭 시 사이드바 열기
         window.kakao.maps.event.addListener(marker, 'click', () => {
+          console.log('마커 클릭:', house)
           emit('select-property', house)
         })
 
