@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!-- resources/mapper/HouseInfoMapper.xml -->
 <mapper namespace="com.ssafy.house.model.dao.HouseInfoDao">
     <resultMap id="houseInfoMap" type="com.ssafy.house.model.dto.HouseInfo">
         <id column="apt_seq" property="aptSeq"/>
@@ -20,65 +20,90 @@
         <result column="longitude" property="longitude"/>
     </resultMap>
 
-    <!-- 전체 조회 -->
-    <select id="selectHouseInfoAll" resultMap="houseInfoMap">
-        SELECT * FROM house_info
-    </select>
-
     <!-- 단일 조회 -->
     <select id="selectHouseInfo" parameterType="string" resultMap="houseInfoMap">
-        SELECT * FROM house_info
-         WHERE apt_seq = #{aptSeq}
+    SELECT * FROM house_info
+    WHERE apt_seq = #{aptSeq}
     </select>
 
     <!-- 범위 조회 -->
     <select id="selectByBounds" resultMap="houseInfoMap">
-        SELECT * FROM house_info
-         WHERE latitude  BETWEEN #{minLat}  AND #{maxLat}
-           AND longitude BETWEEN #{minLng} AND #{maxLng}
+    SELECT *
+    FROM house_info
+    WHERE latitude  BETWEEN #{minLat}  AND #{maxLat}
+    AND longitude BETWEEN #{minLng}  AND #{maxLng}
     </select>
 
-    <!-- 삽입 -->
-    <insert id="insertHouseInfo" parameterType="com.ssafy.house.model.dto.HouseInfo">
-        INSERT INTO house_info (
-            apt_seq, sgg_cd, umd_cd, umd_nm, jibun,
-            road_nm_sgg_cd, road_nm, road_nm_bonbun, road_nm_bubun,
-            apt_nm, build_year, latitude, longitude
-        ) VALUES (
-            #{aptSeq}, #{sggCd}, #{umdCd}, #{umdNm}, #{jibun},
-            #{roadNmSggCd}, #{roadNm}, #{roadNmBonbun}, #{roadNmBubun},
-            #{aptNm}, #{buildYear}, #{latitude}, #{longitude}
-        )
-    </insert>
-
-    <!-- 수정 -->
-    <update id="updateHouseInfo" parameterType="com.ssafy.house.model.dto.HouseInfo">
-        UPDATE house_info
-           SET sgg_cd           = #{sggCd},
-               umd_cd           = #{umdCd},
-               umd_nm           = #{umdNm},
-               jibun            = #{jibun},
-               road_nm_sgg_cd   = #{roadNmSggCd},
-               road_nm          = #{roadNm},
-               road_nm_bonbun   = #{roadNmBonbun},
-               road_nm_bubun    = #{roadNmBubun},
-               apt_nm           = #{aptNm},
-               build_year       = #{buildYear},
-               latitude         = #{latitude},
-               longitude        = #{longitude}
-         WHERE apt_seq = #{aptSeq}
-    </update>
-
-    <!-- 삭제 -->
-    <delete id="deleteHouseInfo" parameterType="string">
-        DELETE FROM house_info
-         WHERE apt_seq = #{aptSeq}
-    </delete>
-
-    <!-- 이름 일부로 검색 -->
-    <select id="searchByAptName" parameterType="string" resultMap="houseInfoMap">
-    SELECT * FROM house_info
-     WHERE apt_nm LIKE #{partialName}
+    <select id="selectBySeqList" resultMap="houseInfoMap" parameterType="list">
+    SELECT * 
+    FROM house_info 
+    WHERE apt_seq IN
+        <foreach item="seq" collection="list" open="(" separator="," close=")">
+        #{seq}
+        </foreach>
     </select>
 
+    <!-- 아파트명 일부 검색 -->
+    <select id="searchByAptName" parameterType="string" resultType="string">
+    SELECT DISTINCT apt_seq FROM house_info
+    WHERE apt_nm LIKE #{partialName}
+    </select>
+
+
+    <!-- 시도+구군 -->
+    <select id="findBySidoGugun" resultType="string">
+    SELECT DISTINCT hi.apt_seq
+    FROM house_info hi
+    JOIN dong_code dc
+    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+    WHERE dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+    AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+    </select>
+
+    <!-- 시도+구군+동 -->
+    <select id="findBySidoGugunDong" resultType="string">
+    SELECT DISTINCT hi.apt_seq
+    FROM house_info hi
+    JOIN dong_code dc
+    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+    WHERE dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+    AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+    AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
+    </select>
+
+    <!-- 조합 검색 -->
+    <select id="findByOptional" resultType="string">
+    SELECT DISTINCT hi.apt_seq
+    FROM house_info hi
+    JOIN dong_code dc
+    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+    WHERE 1=1
+        <if test="sido != null">
+        AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+        </if>
+        <if test="gugun != null">
+        AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+        </if>
+        <if test="dong != null">
+        AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
+        </if>
+    </select>
+
+    <!-- 조합 + 아파트명 -->
+    <select id="findByFiltersAndName" resultType="string">
+        SELECT DISTINCT hi.apt_seq
+        FROM house_info hi
+        JOIN dong_code dc
+        ON LEFT(dc.dong_code,5) = hi.sgg_cd
+        WHERE hi.apt_nm   LIKE CONCAT('%', #{aptNm}, '%')
+        <if test="sido != null">
+            AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+        </if>
+        <if test="gugun != null">
+            AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+        </if>
+        <if test="dong != null">
+            AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
+        </if>
+    </select>
 </mapper>

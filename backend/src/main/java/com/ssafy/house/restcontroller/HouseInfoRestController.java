@@ -1,5 +1,7 @@
 package com.ssafy.house.restcontroller;
 
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,18 +22,10 @@ import com.ssafy.house.model.service.HouseInfoService;
         "http://192.168.204.108:5173/",
         "http://172.22.16.1:5173/" })
 public class HouseInfoRestController {
-
     @Autowired
     private HouseInfoService service;
 
-    // 1) 전체 조회: GET /house
-    @GetMapping
-    public ResponseEntity<List<HouseInfo>> getAll() throws Exception {
-        List<HouseInfo> list = service.getAllHouseInfo();
-        return ResponseEntity.ok(list);
-    }
-
-    // 2) 단일 조회: GET /house/{aptSeq}
+    // 1) 단일 조회
     @GetMapping("/{aptSeq}")
     public ResponseEntity<HouseInfo> getById(@PathVariable String aptSeq) throws Exception {
         HouseInfo info = service.getHouseInfo(aptSeq);
@@ -40,44 +34,31 @@ public class HouseInfoRestController {
                 : ResponseEntity.notFound().build();
     }
 
-    // 3) 범위 조회: GET /house/search?minLat=...&maxLat=...&minLng=...&maxLng=...
+    // 2) 범위 조회
     @GetMapping("/search")
     public ResponseEntity<List<HouseInfo>> getByBounds(
             @RequestParam String minLat,
             @RequestParam String maxLat,
             @RequestParam String minLng,
             @RequestParam String maxLng) throws Exception {
+        // DAO/Service/Mapper 모두 SELECT * → List<HouseInfo> 로 리턴하게 변경되어야 합니다
         List<HouseInfo> list = service.getHouseInfoByBounds(minLat, maxLat, minLng, maxLng);
         return ResponseEntity.ok(list);
     }
 
-    // 4) 등록: POST /house
-    @PostMapping
-    public ResponseEntity<Void> create(@RequestBody HouseInfo info) throws Exception {
-        boolean created = service.addHouseInfo(info);
-        return created
-                ? ResponseEntity.status(201).build()
-                : ResponseEntity.badRequest().build();
+    // 3) 이름 일부 검색
+    @GetMapping("/search/name")
+    public ResponseEntity<List<String>> searchByName(
+            @RequestParam String partialName) throws SQLException {
+        return ResponseEntity.ok(
+                service.searchByAptName(partialName));
     }
 
-    // 5) 수정: PUT /house/{aptSeq}
-    @PutMapping("/{aptSeq}")
-    public ResponseEntity<Void> update(
-            @PathVariable String aptSeq,
-            @RequestBody HouseInfo info) throws Exception {
-        info.setAptSeq(aptSeq);
-        boolean updated = service.modifyHouseInfo(info);
-        return updated
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
-    }
-
-    // 6) 삭제: DELETE /house/{aptSeq}
-    @DeleteMapping("/{aptSeq}")
-    public ResponseEntity<Void> delete(@PathVariable String aptSeq) throws Exception {
-        boolean removed = service.removeHouseInfo(aptSeq);
-        return removed
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+    /** 복수 apt_seq 를 comma-separated 로 받아서 List<HouseInfo> 반환 */
+    @GetMapping("/batch")
+    public ResponseEntity<List<HouseInfo>> getBySeqList(@RequestParam("seqs") String commaSeqs) throws SQLException {
+        List<String> seqList = Arrays.asList(commaSeqs.split(","));
+        List<HouseInfo> list = service.getHouseInfoBySeqList(seqList);
+        return ResponseEntity.ok(list);
     }
 }

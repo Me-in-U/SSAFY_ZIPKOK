@@ -213,67 +213,39 @@ const messages = ref([
 ])
 const isTyping = ref(false)
 const messagesContainer = ref(null)
+const emit = defineEmits(['search-houses'])
 async function sendMessage() {
   const userText = inputMessage.value.trim()
   if (!userText) return
 
+  // 1) 사용자 입력 메시지 추가
   messages.value.push({ content: userText, sender: 'user' })
   inputMessage.value = ''
   nextTick(scrollToBottom)
   isTyping.value = true
 
   try {
-    const payload = { message: userText }
-
-    console.log('[Request Payload]', payload)
-    //  const res = await fetch('https://api.ssafy.blog/ai/member', {
+    // 2) API 호출
     const res = await fetch('http://localhost:8080/ai/house', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userText }),
     })
 
-    console.log('[Response Status]', res.status)
-
     if (!res.ok) {
       throw new Error(`서버 응답 실패: ${res.status} ${res.statusText}`)
     }
 
+    // 3) 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
     const result = await res.json()
-    console.log('[Parsed Result]', result)
+    console.log('[Chat Result]', result)
+    const { message, aptSeqList } = result
 
-    const botReply = result.data.message || '응답이 없습니다.'
-    messages.value.push({ content: botReply, sender: 'bot' })
-    // ✅ 지도 데이터가 있을 경우에만 마커 표시
-    if (Array.isArray(result.data.houses)) {
-      result.data.houses.forEach((apt) => {
-        const lat = parseFloat(apt.latitude)
-        const lng = parseFloat(apt.longitude)
-        const name = apt.aptNm
-        console.log('[Map Data]', lat, lng, name)
-        // if (!isNaN(lat) && !isNaN(lng)) {
-        //   const marker = new kakao.maps.Marker({
-        //     map: window.map, // ❗ 반드시 전역 map 객체 존재해야 함
-        //     position: new kakao.maps.LatLng(lat, lng),
-        //     title: name,
-        //   })
+    // 4) 채팅에는 message 만 보여주기
+    messages.value.push({ content: message, sender: 'bot' })
 
-        //   // 💡 마커 클릭 시 간단한 인포윈도우 열기
-        //   const infowindow = new kakao.maps.InfoWindow({
-        //     content: `<div style="padding:5px;font-size:12px;">${name}</div>`,
-        //   })
-        //   kakao.maps.event.addListener(marker, 'click', function () {
-        //     infowindow.open(window.map, marker)
-        //   })
-        // }
-      })
-
-      // 지도 중심을 첫 번째 마커 위치로 이동
-      // const first = result.data.houses[0]
-      // if (first) {
-      //   window.map.setCenter(new kakao.maps.LatLng(first.latitude, first.longitude))
-      // }
-    }
+    // 5) 부모(App.vue)로 검색 결과 전달
+    emit('search-houses', aptSeqList || [])
   } catch (error) {
     console.error('[Chat Error]', error)
     messages.value.push({
