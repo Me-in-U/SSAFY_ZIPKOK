@@ -24,7 +24,7 @@ public class HouseRecommendRestController {
     private HouseRecommendService recommendService;
 
     /**
-     * GET /api/v1/house/recommend/recent?limit=6
+     * GET /api/v1/house/recommend/recent?limit=10
      * 최근 거래 매물 상위 limit개 조회
      */
     @GetMapping("/recent")
@@ -35,7 +35,7 @@ public class HouseRecommendRestController {
     }
 
     /**
-     * GET /api/v1/house/recommend/most?limit=6
+     * GET /api/v1/house/recommend/most?limit=10
      * 최다 거래 매물 상위 limit개 조회
      */
     @GetMapping("/most")
@@ -46,7 +46,7 @@ public class HouseRecommendRestController {
     }
 
     /**
-     * GET /api/v1/house/recommend/composite?limit=6
+     * GET /api/v1/house/recommend/composite?limit=`0
      * 종합추천 매물(1년 시세상승률 기준) 상위 limit개 조회
      */
     @GetMapping("/composite")
