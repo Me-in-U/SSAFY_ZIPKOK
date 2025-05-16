@@ -136,9 +136,16 @@
         class="transition-all duration-300 ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5"
       >
         <PropertyFilters @filter-change="handleFilterChange" @move-to="handleMoveTo" />
+        <div class="flex justify-end mb-2 px-2">
+          <button class="px-3 py-1 bg-emerald-600 text-white rounded" @click="toggleSearchMarkers">
+            {{ showSearchMarkers ? '검색 마커 숨기기' : '검색 마커 보기' }}
+          </button>
+        </div>
         <MapComponent
           ref="mapRef"
           :properties="filteredProperties"
+          :search-results="searchResults"
+          :show-search="showSearchMarkers"
           @select-property="handleSelectProperty"
           class="flex-1"
         />
@@ -146,7 +153,7 @@
 
       <!-- 3) 오른쪽 챗봇 -->
       <aside class="flex-shrink-0 w-1/4 overflow-auto shadow-lg">
-        <ChatbotInterface class="h-full" />
+        <ChatbotInterface class="h-full" @search-houses="onSearchHouses" />
       </aside>
     </main>
 
@@ -220,6 +227,9 @@ const activeFilters = ref({
   area: '',
   dealType: '',
 })
+function toggleSearchMarkers() {
+  showSearchMarkers.value = !showSearchMarkers.value
+}
 function handleMoveTo({ address }) {
   // MapComponent 의 메서드를 호출
   mapRef.value.panToAddress(address)
@@ -229,6 +239,18 @@ const recentProperties = ref([])
 const mostProperties = ref([])
 const recommendedProperties = ref([])
 const properties = ref([])
+
+// 1) 검색 결과용 상태
+const searchResults = ref([])
+// 2) 검색 마커 표시 여부
+const showSearchMarkers = ref(false)
+
+function onSearchHouses(houses) {
+  searchResults.value = houses
+  // 검색 시 자동으로 전체 결과가 보이도록
+  showSearchMarkers.value = true
+}
+
 // 추천 매물 버튼 클릭 시 백엔드 호출
 async function openRecommendedModal() {
   // 이미 데이터를 가져온 적이 있으면 바로 모달만 열어주고 리턴

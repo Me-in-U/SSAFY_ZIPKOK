@@ -58,181 +58,223 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, toRefs } from 'vue'
 import axios from 'axios'
 
-// 부모로 보낼 이벤트 정의
+// 부모 이벤트
 const emit = defineEmits(['select-property'])
+
+// props 정의 및 분해
+const props = defineProps({
+  properties: Array,
+  searchResults: Array,
+  showSearch: Boolean,
+})
+const { searchResults, showSearch } = toRefs(props)
 
 const mapContainer = ref(null)
 const mapInstance = ref(null)
-const selectedMapType = ref('roadmap')
-
-// 화면에 표시할 마커 리스트
-const markers = ref([])
-
-onMounted(() => {
-  loadKakaoMap()
-})
+const baseMarkers = ref([])
+const baseOverlays = ref([])
+const searchMarkers = ref([])
+const searchOverlays = ref([])
+// 새로 추가: 배치 조회된 상세 결과를 담을 곳
+const detailedResults = ref([]) // HouseInfo[]
+onMounted(loadKakaoMap)
 
 function loadKakaoMap() {
-  if (window.kakao?.maps) {
-    initMap()
-    return
-  }
-
-  const script = document.createElement('script')
-  script.src =
+  if (window.kakao?.maps) return initMap()
+  const s = document.createElement('script')
+  s.src =
     'https://dapi.kakao.com/v2/maps/sdk.js?appkey=622cf4d5b80a1ab21c638844092e7856&autoload=false&libraries=services'
-  script.async = true
-  document.head.appendChild(script)
-
-  script.onload = () => {
-    window.kakao.maps.load(() => {
-      initMap()
-    })
-  }
+  s.async = true
+  document.head.appendChild(s)
+  s.onload = () => window.kakao.maps.load(initMap)
 }
 
 function initMap() {
-  const options = {
-    center: new window.kakao.maps.LatLng(37.543361625522714, 127.01908556679024),
+  mapInstance.value = new window.kakao.maps.Map(mapContainer.value, {
+    center: new window.kakao.maps.LatLng(37.54336, 127.01908),
     level: 5,
-  }
-  mapInstance.value = new window.kakao.maps.Map(mapContainer.value, options)
-  setMapType(selectedMapType.value)
-
-  fetchByBounds()
-  // 1) idle 이벤트 등록: 범위 요청
-  window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchByBounds)
+  })
+  fetchBase()
+  window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchBase)
 }
 
-// 2) bounds 계산 & 서버 요청
-function fetchByBounds() {
-  const level = mapInstance.value.getLevel()
-  if (level > 5) {
-    hideMarkers()
+// 기본 매물 로드
+function fetchBase() {
+  if (mapInstance.value.getLevel() > 5 || showSearch.value) {
+    hideAll(baseMarkers.value, baseOverlays.value)
     return
   }
-
-  const bounds = mapInstance.value.getBounds()
-  const sw = bounds.getSouthWest()
-  const ne = bounds.getNorthEast()
-
-  const params = {
-    minLat: sw.getLat(),
-    maxLat: ne.getLat(),
-    minLng: sw.getLng(),
-    maxLng: ne.getLng(),
-  }
-
-  // TODO: 배포시 URL 변경
-  // https://api.ssafy.blog/api/v1/house/search
+  const b = mapInstance.value.getBounds()
   axios
-    .get('http://localhost:8080/api/v1/house/search', { params })
+    .get('http://localhost:8080/api/v1/house/search', {
+      params: {
+        minLat: b.getSouthWest().getLat(),
+        maxLat: b.getNorthEast().getLat(),
+        minLng: b.getSouthWest().getLng(),
+        maxLng: b.getNorthEast().getLng(),
+      },
+    })
     .then((res) => {
-      console.log('응답 전체:', res.data)
-      // 실제 데이터 리스트가 있는 필드명(houses, list 등)을 확인하세요.
-      const list = Array.isArray(res.data)
-        ? res.data
-        : Array.isArray(res.data.houses)
-          ? res.data.houses
-          : Array.isArray(res.data.list)
-            ? res.data.list
-            : []
-
-      // 기존 마커 제거
-      hideMarkers()
-
-      // 새 마커 + 텍스트(CustomOverlay) 그리기
-      list.forEach((house) => {
-        const position = new window.kakao.maps.LatLng(house.latitude, house.longitude)
-
-        // 1) 기본 마커
-        const marker = new window.kakao.maps.Marker({
-          position,
-          clickable: true,
-        })
-        marker.setMap(mapInstance.value)
-
-        // 2) 텍스트 오버레이
-        const overlay = new window.kakao.maps.CustomOverlay({
-          position,
+      hideAll(baseMarkers.value, baseOverlays.value)
+      const list = Array.isArray(res.data.houses) ? res.data.houses : res.data
+      console.log('[Base Result]', list)
+      list.forEach((h) => {
+        const pos = new window.kakao.maps.LatLng(h.latitude, h.longitude)
+        // 마커
+        const m = new window.kakao.maps.Marker({ position: pos, map: mapInstance.value })
+        // 텍스트 오버레이
+        const ov = new window.kakao.maps.CustomOverlay({
+          position: pos,
           content: `<div style="
-            padding:2px 4px;
-            background:rgba(255,255,255,0.8);
-            border:1px solid #777;
-            border-radius:4px;
-            font-size:12px;
-            white-space:nowrap;
-          ">${house.aptNm}</div>`,
-          yAnchor: 2, // 마커 아이콘 위쪽에 위치
+          padding:2px 4px;
+          background:rgba(255,255,255,0.8);
+          border:1px solid #777;
+          border-radius:4px;
+          font-size:12px;
+          white-space:nowrap;
+        ">${h.aptNm}</div>`,
+          yAnchor: 2,
         })
-        overlay.setMap(mapInstance.value)
-
-        // 클릭 시 사이드바 열기
-        window.kakao.maps.event.addListener(marker, 'click', () => {
-          console.log('마커 클릭:', house)
-          emit('select-property', house)
-        })
-
-        // 상태 관리용 배열에 함께 저장
-        markers.value.push({ marker, overlay })
+        ov.setMap(mapInstance.value)
+        // 클릭 이벤트
+        window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
+        baseMarkers.value.push(m)
+        baseOverlays.value.push(ov)
       })
     })
-    .catch((err) => console.error(err))
 }
 
-// 마커와 오버레이를 모두 지도에서 제거하고 배열까지 비우는 함수
-function hideMarkers() {
-  markers.value.forEach(({ marker, overlay }) => {
-    marker.setMap(null)
-    overlay.setMap(null)
-  })
-  markers.value = []
-}
+// 1) searchResults가 바뀌면
+watch(
+  searchResults,
+  async (raw) => {
+    console.log('[Search Result]', raw)
+    // 1-1) 모두 지우고
+    clearAll(searchMarkers.value, searchOverlays.value)
 
-function setMapType(type) {
-  if (!mapInstance.value) return
-  const { MapTypeId } = window.kakao.maps
+    if (!raw || raw.length === 0) {
+      detailedResults.value = []
+      return
+    }
 
-  if (type === 'roadmap') {
-    mapInstance.value.setMapTypeId(MapTypeId.ROADMAP)
+    let list
+    // 1-2) 만약 첫 번째 엘리먼트가 문자열(apt_seq)이면, 백엔드에 배치 조회
+    if (typeof raw[0] === 'string') {
+      const seqs = raw.join(',')
+      const res = await axios.get('http://localhost:8080/api/v1/house/batch', {
+        params: { seqs },
+      })
+      list = res.data // HouseInfo[]
+    } else {
+      // 이미 HouseInfo 객체 배열이 넘어온 경우
+      list = raw
+    }
+    console.log('[Search Result]', list)
+    detailedResults.value = list
+
+    // 2) detailedResults 로 동일하게 bounds 맞추고 마커 생성
+    const bounds = new window.kakao.maps.LatLngBounds()
+    list.forEach((h) => {
+      const lat = parseFloat(h.latitude)
+      const lng = parseFloat(h.longitude)
+      if (isNaN(lat) || isNaN(lng)) return
+      const pos = new window.kakao.maps.LatLng(lat, lng)
+
+      const m = new window.kakao.maps.Marker({
+        position: pos,
+        map: mapInstance.value,
+        title: h.aptNm,
+      })
+      const ov = new window.kakao.maps.CustomOverlay({
+        position: pos,
+        content: `<div style="
+        padding:2px 4px;
+        background:rgba(255,255,255,0.8);
+        border:1px solid #777;
+        border-radius:4px;
+        font-size:12px;
+        white-space:nowrap;
+      ">${h.aptNm}</div>`,
+        yAnchor: 2,
+      })
+      ov.setMap(mapInstance.value)
+      window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
+
+      searchMarkers.value.push(m)
+      searchOverlays.value.push(ov)
+      bounds.extend(pos)
+    })
+
+    if (!bounds.isEmpty()) {
+      mapInstance.value.setBounds(bounds)
+    }
+  },
+  { immediate: true },
+)
+
+// 검색 토글 시
+watch(showSearch, (visible) => {
+  if (visible) {
+    hideMarkersOnly(baseMarkers.value, baseOverlays.value)
+    showMarkersOnly(searchMarkers.value, searchOverlays.value)
   } else {
-    mapInstance.value.setMapTypeId(MapTypeId.SKYVIEW)
+    hideMarkersOnly(searchMarkers.value, searchOverlays.value)
+    fetchBase()
   }
+})
 
-  selectedMapType.value = type
+// 헬퍼: 마커+오버레이 숨기기/보이기
+function hideAll(markers, overlays) {
+  markers.forEach((m) => m.setMap(null))
+  overlays.forEach((o) => o.setMap(null))
+  markers.splice(0)
+  overlays.splice(0)
+}
+// 기존 헬퍼: 완전 제거(검색 결과 업데이트 시 사용)
+function clearAll(markers, overlays) {
+  markers.forEach((m) => m.setMap(null))
+  overlays.forEach((o) => o.setMap(null))
+  markers.splice(0)
+  overlays.splice(0)
+}
+
+// 헬퍼: 마커·오버레이만 숨기고 배열은 유지
+function hideMarkersOnly(markers, overlays) {
+  markers.forEach((m) => m.setMap(null))
+  overlays.forEach((o) => o.setMap(null))
+}
+
+// 헬퍼: 마커·오버레이만 보이기
+function showMarkersOnly(markers, overlays) {
+  markers.forEach((m) => m.setMap(mapInstance.value))
+  overlays.forEach((o) => o.setMap(mapInstance.value))
 }
 
 function zoomIn() {
-  if (mapInstance.value) {
-    mapInstance.value.setLevel(mapInstance.value.getLevel() - 1)
-  }
+  mapInstance.value.setLevel(mapInstance.value.getLevel() - 1)
 }
-
 function zoomOut() {
-  if (mapInstance.value) {
-    mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
-  }
+  mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
 }
-
-// 부모에서 호출 가능한 메서드
-function panToAddress(address) {
-  const geocoder = new window.kakao.maps.services.Geocoder()
-  geocoder.addressSearch(address, (result, status) => {
-    if (status === window.kakao.maps.services.Status.OK) {
-      const { y, x } = result[0]
-      const newCenter = new window.kakao.maps.LatLng(y, x)
-      mapInstance.value.panTo(newCenter)
-      // 원한다면 zoom 레벨도 조정 가능
-      mapInstance.value.setLevel(5)
-    }
-  })
+function setMapType(type) {
+  const { MapTypeId } = window.kakao.maps
+  mapInstance.value.setMapTypeId(type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.SKYVIEW)
 }
-defineExpose({ panToAddress })
+defineExpose({
+  panToAddress: (address) => {
+    new window.kakao.maps.services.Geocoder().addressSearch(address, (r, s) => {
+      if (s === window.kakao.maps.services.Status.OK) {
+        const c = new window.kakao.maps.LatLng(r[0].y, r[0].x)
+        mapInstance.value.panTo(c)
+        mapInstance.value.setLevel(5)
+      }
+    })
+  },
+})
 </script>
 
 <style scoped>

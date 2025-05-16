@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
+import com.ssafy.house.ai.tools.HouseTools;
+
 @Configuration
 public class AiConfig {
     @Value("${ssafy.ai.system-prompt}")
@@ -23,20 +25,19 @@ public class AiConfig {
     @Bean
     ChatMemory chatMemory() {
         return MessageWindowChatMemory.builder()
-                .maxMessages(10)
                 .chatMemoryRepository(chatMemoryRepository)
                 .build();
     }
 
     @Bean
-    ChatClient advisedChatClient(ChatClient.Builder builder, ChatMemory chatMemory) {
+    ChatClient advisedChatClient(ChatClient.Builder builder, ChatMemory chatMemory, HouseTools houseTools) {
         return builder
                 .defaultSystem(systemPrompt)
-                .defaultAdvisors(
-                        // 1) 요청·응답 로그
-                        new SimpleLoggerAdvisor(Ordered.LOWEST_PRECEDENCE - 1),
-                        // 2) 대화 메모리 관리
-                        MessageChatMemoryAdvisor.builder(chatMemory).build())
+                // .defaultAdvisors(
+                // // 1) 요청·응답 로그(properties에서 log.level 설정)
+                // new SimpleLoggerAdvisor(Ordered.LOWEST_PRECEDENCE - 1),
+                // // 2) 대화 메모리 관리
+                // MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
     }
 }
