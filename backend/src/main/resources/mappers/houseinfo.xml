@@ -30,8 +30,8 @@
     <select id="selectByBounds" resultMap="houseInfoMap">
     SELECT *
     FROM house_info
-    WHERE latitude  BETWEEN #{minLat}  AND #{maxLat}
-    AND longitude BETWEEN #{minLng}  AND #{maxLng}
+    WHERE latitude BETWEEN #{minLat} AND #{maxLat}
+    AND longitude BETWEEN #{minLng} AND #{maxLng}
     </select>
 
     <select id="selectBySeqList" resultMap="houseInfoMap" parameterType="list">
@@ -39,7 +39,7 @@
     FROM house_info 
     WHERE apt_seq IN
         <foreach item="seq" collection="list" open="(" separator="," close=")">
-        #{seq}
+            #{seq}
         </foreach>
     </select>
 
@@ -55,7 +55,7 @@
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
-    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+        ON LEFT(dc.dong_code,5) = hi.sgg_cd
     WHERE dc.sido_name LIKE CONCAT('%', #{sido}, '%')
     AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
     </select>
@@ -65,37 +65,38 @@
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
-    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+        ON LEFT(dc.dong_code,5) = hi.sgg_cd
+        AND RIGHT(dc.dong_code,5)= hi.umd_cd
     WHERE dc.sido_name LIKE CONCAT('%', #{sido}, '%')
     AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
     AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
     </select>
 
     <!-- 조합 검색 -->
-    <select id="findByOptional" resultType="string">
+    <select id="findByOptions" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
-    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+        ON LEFT(dc.dong_code,5) = hi.sgg_cd
     WHERE 1=1
         <if test="sido != null">
-        AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+            AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
         </if>
         <if test="gugun != null">
-        AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+            AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
         </if>
         <if test="dong != null">
-        AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
+            AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
         </if>
     </select>
 
     <!-- 조합 + 아파트명 -->
-    <select id="findByFiltersAndName" resultType="string">
-        SELECT DISTINCT hi.apt_seq
-        FROM house_info hi
-        JOIN dong_code dc
+    <select id="findByOptionsAndAptName" resultType="string">
+    SELECT DISTINCT hi.apt_seq
+    FROM house_info hi
+    JOIN dong_code dc
         ON LEFT(dc.dong_code,5) = hi.sgg_cd
-        WHERE hi.apt_nm   LIKE CONCAT('%', #{aptNm}, '%')
+    WHERE hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
         <if test="sido != null">
             AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
         </if>

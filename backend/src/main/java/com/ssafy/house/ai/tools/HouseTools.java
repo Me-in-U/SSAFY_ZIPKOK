@@ -34,38 +34,38 @@ public class HouseTools {
 
     @Tool(description = "시도(sido), 구군(gugun)으로 아파트 검색 (부분 매칭)")
     public List<String> searchByGugun(
-            @ToolParam(description = "시도 이름") String sido,
-            @ToolParam(description = "구군 이름") String gugun) {
+            @ToolParam(description = "시도 이름 일부") String sido,
+            @ToolParam(description = "구군 이름 일부") String gugun) {
         logger.warn("searchByGugun called with sido={} and gugun={}", sido, gugun);
         return houseInfoService.findBySidoGugun(sido, gugun);
     }
 
     @Tool(description = "시도(sido), 구군(gugun), 읍면동(dong)으로 아파트 검색 (부분 매칭)")
     public List<String> searchByDong(
-            @ToolParam(description = "시도 이름") String sido,
-            @ToolParam(description = "구군 이름") String gugun,
-            @ToolParam(description = "읍면동 이름") String dong) {
+            @ToolParam(description = "시도 이름 일부") String sido,
+            @ToolParam(description = "구군 이름 일부") String gugun,
+            @ToolParam(description = "읍면동 이름 일부") String dong) {
         logger.warn("searchByDong called with sido={}, gugun={}, dong={}", sido, gugun, dong);
         return houseInfoService.findBySidoGugunDong(sido, gugun, dong);
     }
 
     @Tool(description = "시도, 구군, 읍면동 조합으로 아파트 검색 (부분 매칭)")
-    public List<String> searchByFilters(
-            @ToolParam(description = "시도 이름") String sido,
-            @ToolParam(description = "구군 이름") String gugun,
-            @ToolParam(description = "읍면동 이름") String dong) {
-        logger.warn("searchByFilters called with sido={}, gugun={}, dong={}", sido, gugun, dong);
-        return houseInfoService.findByOptional(sido, gugun, dong);
+    public List<String> searchByOptions(
+            @ToolParam(description = "시도 이름 일부") String sido,
+            @ToolParam(description = "구군 이름 일부") String gugun,
+            @ToolParam(description = "읍면동 이름 일부") String dong) {
+        logger.warn("searchByOptions called with sido={}, gugun={}, dong={}", sido, gugun, dong);
+        return houseInfoService.findByOptions(sido, gugun, dong);
     }
 
     @Tool(description = "시도, 구군, 읍면동 + 아파트명 조합으로 검색 (부분 매칭)")
-    public List<String> searchByFiltersAndName(
-            @ToolParam(description = "시도 이름") String sido,
-            @ToolParam(description = "구군 이름") String gugun,
-            @ToolParam(description = "읍면동 이름") String dong,
+    public List<String> searchByOptionsAndName(
+            @ToolParam(description = "시도 이름 일부") String sido,
+            @ToolParam(description = "구군 이름 일부") String gugun,
+            @ToolParam(description = "읍면동 이름 일부") String dong,
             @ToolParam(description = "아파트 이름 일부") String aptNm) {
-        logger.warn("searchByFiltersAndName called with sido={}, gugun={}, dong={}, aptNm={}",
+        logger.warn("searchByOptionsAndName called with sido={}, gugun={}, dong={}, aptNm={}",
                 sido, gugun, dong, aptNm);
-        return houseInfoService.findByFiltersAndName(sido, gugun, dong, aptNm);
+        return houseInfoService.findByOptionsAndAptName(sido, gugun, dong, aptNm);
     }
 }
