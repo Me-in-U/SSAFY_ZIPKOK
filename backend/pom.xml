@@ -57,6 +57,7 @@
 	</repositories>
 	<dependencyManagement>
 		<dependencies>
+      <!-- Spring AI -->
 			<dependency>
 				<groupId>org.springframework.ai</groupId>
 				<artifactId>spring-ai-bom</artifactId>
@@ -64,6 +65,17 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+      <!-- Flyway Core -->
+      <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+      </dependency>
+      <!-- Caffeine BOM 관리 -->
+      <dependency>
+          <groupId>com.github.ben-manes.caffeine</groupId>
+          <artifactId>caffeine</artifactId>
+          <version>3.1.8</version>
+      </dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -153,9 +165,7 @@
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-autoconfigure-model-tool</artifactId>
 		</dependency>
-
 		<!-- ===== End Spring AI ===== -->
-
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -173,6 +183,15 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+    <!-- 캐시 관련 의존성 -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+    </dependency>
 	</dependencies>
 
 	<build>
@@ -205,5 +224,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
