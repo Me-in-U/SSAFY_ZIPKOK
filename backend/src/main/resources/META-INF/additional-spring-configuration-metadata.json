@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "spring.cache.caffeine.specs.recommendRecent",
+  "type": "java.lang.String",
+  "description": "A description for 'spring.cache.caffeine.specs.recommendRecent'"
+}]}
