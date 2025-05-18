@@ -226,7 +226,7 @@ async function sendMessage() {
 
   try {
     // 2) API 호출
-    const res = await fetch('http://localhost:8080/ai/house', {
+    const res = await fetch('https://api.ssafy.blog/ai/house', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userText }),

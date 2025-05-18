@@ -278,7 +278,7 @@ function onMove() {
 }
 
 async function loadSido() {
-  const res = await axios.get('http://localhost:8080/api/v1/sidogungu/sido')
+  const res = await axios.get('https://api.ssafy.blog/api/v1/sidogungu/sido')
   sidoList.value = res.data
 }
 
@@ -290,7 +290,7 @@ async function onSidoChange() {
     gugunList.value = []
     return
   }
-  const res = await axios.get(`http://localhost:8080/api/v1/sidogungu/gugun/${filters.sido}`)
+  const res = await axios.get(`https://api.ssafy.blog/api/v1/sidogungu/gugun/${filters.sido}`)
   gugunList.value = res.data
 }
 
@@ -301,7 +301,7 @@ async function onGugunChange() {
     return
   }
   const res = await axios.get(
-    `http://localhost:8080/api/v1/sidogungu/dong/${filters.sido}/${filters.gugun}`,
+    `https://api.ssafy.blog/api/v1/sidogungu/dong/${filters.sido}/${filters.gugun}`,
   )
   dongList.value = res.data
 }
