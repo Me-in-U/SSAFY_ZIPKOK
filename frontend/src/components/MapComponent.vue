@@ -110,7 +110,7 @@ function fetchBase() {
   }
   const b = mapInstance.value.getBounds()
   axios
-    .get('http://localhost:8080/api/v1/house/search', {
+    .get('https://api.ssafy.blog/api/v1/house/search', {
       params: {
         minLat: b.getSouthWest().getLat(),
         maxLat: b.getNorthEast().getLat(),
@@ -165,7 +165,7 @@ watch(
     // 1-2) 만약 첫 번째 엘리먼트가 문자열(apt_seq)이면, 백엔드에 배치 조회
     if (typeof raw[0] === 'string') {
       const seqs = raw.join(',')
-      const res = await axios.get('http://localhost:8080/api/v1/house/batch', {
+      const res = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
         params: { seqs },
       })
       list = res.data // HouseInfo[]
