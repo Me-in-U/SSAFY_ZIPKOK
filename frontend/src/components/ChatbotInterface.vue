@@ -213,37 +213,39 @@ const messages = ref([
 ])
 const isTyping = ref(false)
 const messagesContainer = ref(null)
+const emit = defineEmits(['search-houses'])
 async function sendMessage() {
   const userText = inputMessage.value.trim()
   if (!userText) return
 
+  // 1) 사용자 입력 메시지 추가
   messages.value.push({ content: userText, sender: 'user' })
   inputMessage.value = ''
   nextTick(scrollToBottom)
   isTyping.value = true
 
   try {
-    const payload = { message: userText }
-
-    console.log('[Request Payload]', payload)
-
-    const res = await fetch('https://api.ssafy.blog/ai/member', {
+    // 2) API 호출
+    const res = await fetch('http://localhost:8080/ai/house', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userText }),
     })
 
-    console.log('[Response Status]', res.status)
-
     if (!res.ok) {
       throw new Error(`서버 응답 실패: ${res.status} ${res.statusText}`)
     }
 
+    // 3) 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
     const result = await res.json()
-    console.log('[Parsed Result]', result)
+    console.log('[Chat Result]', result)
+    const { message, aptSeqList } = result
 
-    const botReply = result.data.message // ← 여기 주의!
-    messages.value.push({ content: botReply, sender: 'bot' })
+    // 4) 채팅에는 message 만 보여주기
+    messages.value.push({ content: message, sender: 'bot' })
+
+    // 5) 부모(App.vue)로 검색 결과 전달
+    emit('search-houses', aptSeqList || [])
   } catch (error) {
     console.error('[Chat Error]', error)
     messages.value.push({
