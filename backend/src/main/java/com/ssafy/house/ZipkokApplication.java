@@ -1,6 +1,5 @@
 package com.ssafy.house;
 
-import org.springframework.ai.autoconfigure.vectorstore.redis.RedisVectorStoreAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -8,7 +7,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(exclude = RedisVectorStoreAutoConfiguration.class)
+@SpringBootApplication
 @EnableScheduling
 @EnableCaching
 public class ZipkokApplication extends SpringBootServletInitializer {
