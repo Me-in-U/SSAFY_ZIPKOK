@@ -18,7 +18,7 @@ public interface HouseInfoService {
 
     List<String> findBySidoGugunDong(String sido, String gugun, String dong);
 
-    List<String> findByOptional(String sido, String gugun, String dong);
+    List<String> findByOptions(String sido, String gugun, String dong);
 
-    List<String> findByFiltersAndName(String sido, String gugun, String dong, String aptNm);
+    List<String> findByOptionsAndAptName(String sido, String gugun, String dong, String aptNm);
 }

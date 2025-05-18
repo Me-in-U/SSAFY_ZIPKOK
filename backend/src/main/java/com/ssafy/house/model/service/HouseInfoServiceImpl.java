@@ -49,13 +49,13 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     }
 
     @Override
-    public List<String> findByOptional(String sido, String gugun, String dong) {
-        return dao.findByOptional(sido, gugun, dong);
+    public List<String> findByOptions(String sido, String gugun, String dong) {
+        return dao.findByOptions(sido, gugun, dong);
     }
 
     @Override
-    public List<String> findByFiltersAndName(
+    public List<String> findByOptionsAndAptName(
             String sido, String gugun, String dong, String aptNm) {
-        return dao.findByFiltersAndName(sido, gugun, dong, aptNm);
+        return dao.findByOptionsAndAptName(sido, gugun, dong, aptNm);
     }
 }
