@@ -67,20 +67,45 @@ const emit = defineEmits(['select-property'])
 
 // props 정의 및 분해
 const props = defineProps({
-  properties: Array,
-  searchResults: Array,
-  showSearch: Boolean,
+  properties: Array, // 화면에 보여줄 주택 리스트
+  searchResults: Array, // 검색 결과 리스트
+  favoriteSeqs: Array, // 즐겨찾기 aptSeq 리스트
+  showBase: Boolean, // 기본 마커 토글
+  showFavorite: Boolean, // 즐겨찾기 마커 토글
+  showSearch: Boolean, // 검색 결과 토글
 })
-const { searchResults, showSearch } = toRefs(props)
+const { searchResults, favoriteSeqs, showBase, showFavorite, showSearch } = toRefs(props)
 
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const baseMarkers = ref([])
 const baseOverlays = ref([])
+const favoriteMarkers = ref([])
+const favoriteOverlays = ref([])
 const searchMarkers = ref([])
 const searchOverlays = ref([])
-// 새로 추가: 배치 조회된 상세 결과를 담을 곳
-const detailedResults = ref([]) // HouseInfo[]
+const selectedMapType = ref('roadmap')
+
+// 1) 모든 watcher 앞에 정의
+function updateVisibility() {
+  // 기본 마커
+  baseMarkers.value.forEach((m) => m.setMap(showBase.value ? mapInstance.value : null))
+  baseOverlays.value.forEach((o) => o.setMap(showBase.value ? mapInstance.value : null))
+  // 검색
+  searchMarkers.value.forEach((m) => m.setMap(showSearch.value ? mapInstance.value : null))
+  searchOverlays.value.forEach((o) => o.setMap(showSearch.value ? mapInstance.value : null))
+  // 즐겨찾기
+  favoriteMarkers.value.forEach((m) => m.setMap(showFavorite.value ? mapInstance.value : null))
+  favoriteOverlays.value.forEach((o) => o.setMap(showFavorite.value ? mapInstance.value : null))
+}
+
+function clearMarkers(markers, overlays) {
+  markers.forEach((m) => m.setMap(null))
+  overlays.forEach((o) => o.setMap(null))
+  markers.splice(0)
+  overlays.splice(0)
+}
+
 onMounted(loadKakaoMap)
 
 function loadKakaoMap() {
@@ -93,11 +118,14 @@ function loadKakaoMap() {
   s.onload = () => window.kakao.maps.load(initMap)
 }
 
+// 지도 초기화 & 사용자 위치
 function initMap() {
   mapInstance.value = new window.kakao.maps.Map(mapContainer.value, {
     center: new window.kakao.maps.LatLng(37.54336, 127.01908),
     level: 5,
   })
+
+  // base 마커 불러오기
   fetchBase()
   window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchBase)
 
@@ -131,168 +159,170 @@ function initMap() {
   }
 }
 
-// 기본 매물 로드
+// 기본 매물
 function fetchBase() {
   if (mapInstance.value.getLevel() > 5 || showSearch.value) {
-    hideAll(baseMarkers.value, baseOverlays.value)
+    clearMarkers(baseMarkers.value, baseOverlays.value)
     return
   }
-  const b = mapInstance.value.getBounds()
+  const bounds = mapInstance.value.getBounds()
   axios
     .get('https://api.ssafy.blog/api/v1/house/search', {
       params: {
-        minLat: b.getSouthWest().getLat(),
-        maxLat: b.getNorthEast().getLat(),
-        minLng: b.getSouthWest().getLng(),
-        maxLng: b.getNorthEast().getLng(),
+        minLat: bounds.getSouthWest().getLat(),
+        maxLat: bounds.getNorthEast().getLat(),
+        minLng: bounds.getSouthWest().getLng(),
+        maxLng: bounds.getNorthEast().getLng(),
       },
     })
     .then((res) => {
-      hideAll(baseMarkers.value, baseOverlays.value)
+      clearMarkers(baseMarkers.value, baseOverlays.value)
       const list = Array.isArray(res.data.houses) ? res.data.houses : res.data
-      console.log('[Base Result]', list)
       list.forEach((h) => {
         const pos = new window.kakao.maps.LatLng(h.latitude, h.longitude)
-        // 마커
-        const m = new window.kakao.maps.Marker({ position: pos, map: mapInstance.value })
-        // 텍스트 오버레이
+        const m = new window.kakao.maps.Marker({ position: pos, map: mapInstance.value, zIndex: 1 })
         const ov = new window.kakao.maps.CustomOverlay({
           position: pos,
-          content: `<div style="
-          padding:2px 4px;
-          background:rgba(255,255,255,0.8);
-          border:1px solid #777;
-          border-radius:4px;
-          font-size:12px;
-          white-space:nowrap;
-        ">${h.aptNm}</div>`,
+          content: `<div style="padding:2px 4px; background:rgba(255,255,255,0.8); border:1px solid #777; border-radius:4px; font-size:12px;">${h.aptNm}</div>`,
           yAnchor: 2,
+          zIndex: 1,
         })
         ov.setMap(mapInstance.value)
-        // 클릭 이벤트
         window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
         baseMarkers.value.push(m)
         baseOverlays.value.push(ov)
       })
+      updateVisibility()
     })
 }
 
-// 1) searchResults가 바뀌면
+// 즐겨찾기 watcher
 watch(
-  searchResults,
-  async (raw) => {
-    console.log('[Search Result]', raw)
-    // 1-1) 모두 지우고
-    clearAll(searchMarkers.value, searchOverlays.value)
-
-    if (!raw || raw.length === 0) {
-      detailedResults.value = []
+  favoriteSeqs,
+  async (seqs) => {
+    // mapInstance 가 준비되지 않았다면 스킵
+    if (!mapInstance.value) {
+      console.log('[Favorite Seqs] 지도 준비 안됨')
       return
     }
-
-    let list
-    // 1-2) 만약 첫 번째 엘리먼트가 문자열(apt_seq)이면, 백엔드에 배치 조회
-    if (typeof raw[0] === 'string') {
-      const seqs = raw.join(',')
-      const res = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
-        params: { seqs },
-      })
-      list = res.data // HouseInfo[]
-    } else {
-      // 이미 HouseInfo 객체 배열이 넘어온 경우
-      list = raw
+    clearMarkers(favoriteMarkers.value, favoriteOverlays.value)
+    if (!seqs || seqs.length === 0) {
+      console.log('[Favorite Seqs] 없음')
+      return updateVisibility()
     }
-    console.log('[Search Result]', list)
-    detailedResults.value = list
-
-    // 2) detailedResults 로 동일하게 bounds 맞추고 마커 생성
-    const bounds = new window.kakao.maps.LatLngBounds()
+    console.log('[Favorite Seqs]', seqs)
+    const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
+      params: { seqs: seqs.join(',') },
+    })
     list.forEach((h) => {
-      const lat = parseFloat(h.latitude)
-      const lng = parseFloat(h.longitude)
-      if (isNaN(lat) || isNaN(lng)) return
-      const pos = new window.kakao.maps.LatLng(lat, lng)
-
+      const pos = new window.kakao.maps.LatLng(h.latitude, h.longitude)
       const m = new window.kakao.maps.Marker({
         position: pos,
         map: mapInstance.value,
-        title: h.aptNm,
+        icon: { url: '/favorite-icon.png', size: new window.kakao.maps.Size(24, 24), zIndex: 2 },
       })
       const ov = new window.kakao.maps.CustomOverlay({
         position: pos,
-        content: `<div style="
-        padding:2px 4px;
-        background:rgba(255,255,255,0.8);
-        border:1px solid #777;
-        border-radius:4px;
-        font-size:12px;
-        white-space:nowrap;
-      ">${h.aptNm}</div>`,
+        content: `
+          <div style="
+            padding:2px 4px;
+            background:rgba(255,245,235,0.9);
+            border:1px solid #e58a00;
+            border-radius:4px;
+            font-size:12px;
+            color:#000000
+          ">
+            ${h.aptNm}
+          </div>
+        `,
         yAnchor: 2,
+        zIndex: 2,
       })
       ov.setMap(mapInstance.value)
       window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
-
-      searchMarkers.value.push(m)
-      searchOverlays.value.push(ov)
-      bounds.extend(pos)
+      favoriteMarkers.value.push(m)
+      favoriteOverlays.value.push(ov)
     })
-
-    if (!bounds.isEmpty()) {
-      mapInstance.value.setBounds(bounds)
-    }
+    updateVisibility()
   },
   { immediate: true },
 )
 
-// 검색 토글 시
-watch(showSearch, (visible) => {
-  if (visible) {
-    hideMarkersOnly(baseMarkers.value, baseOverlays.value)
-    showMarkersOnly(searchMarkers.value, searchOverlays.value)
-  } else {
-    hideMarkersOnly(searchMarkers.value, searchOverlays.value)
-    fetchBase()
-  }
-})
+// 검색 결과 watcher
+watch(
+  searchResults,
+  async (raw) => {
+    clearMarkers(searchMarkers.value, searchOverlays.value)
+    if (!raw || raw.length === 0) {
+      return updateVisibility()
+    }
+    // 배치 조회 or 바로 활용
+    const list =
+      typeof raw[0] === 'string'
+        ? (
+            await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
+              params: { seqs: raw.join(',') },
+            })
+          ).data
+        : raw
+    // 지도 표시
+    const bounds = new window.kakao.maps.LatLngBounds()
+    list.forEach((h) => {
+      const lat = parseFloat(h.latitude),
+        lng = parseFloat(h.longitude)
+      if (isNaN(lat) || isNaN(lng)) return
+      const pos = new window.kakao.maps.LatLng(lat, lng)
+      const m = new window.kakao.maps.Marker({ position: pos, map: mapInstance.value, zIndex: 3 })
+      const ov = new window.kakao.maps.CustomOverlay({
+        position: pos,
+        content: `
+          <div style="
+            padding:2px 4px;
+            background:rgba(255,245,235,0.9);
+            border:3px solid #a0d2f0;
+            border-radius:4px;
+            font-size:12px;
+            color:#000000
+          ">
+            ${h.aptNm}
+          </div>
+        `,
+        yAnchor: 2,
+        zIndex: 3,
+      })
+      ov.setMap(mapInstance.value)
+      window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
+      searchMarkers.value.push(m)
+      searchOverlays.value.push(ov)
+      bounds.extend(pos)
+    })
+    if (!bounds.isEmpty()) mapInstance.value.setBounds(bounds)
+    updateVisibility()
+  },
+  { immediate: true },
+)
 
-// 헬퍼: 마커+오버레이 숨기기/보이기
-function hideAll(markers, overlays) {
-  markers.forEach((m) => m.setMap(null))
-  overlays.forEach((o) => o.setMap(null))
-  markers.splice(0)
-  overlays.splice(0)
-}
-// 기존 헬퍼: 완전 제거(검색 결과 업데이트 시 사용)
-function clearAll(markers, overlays) {
-  markers.forEach((m) => m.setMap(null))
-  overlays.forEach((o) => o.setMap(null))
-  markers.splice(0)
-  overlays.splice(0)
-}
+// 5) 토글만 바뀔 때
+watch([showBase, showSearch, showFavorite], updateVisibility)
 
-// 헬퍼: 마커·오버레이만 숨기고 배열은 유지
-function hideMarkersOnly(markers, overlays) {
-  markers.forEach((m) => m.setMap(null))
-  overlays.forEach((o) => o.setMap(null))
-}
-
-// 헬퍼: 마커·오버레이만 보이기
-function showMarkersOnly(markers, overlays) {
-  markers.forEach((m) => m.setMap(mapInstance.value))
-  overlays.forEach((o) => o.setMap(mapInstance.value))
-}
-
-function zoomIn() {
-  mapInstance.value.setLevel(mapInstance.value.getLevel() - 1)
-}
-function zoomOut() {
-  mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
-}
+// 지도 타입 변경
 function setMapType(type) {
   const { MapTypeId } = window.kakao.maps
   mapInstance.value.setMapTypeId(type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.SKYVIEW)
+  selectedMapType.value = type
 }
+
+// 확대
+function zoomIn() {
+  mapInstance.value.setLevel(mapInstance.value.getLevel() - 1)
+}
+
+// 축소
+function zoomOut() {
+  mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
+}
+
+// 주소기반 검색 후 지도 이동
 defineExpose({
   panToAddress: (address) => {
     new window.kakao.maps.services.Geocoder().addressSearch(address, (r, s) => {

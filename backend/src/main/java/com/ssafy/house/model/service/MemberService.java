@@ -3,6 +3,7 @@ package com.ssafy.house.model.service;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
@@ -27,4 +28,11 @@ public interface MemberService {
     Member login(Member member) throws SQLException;
 
     Page<Member> search(SearchCondition condition);
+
+    // 즐겨찾기
+    void addFavorite(int mno, String aptSeq) throws SQLException;
+
+    void removeFavorite(int mno, String aptSeq) throws SQLException;
+
+    List<HouseInfo> getFavorites(int mno) throws SQLException;
 }

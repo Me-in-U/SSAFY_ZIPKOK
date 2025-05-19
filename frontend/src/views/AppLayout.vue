@@ -115,13 +115,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, provide } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const user = ref(null)
 const mobileMenuOpen = ref(false)
+const favoriteSeqs = ref([])
 
 // 마운트 시, 로컬스토리지에 남은 JWT가 있으면 사용자 정보 가져오기
 onMounted(async () => {
@@ -132,10 +133,30 @@ onMounted(async () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     user.value = data.user
+    console.log('사용자 정보:', user.value)
+    await loadFavorites() // user 세팅 직후 즐겨찾기 불러오기
   } catch {
     localStorage.removeItem('jwtToken')
   }
 })
+
+async function loadFavorites() {
+  if (!user.value) return
+  try {
+    const token = localStorage.getItem('jwtToken')
+    const res = await axios.get(
+      `http://localhost:8080/api/v1/members/${user.value.mno}/favorites`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+    favoriteSeqs.value = res.data.data.result.map((item) => item.aptSeq)
+  } catch (e) {
+    console.error('즐겨찾기 로드 실패', e)
+  }
+}
+
+// 전역으로 제공
+provide('user', user)
+provide('favoriteSeqs', favoriteSeqs)
 
 // 로그아웃
 function handleLogout() {
@@ -144,8 +165,9 @@ function handleLogout() {
   router.push('/')
 }
 // 로그인 성공 핸들러
-function handleLoginSuccess(loggedUser) {
+async function handleLoginSuccess(loggedUser) {
   user.value = loggedUser
+  await loadFavorites()
   router.push('/')
 }
 // 회원가입 성공 핸들러
