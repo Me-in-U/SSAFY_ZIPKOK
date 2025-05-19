@@ -163,9 +163,8 @@ const props = defineProps({
   isFavorite: { type: Boolean, default: false },
   aptSeq: { type: String, required: true },
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'toggle-favorite', 'consult'])
 
-defineEmits(['close', 'toggle-favorite', 'consult'])
 
 const activeTab = ref('info')
 
