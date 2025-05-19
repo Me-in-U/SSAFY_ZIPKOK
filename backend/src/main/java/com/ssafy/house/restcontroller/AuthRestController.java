@@ -7,6 +7,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -63,10 +64,11 @@ public class AuthRestController implements RestControllerHelper {
                 "user", user));
     }
 
-    @PostMapping
+    @PostMapping("/regist")
     @Operation(summary = "회원 가입", description = "회원 가입을 처리한다. 회원 정보는 json 문자열로 전달받는다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "회원 가입 성공"),
+            @ApiResponse(responseCode = "409", description = "이미 존재하는 회원"),
             @ApiResponse(responseCode = "500", description = "회원 가입 실패(서버오류)"),
     })
     private ResponseEntity<?> registMember(@RequestBody Member member) throws SQLException {
@@ -74,8 +76,15 @@ public class AuthRestController implements RestControllerHelper {
             member.setPassword(passwordEncoder.encode(member.getPassword()));
             mService.insert(member);
             return handleSuccess(Map.of("member", member), HttpStatus.CREATED);
-        } catch (DataAccessException e) {
-            System.out.println(e.getCause());
+        } // 중복 키(Unique constraint) 위반 시 409 Conflict
+        catch (DataIntegrityViolationException e) {
+            // 로그 남기기
+            logger.warn("회원 가입 중 중복 오류: {}", e.getMessage());
+            return handleFail(e, HttpStatus.CONFLICT);
+        }
+        // 그 외 DB 접근 에러는 500
+        catch (DataAccessException e) {
+            logger.error("DB 에러 발생", e);
             return handleFail(e);
         }
     }
