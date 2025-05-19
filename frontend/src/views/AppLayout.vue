@@ -116,14 +116,18 @@
 
 <script setup>
 import { ref, onMounted, provide } from 'vue'
-import axios from 'axios'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
-const router = useRouter()
+// refs
 const user = ref(null)
 const mobileMenuOpen = ref(false)
 const favoriteSeqs = ref([])
 
+// router
+const router = useRouter()
+
+// onMounted
 // 마운트 시, 로컬스토리지에 남은 JWT가 있으면 사용자 정보 가져오기
 onMounted(async () => {
   const token = localStorage.getItem('jwtToken')

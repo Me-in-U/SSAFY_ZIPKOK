@@ -62,10 +62,8 @@
 import { ref, onMounted, watch, toRefs } from 'vue'
 import axios from 'axios'
 
-// 부모 이벤트
+// emit props
 const emit = defineEmits(['select-property'])
-
-// props 정의 및 분해
 const props = defineProps({
   properties: Array, // 화면에 보여줄 주택 리스트
   searchResults: Array, // 검색 결과 리스트
@@ -76,6 +74,7 @@ const props = defineProps({
 })
 const { searchResults, favoriteSeqs, showBase, showFavorite, showSearch } = toRefs(props)
 
+// refs
 const mapContainer = ref(null)
 const mapInstance = ref(null)
 const baseMarkers = ref([])
@@ -86,7 +85,10 @@ const searchMarkers = ref([])
 const searchOverlays = ref([])
 const selectedMapType = ref('roadmap')
 
-// 1) 모든 watcher 앞에 정의
+// onMounted
+onMounted(loadKakaoMap)
+
+// 모든 watcher 앞에 정의
 function updateVisibility() {
   // 기본 마커
   baseMarkers.value.forEach((m) => m.setMap(showBase.value ? mapInstance.value : null))
@@ -105,8 +107,6 @@ function clearMarkers(markers, overlays) {
   markers.splice(0)
   overlays.splice(0)
 }
-
-onMounted(loadKakaoMap)
 
 function loadKakaoMap() {
   if (window.kakao?.maps) return initMap()
@@ -286,7 +286,7 @@ watch(
   { immediate: true },
 )
 
-// 5) 토글만 바뀔 때
+// 토글만 바뀔 때 updateVisibility
 watch([showBase, showSearch, showFavorite], updateVisibility)
 
 // 지도 타입 변경

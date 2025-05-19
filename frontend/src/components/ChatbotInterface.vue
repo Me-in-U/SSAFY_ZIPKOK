@@ -199,33 +199,34 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 import BotTypingMessage from './BotTypingMessage.vue'
 
+// emit props
+const emit = defineEmits(['search-houses'])
+
+// refs
 const isMinimized = ref(false)
 const inputMessage = ref('')
-const messages = ref([
-  {
-    content: '안녕하세요! 부동산 투자 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
-    sender: 'bot',
-    options: ['투자 추천 매물 보여줘', '요즘 부동산 시장 어때?', '투자 수익률 높은 지역은?'],
-  },
-])
+const messages = ref([])
 const isTyping = ref(false)
 const messagesContainer = ref(null)
-const emit = defineEmits(['search-houses'])
+
+// onMounted
+onMounted(() => clearChat())
+
 async function sendMessage() {
   const userText = inputMessage.value.trim()
   if (!userText) return
 
-  // 1) 사용자 입력 메시지 추가
+  // 사용자 입력 메시지 추가
   messages.value.push({ content: userText, sender: 'user' })
   inputMessage.value = ''
   nextTick(scrollToBottom)
   isTyping.value = true
 
   try {
-    // 2) API 호출
+    // API 호출
     const res = await fetch('https://api.ssafy.blog/ai/house', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -236,15 +237,15 @@ async function sendMessage() {
       throw new Error(`서버 응답 실패: ${res.status} ${res.statusText}`)
     }
 
-    // 3) 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
+    // 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
     const result = await res.json()
     console.log('[Chat Result]', result)
     const { message, aptSeqList } = result
 
-    // 4) 채팅에는 message 만 보여주기
+    // 채팅에는 message 만 보여주기
     messages.value.push({ content: message, sender: 'bot' })
 
-    // 5) 부모(App.vue)로 검색 결과 전달
+    // 부모(App.vue)로 검색 결과 전달
     emit('search-houses', aptSeqList || [])
   } catch (error) {
     console.error('[Chat Error]', error)
@@ -258,6 +259,10 @@ async function sendMessage() {
   }
 }
 
+watch(messages, () => {
+  nextTick(scrollToBottom)
+})
+
 function clearChat() {
   messages.value = [
     {
@@ -267,10 +272,6 @@ function clearChat() {
     },
   ]
 }
-
-watch(messages, () => {
-  nextTick(scrollToBottom)
-})
 
 function scrollToBottom() {
   if (messagesContainer.value) {

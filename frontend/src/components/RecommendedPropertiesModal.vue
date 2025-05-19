@@ -1,6 +1,8 @@
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-auto relative">
+    <div
+      class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-auto relative"
+    >
       <!-- 헤더 -->
       <div class="flex items-center justify-between px-6 py-4 border-b">
         <h2 class="text-2xl font-bold text-gray-800">추천 매물</h2>
@@ -13,39 +15,72 @@
           <!-- 뷰 토글 -->
           <div class="inline-flex bg-gray-100 rounded-full p-1 shadow-inner">
             <!-- 그리드 뷰 버튼 -->
-            <button @click="view = 'grid'" :class="view === 'grid'
-              ? 'bg-white text-emerald-600'
-              : 'text-gray-500 hover:bg-white hover:text-emerald-600'" class="px-3 py-2 rounded-l-full transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" 
+            <button
+              @click="view = 'grid'"
+              :class="
+                view === 'grid'
+                  ? 'bg-white text-emerald-600'
+                  : 'text-gray-500 hover:bg-white hover:text-emerald-600'
+              "
+              class="px-3 py-2 rounded-l-full transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 4h6v6H4V4zM14 4h6v6h-6V4zM4 14h6v6H4v-6zM14 14h6v6h-6v-6z" />
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4h6v6H4V4zM14 4h6v6h-6V4zM4 14h6v6H4v-6zM14 14h6v6h-6v-6z"
+                />
               </svg>
             </button>
 
             <!-- 리스트 뷰 버튼 -->
-            <button @click="view = 'list'" :class="view === 'list'
-              ? 'bg-white text-emerald-600'
-              : 'text-gray-500 hover:bg-white hover:text-emerald-600'" class="px-3 py-2 rounded-r-full transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" 
+            <button
+              @click="view = 'list'"
+              :class="
+                view === 'list'
+                  ? 'bg-white text-emerald-600'
+                  : 'text-gray-500 hover:bg-white hover:text-emerald-600'
+              "
+              class="px-3 py-2 rounded-r-full transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
 
           <!-- 탭 네비 -->
           <nav class="flex space-x-4">
-            <button v-for="tab in tabs" :key="tab" @click="activeTab = tab"
-              class="relative px-3 py-2 font-medium transition" :class="activeTab === tab
-                ? 'text-white'
-                : 'text-white/70 hover:text-white'">
+            <button
+              v-for="tab in tabs"
+              :key="tab"
+              @click="activeTab = tab"
+              class="relative px-3 py-2 font-medium transition"
+              :class="activeTab === tab ? 'text-white' : 'text-white/70 hover:text-white'"
+            >
               {{ tabNames[tab] }}
-              <span v-if="activeTab === tab" class="absolute inset-x-0 -bottom-1 h-0.5 bg-white transition-all" />
+              <span
+                v-if="activeTab === tab"
+                class="absolute inset-x-0 -bottom-1 h-0.5 bg-white transition-all"
+              />
             </button>
           </nav>
         </div>
@@ -55,30 +90,49 @@
       <div class="px-6 py-6 bg-gray-50">
         <!-- 로딩 -->
         <div v-if="loading" class="flex items-center justify-center h-64">
-          <svg class="animate-spin h-10 w-10 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <svg
+            class="animate-spin h-10 w-10 text-emerald-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
           </svg>
         </div>
 
         <!-- 그리드/리스트 -->
-        <div v-else :class="view === 'grid'
-          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-          : 'space-y-4'">
-          <div v-for="item in currentList" :key="item.aptSeq || item.id"
-            class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition">
+        <div
+          v-else
+          :class="
+            view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'
+          "
+        >
+          <div
+            v-for="item in currentList"
+            :key="item.aptSeq || item.id"
+            class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition"
+          >
             <div :class="view === 'grid' ? '' : 'flex'">
               <div :class="view === 'grid' ? 'h-48' : 'w-1/3 h-32'">
-                <img :src="item.imgPath || '/placeholder.svg'" alt="아파트" class="w-full h-full object-cover" />
+                <img
+                  :src="item.imgPath || '/placeholder.svg'"
+                  alt="아파트"
+                  class="w-full h-full object-cover"
+                />
               </div>
               <div :class="view === 'grid' ? 'p-4' : 'p-4 w-2/3'">
                 <h3 class="text-lg font-semibold text-gray-800 mb-1">
                   {{ item.listingName || '정보 없음' }}
                 </h3>
-                <p class="text-emerald-600 font-bold mb-2">
-                  {{ formatNumber(item.price) }}원
-                </p>
+                <p class="text-emerald-600 font-bold mb-2">{{ formatNumber(item.price) }}원</p>
                 <p class="text-sm text-gray-500 mb-2">
                   {{ item.spec || '스펙 정보 없음' }}
                 </p>
@@ -99,11 +153,19 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+//refs
+const view = ref('grid') // 현재 뷰 모드 (grid/list)
+const activeTab = ref('recent') // 현재 활성화된 탭
+const recent = ref([])
+const nearstation = ref([]) //<-- Todo : 변수명 변경 nearStation
+const newlyweds = ref([])
+const rec = ref([])
+const loading = ref(true)
+
+// router
 const router = useRouter()
 
-// 뷰 모드 / 탭 상태
-const view = ref('grid')
-const activeTab = ref('recent')
+// constant
 const tabs = ['recent', 'nearstation', 'newlyweds']
 const tabNames = {
   recent: '최근 거래 매물',
@@ -111,13 +173,7 @@ const tabNames = {
   newlyweds: '신혼 추천 매물',
 }
 
-// 데이터 상태
-const recent = ref([])
-const nearstation = ref([])
-const newlyweds = ref([])
-const rec = ref([])
-const loading = ref(true)
-
+// computed
 const currentList = computed(() => {
   if (activeTab.value === 'recent') return recent.value
   if (activeTab.value === 'nearstation') return nearstation.value
@@ -125,7 +181,7 @@ const currentList = computed(() => {
   return rec.value
 })
 
-// 데이터 불러오기
+// onMounted
 onMounted(async () => {
   loading.value = true
   try {
