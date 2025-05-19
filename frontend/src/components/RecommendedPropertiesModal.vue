@@ -16,8 +16,8 @@
         <div class="flex border-b">
           <button
             v-for="tab in tabs"
-            :key="tab.id"
-            @click="activeTab = tab.id"
+            :key="tab"
+            @click="activeTab = tab"
             :class="tab === activeTab ? 'border-b-2 border-primary font-medium' : ''"
             class="px-4 py-2 flex-1"
           >
@@ -78,21 +78,23 @@ const router = useRouter()
 // 뷰 모드 / 탭 상태
 const view = ref('grid')
 const activeTab = ref('recent')
-const tabs = ['recent', 'most', 'recommended']
+const tabs = ['recent', 'nearstation', 'newlyweds']
 const tabNames = {
   recent: '최근 거래 매물',
-  most: '최다 거래 매물',
-  recommended: '추천 매물',
+  nearstation: '역세권 매물',
+  newlyweds: '신혼 추천 매물',
 }
 
 // 데이터 상태
 const recent = ref([])
-const most = ref([])
+const nearstation = ref([])
+const newlyweds = ref([])
 const rec = ref([])
 
 const currentList = computed(() => {
   if (activeTab.value === 'recent') return recent.value
-  if (activeTab.value === 'most') return most.value
+  if (activeTab.value === 'nearstation') return nearstation.value
+  if (activeTab.value === 'newlyweds') return newlyweds.value
   return rec.value
 })
 
@@ -100,13 +102,13 @@ const currentList = computed(() => {
 onMounted(async () => {
   try {
     const [r, m, c] = await Promise.all([
-      axios.get('https://api.ssafy.blog/api/v1/house/recommend/recent?limit=6'),
-      axios.get('https://api.ssafy.blog/api/v1/house/recommend/most?limit=6'),
-      axios.get('https://api.ssafy.blog/api/v1/house/recommend/composite?limit=6'),
+      axios.get('http://localhost:8080/api/v1/house/recommend/recent?limit=6'),
+      axios.get('http://localhost:8080/api/v1/house/recommend/nearstation?limit=6'),
+      axios.get('http://localhost:8080/api/v1/house/recommend/newlyweds?limit=6'),
     ])
     recent.value = r.data
-    most.value = m.data
-    rec.value = c.data
+    nearstation.value = m.data
+    newlyweds.value = c.data
   } catch (e) {
     console.error(e)
   }
@@ -132,6 +134,7 @@ function formatNumber(val) {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

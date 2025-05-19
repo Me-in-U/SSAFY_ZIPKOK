@@ -21,21 +21,21 @@ public class HouseRecommendServiceImpl implements HouseRecommendService {
     @Cacheable(cacheNames = "recommendRecent", key = "#limit")
     public List<HouseRecommend> getRecentProperties(int limit) {
         // SQL로는 limit * 2 만큼 미리 가져오고, 서비스 레이어에서 단지명(prefix) 중복 제거
-        List<HouseRecommend> raw = recommendDao.selectRecentProperties(limit * 2);
+        List<HouseRecommend> raw = recommendDao.selectRecentProperties(limit * 10);
         return filterByComplexName(raw, limit);
     }
 
     @Override
-    @Cacheable(cacheNames = "recommendMost", key = "#limit")
-    public List<HouseRecommend> getMostTradedProperties(int limit) {
-        List<HouseRecommend> raw = recommendDao.selectMostTradedProperties(limit * 2);
+    @Cacheable(cacheNames = "recommendNearStation", key = "#limit")
+    public List<HouseRecommend> getNearStationProperties(int limit) {
+        List<HouseRecommend> raw = recommendDao.selectNearStationProperties(limit * 10);
         return filterByComplexName(raw, limit);
     }
 
     @Override
-    @Cacheable(cacheNames = "recommendComposite", key = "#limit")
-    public List<HouseRecommend> getRecommendedCompositeProperties(int limit) {
-        List<HouseRecommend> raw = recommendDao.selectRecommendedCompositeProperties(limit * 2);
+    @Cacheable(cacheNames = "recommendNewlyweds", key = "#limit")
+    public List<HouseRecommend> getNewlywedsProperties(int limit) {
+        List<HouseRecommend> raw = recommendDao.selectNewlywedsProperties(limit * 10);
         return filterByComplexName(raw, limit);
     }
 

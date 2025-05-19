@@ -36,23 +36,23 @@ public class HouseRecommendRestController {
 
     /**
      * GET /api/v1/house/recommend/most?limit=10
-     * 최다 거래 매물 상위 limit개 조회
+     * 역세권 매물 상위 limit개 조회
      */
-    @GetMapping("/most")
+    @GetMapping("/nearstation")
     public ResponseEntity<List<HouseRecommend>> most(
             @RequestParam(defaultValue = "6") int limit) {
-        List<HouseRecommend> list = recommendService.getMostTradedProperties(limit);
+        List<HouseRecommend> list = recommendService.getNearStationProperties(limit);
         return ResponseEntity.ok(list);
     }
 
     /**
      * GET /api/v1/house/recommend/composite?limit=`0
-     * 종합추천 매물(1년 시세상승률 기준) 상위 limit개 조회
+     * 신혼 추천 매물 상위 limit개 조회
      */
-    @GetMapping("/composite")
+    @GetMapping("/newlyweds")
     public ResponseEntity<List<HouseRecommend>> composite(
             @RequestParam(defaultValue = "6") int limit) {
-        List<HouseRecommend> list = recommendService.getRecommendedCompositeProperties(limit);
+        List<HouseRecommend> list = recommendService.getNewlywedsProperties(limit);
         return ResponseEntity.ok(list);
     }
 }

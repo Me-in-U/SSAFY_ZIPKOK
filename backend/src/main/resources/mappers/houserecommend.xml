@@ -36,80 +36,67 @@
     LIMIT #{limit}
   </select>
 
-  <!-- 2) 최다 거래 매물: 과거 거래 건수 기준, 상위 6개 -->
-  <select id="selectMostTradedProperties"
+  <!-- 2) 역세권 매물: 상위 6개 -->
+  <select id="selectNearStationProperties"
           resultType="com.ssafy.house.model.dto.HouseRecommend">
     SELECT
-      p.apt_seq        AS aptSeq,
-      hi.img_path      AS imgPath,
-      d.listing_name   AS listingName,
-      d.price          AS price,
-      d.spec           AS spec,
-      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description
-    FROM (
-      SELECT apt_seq, COUNT(1) AS cnt
-      FROM ssafyproj.house_deals_done
-      GROUP BY apt_seq
-      /* ORDER BY, LIMIT 제거 */
-    ) p
-    LEFT JOIN (
-      SELECT apt_seq, MIN(img_path) AS img_path
-      FROM ssafyproj.house_image
-      GROUP BY apt_seq
-    ) hi ON hi.apt_seq = p.apt_seq
-    JOIN (
-      SELECT hd1.apt_seq, hd1.listing_name, hd1.price, hd1.spec, hd1.description
-      FROM ssafyproj.house_deal hd1
-      JOIN (
-        SELECT apt_seq, MAX(confirmed_at) AS max_date
-        FROM ssafyproj.house_deal
-        WHERE price IS NOT NULL
-        GROUP BY apt_seq
-      ) hd2 ON hd1.apt_seq = hd2.apt_seq
-          AND hd1.confirmed_at = hd2.max_date
-    ) d ON d.apt_seq = p.apt_seq
-    WHERE d.price IS NOT NULL
-      AND hi.img_path IS NOT NULL
-    ORDER BY p.cnt DESC
+      hd.apt_seq,
+      hi.img_path,
+      hd.listing_name,
+      hd.price,
+      hd.spec,
+      CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description
+    FROM
+      house_deal AS hd
+    INNER JOIN
+      house_image AS hi
+        ON hi.apt_seq = hd.apt_seq
+    WHERE
+      hd.description LIKE '%역세권%'
+    ORDER BY
+      hd.confirmed_at
     LIMIT #{limit}
   </select>
 
-  <!-- 3) 종합추천 매물: 1년 시세상승률 기준, 상위 6개 -->
-  <select id="selectRecommendedCompositeProperties"
+  <!-- 3) 학교와 가까운 신혼 추천 매물: 상위 6개 -->
+  <select id="selectNewlywedsProperties"
           parameterType="int"
           resultType="com.ssafy.house.model.dto.HouseRecommend">
     SELECT
-      tmp.apt_seq        AS aptSeq,
-      tmp.img_path       AS imgPath,
-      d.listing_name     AS listingName,
-      tmp.price_now      AS price,
-      d.spec             AS spec,
-      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description
-    FROM (
+      hd.apt_seq,
+      hi.img_path,
+      hd.listing_name,
+      hd.price,
+      hd.spec,
+      CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description,
+      hs_min.min_distance_minutes AS school_distance_minutes
+    FROM
+      house_deal AS hd
+    JOIN (
+      -- apt_seq별 최소 도보 시간(분) 계산
       SELECT
-        sc.apt_seq,
-        sc.img_path,
-        sc.price_now,
-        /* 거래량과 상승률 결합 지표 */
-        sc.score * LOG(1 + vd.trades_last_year) AS composite_score
-      FROM ssafyproj.house_score sc
-      JOIN (
-        SELECT apt_seq, COUNT(*) AS trades_last_year
-        FROM ssafyproj.house_deal
-        WHERE confirmed_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY apt_seq
-      ) vd ON vd.apt_seq = sc.apt_seq
-    ) tmp
-    JOIN ssafyproj.house_deal d
-      ON d.apt_seq = tmp.apt_seq
-     AND d.confirmed_at = (
-       SELECT MAX(confirmed_at)
-       FROM ssafyproj.house_deal
-       WHERE apt_seq = tmp.apt_seq
-     )
-    ORDER BY tmp.composite_score DESC
+        apt_seq,
+        MIN(
+          CAST(
+            SUBSTRING_INDEX(
+              -- "도보로 15분" → SUBSTRING_INDEX(...,'분',1) = "도보로 15"
+              SUBSTRING_INDEX(distance, '분', 1),
+            ' ', -1)  -- "도보로 15" → 마지막 토큰 "15"
+          AS UNSIGNED)
+        ) AS min_distance_minutes
+      FROM house_school
+      GROUP BY apt_seq
+    ) AS hs_min
+      ON hs_min.apt_seq = hd.apt_seq
+    INNER JOIN
+      house_image AS hi
+        ON hi.apt_seq = hd.apt_seq
+    WHERE
+      hd.description LIKE '%신혼%'     -- 신혼 대상 필터
+    ORDER BY
+      hs_min.min_distance_minutes ASC,  -- 가까운 순
+      hd.confirmed_at            DESC -- 최신 거래순
     LIMIT #{limit}
-
   </select>
 
 </mapper>

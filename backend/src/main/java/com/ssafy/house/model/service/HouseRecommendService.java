@@ -12,14 +12,14 @@ public interface HouseRecommendService {
     List<HouseRecommend> getRecentProperties(int limit);
 
     /**
-     * 최다 거래 매물 조회
+     * 역세권 매물 조회
      * @param limit 상위 몇 개
      */
-    List<HouseRecommend> getMostTradedProperties(int limit);
+    List<HouseRecommend> getNearStationProperties(int limit);
 
     /**
-     * 종합추천 매물 조회
+     * 신혼 추천 매물물 조회
      * @param limit 상위 몇 개
      */
-    List<HouseRecommend> getRecommendedCompositeProperties(int limit);
+    List<HouseRecommend> getNewlywedsProperties(int limit);
 }
