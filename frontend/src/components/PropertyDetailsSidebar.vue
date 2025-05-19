@@ -113,21 +113,9 @@
                 </li>
               </ul>
             </div>
-
-            <!-- 하단 버튼 -->
-            <div class="mt-6 flex gap-2">
-              <button class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition">
-                관심 매물 등록
-              </button>
-            </div>
           </div>
           <!-- 하단 버튼 -->
           <div class="mt-6 flex gap-2">
-            <button
-              class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition"
-            >
-              투자 상담 받기
-            </button>
             <button
               class="flex-1 px-4 py-3"
               :class="
