@@ -9,7 +9,7 @@
         v-if="showDetailInfo"
         :property="detailInfoData"
         :isOpen="showDetailInfo"
-        :is-favorite="favoriteSeqs.includes(detailInfoData.aptSeq)"
+        :is-favorite="favoriteSeqs.includes(selectedAptSeq.aptSeq)"
         @close="showDetailInfo = false"
         @toggle-favorite="onToggleFavorite"
         @consult="onConsult"
@@ -87,7 +87,6 @@ const showDetailInfo = ref(false)
 const detailInfoData = ref(null)
 const favoriteSeqs = inject('favoriteSeqs')
 
-const showPropertyDetails = ref(false)
 const selectedAptSeq = ref(null)
 
 const properties = ref([])
@@ -119,9 +118,10 @@ function onSearchHouses(houses) {
   showSearchMarkers.value = true
 }
 
+
 function handleSelectProperty(house) {
-  selectedAptSeq.value = house.aptSeq
-  showPropertyDetails.value = true
+  selectedAptSeq.value = {aptSeq: house.aptSeq}
+  showDetailInfo.value = true
   console.log('🏠 선택된 aptSeq:', house.aptSeq)
 }
 
