@@ -1,4 +1,3 @@
-<!-- src/views/HomeContent.vue -->
 <template>
   <main class="container mx-auto px-4 mt-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-4">
     <!-- 사이드바 -->
@@ -55,7 +54,7 @@
         :show-base="showBaseMarkers"
         :show-favorite="showFavoriteMarkers"
         :show-search="showSearchMarkers"
-        @select-property="handleDetailData"
+        @select-property="handleSelectProperty"
         class="flex-1"
       />
     </section>
@@ -88,6 +87,9 @@ const showDetailInfo = ref(false)
 const detailInfoData = ref(null)
 const favoriteSeqs = inject('favoriteSeqs')
 
+const showPropertyDetails = ref(false)
+const selectedAptSeq = ref(null)
+
 const properties = ref([])
 const activeFilters = ref({ propertyType: '', priceRange: [0, 100], area: '', dealType: '' })
 const filteredProperties = computed(() =>
@@ -117,28 +119,10 @@ function onSearchHouses(houses) {
   showSearchMarkers.value = true
 }
 
-// 매물 상세보기(사이드 바)
-function handleDetailData(house) {
-  detailInfoData.value = {
-    title: house.aptNm,
-    address: `${house.roadNm} ${house.roadNmBonbun}${house.roadNmBubun}`,
-    builtYear: house.buildYear,
-    type: house.propertyType || '데이터 없음',
-    dealType: house.dealType || '데이터 없음',
-    priceValue: house.priceValue,
-    sizeValue: house.sizeValue,
-    price: house.priceText,
-    size: house.sizeText,
-    location: house.umdNm,
-    roi: house.roi,
-    priceChange: house.priceChange,
-    image: house.imageUrl,
-    description: house.description,
-    amenities: house.amenities,
-    possibleDay: house.possibleDay,
-    aptSeq: house.aptSeq,
-  }
-  showDetailInfo.value = true
+function handleSelectProperty(house) {
+  selectedAptSeq.value = house.aptSeq
+  showPropertyDetails.value = true
+  console.log('🏠 선택된 aptSeq:', house.aptSeq)
 }
 
 // 관심 매물 등록/해제
