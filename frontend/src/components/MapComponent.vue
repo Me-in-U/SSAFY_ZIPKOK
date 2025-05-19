@@ -128,7 +128,8 @@ function initMap() {
   // base 마커 불러오기
   fetchBase()
   window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchBase)
-
+  // 맵이 준비되자마자 즐겨찾기 로드
+  loadFavorites(favoriteSeqs.value)
   // 현재 위치 가져오기
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -197,56 +198,39 @@ function fetchBase() {
 }
 
 // 즐겨찾기 watcher
-watch(
-  favoriteSeqs,
-  async (seqs) => {
-    // mapInstance 가 준비되지 않았다면 스킵
-    if (!mapInstance.value) {
-      console.log('[Favorite Seqs] 지도 준비 안됨')
-      return
-    }
-    clearMarkers(favoriteMarkers.value, favoriteOverlays.value)
-    if (!seqs || seqs.length === 0) {
-      console.log('[Favorite Seqs] 없음')
-      return updateVisibility()
-    }
-    console.log('[Favorite Seqs]', seqs)
-    const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
-      params: { seqs: seqs.join(',') },
+async function loadFavorites(seqs) {
+  if (!mapInstance.value) return
+  clearMarkers(favoriteMarkers.value, favoriteOverlays.value)
+  if (!seqs || seqs.length === 0) {
+    console.log('[즐겨찾기] 없음')
+    return updateVisibility()
+  }
+  const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
+    params: { seqs: seqs.join(',') },
+  })
+  list.forEach((h) => {
+    const pos = new window.kakao.maps.LatLng(h.latitude, h.longitude)
+    const m = new window.kakao.maps.Marker({
+      position: pos,
+      map: mapInstance.value,
+      icon: { url: '/favorite-icon.png', size: new window.kakao.maps.Size(24, 24), zIndex: 2 },
     })
-    list.forEach((h) => {
-      const pos = new window.kakao.maps.LatLng(h.latitude, h.longitude)
-      const m = new window.kakao.maps.Marker({
-        position: pos,
-        map: mapInstance.value,
-        icon: { url: '/favorite-icon.png', size: new window.kakao.maps.Size(24, 24), zIndex: 2 },
-      })
-      const ov = new window.kakao.maps.CustomOverlay({
-        position: pos,
-        content: `
-          <div style="
-            padding:2px 4px;
-            background:rgba(255,245,235,0.9);
-            border:1px solid #e58a00;
-            border-radius:4px;
-            font-size:12px;
-            color:#000000
-          ">
-            ${h.aptNm}
-          </div>
-        `,
-        yAnchor: 2,
-        zIndex: 2,
-      })
-      ov.setMap(mapInstance.value)
-      window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
-      favoriteMarkers.value.push(m)
-      favoriteOverlays.value.push(ov)
+    const ov = new window.kakao.maps.CustomOverlay({
+      position: pos,
+      content: `<div style="padding:2px 4px; background:rgba(255,245,235,0.9); border:3px solid #e52200; border-radius:4px; font-size:12px; color:#000000">
+                  ${h.aptNm}
+                </div>`,
+      yAnchor: 2,
+      zIndex: 2,
     })
-    updateVisibility()
-  },
-  { immediate: true },
-)
+    ov.setMap(mapInstance.value)
+    window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', h))
+    favoriteMarkers.value.push(m)
+    favoriteOverlays.value.push(ov)
+  })
+  updateVisibility()
+}
+watch(favoriteSeqs, loadFavorites, { deep: true })
 
 // 검색 결과 watcher
 watch(

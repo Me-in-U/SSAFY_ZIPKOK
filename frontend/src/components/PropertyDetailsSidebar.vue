@@ -266,7 +266,21 @@ function closeSidebar() {
 }
 
 function formatCurrency(val) {
-  return val != null ? val.toLocaleString() + '원' : '-'
+  if (val == null) return '-'
+
+  let eok = 0,
+    man = 0,
+    remainder = 0
+  if (val >= 10000) {
+    man = Math.floor(val / 10000)
+    remainder = val % 10000
+    if (man >= 10000) {
+      eok = Math.floor(man / 10000)
+      man = man % 10000
+    }
+  }
+
+  return `${eok > 0 ? eok + '억' : ''}${man > 0 ? man + '만' : ''}${remainder != 0 ? remainder + '원' : '원'}`
 }
 </script>
 

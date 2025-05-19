@@ -35,7 +35,7 @@ public class HouseTools {
     @Tool(description = "시도(sido), 구군(gugun)으로 아파트 검색 (부분 매칭)")
     public List<String> searchByGugun(
             @ToolParam(description = "시도 이름 일부") String sido,
-            @ToolParam(description = "구군 이름 일부") String gugun) {
+            @ToolParam(description = "구군 이름 일부") String gugun) throws SQLException {
         logger.warn("searchByGugun called with sido={} and gugun={}", sido, gugun);
         return houseInfoService.findBySidoGugun(sido, gugun);
     }
@@ -44,7 +44,7 @@ public class HouseTools {
     public List<String> searchByDong(
             @ToolParam(description = "시도 이름 일부") String sido,
             @ToolParam(description = "구군 이름 일부") String gugun,
-            @ToolParam(description = "읍면동 이름 일부") String dong) {
+            @ToolParam(description = "읍면동 이름 일부") String dong) throws SQLException {
         logger.warn("searchByDong called with sido={}, gugun={}, dong={}", sido, gugun, dong);
         return houseInfoService.findBySidoGugunDong(sido, gugun, dong);
     }
@@ -53,7 +53,7 @@ public class HouseTools {
     public List<String> searchByOptions(
             @ToolParam(description = "시도 이름 일부") String sido,
             @ToolParam(description = "구군 이름 일부") String gugun,
-            @ToolParam(description = "읍면동 이름 일부") String dong) {
+            @ToolParam(description = "읍면동 이름 일부") String dong) throws SQLException {
         logger.warn("searchByOptions called with sido={}, gugun={}, dong={}", sido, gugun, dong);
         return houseInfoService.findByOptions(sido, gugun, dong);
     }
@@ -63,7 +63,7 @@ public class HouseTools {
             @ToolParam(description = "시도 이름 일부") String sido,
             @ToolParam(description = "구군 이름 일부") String gugun,
             @ToolParam(description = "읍면동 이름 일부") String dong,
-            @ToolParam(description = "아파트 이름 일부") String aptNm) {
+            @ToolParam(description = "아파트 이름 일부") String aptNm) throws SQLException {
         logger.warn("searchByOptionsAndName called with sido={}, gugun={}, dong={}, aptNm={}",
                 sido, gugun, dong, aptNm);
         return houseInfoService.findByOptionsAndAptName(sido, gugun, dong, aptNm);

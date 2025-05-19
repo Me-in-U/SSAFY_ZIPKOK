@@ -149,6 +149,7 @@ async function loadFavorites() {
       { headers: { Authorization: `Bearer ${token}` } },
     )
     favoriteSeqs.value = res.data.data.result.map((item) => item.aptSeq)
+    console.log('[즐겨찾기 목록]:', favoriteSeqs.value)
   } catch (e) {
     console.error('즐겨찾기 로드 실패', e)
   }
