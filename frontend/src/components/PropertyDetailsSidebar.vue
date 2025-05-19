@@ -253,9 +253,15 @@
               투자 상담 받기
             </button>
             <button
-              class="flex-1 px-4 py-3 border border-emerald-600 text-emerald-600 rounded-md hover:bg-emerald-50 transition"
+              class="flex-1 px-4 py-3"
+              :class="
+                isFavorite
+                  ? 'border border-red-600 text-red-600 hover:bg-red-50 rounded-md '
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700 rounded-md'
+              "
+              @click="$emit('toggle-favorite', property.aptSeq)"
             >
-              관심 매물 등록
+              {{ isFavorite ? '관심 매물 해제' : '관심 매물 등록' }}
             </button>
           </div>
         </div>
@@ -277,9 +283,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isFavorite: { type: Boolean, default: false },
 })
 
-defineEmits(['close'])
+defineEmits(['close', 'toggle-favorite', 'consult'])
 
 const activeTab = ref('info')
 

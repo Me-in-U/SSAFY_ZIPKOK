@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.house.exception.RecordNotFoundException;
 import com.ssafy.house.model.dao.MemberDao;
+import com.ssafy.house.model.dao.MemberFavoriteDao;
+import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
     private final MemberDao memberDao;
+    private final MemberFavoriteDao favoriteDao;
     private Logger logger = LoggerFactory.getLogger(MemberServiceImpl.class);
 
     // 1. 회원가입
@@ -74,5 +77,21 @@ public class MemberServiceImpl implements MemberService {
         // 페이지네이션 정보 생성
         Page<Member> page = new Page<>(condition, totalItems, members);
         return page;
+    }
+
+    // 즐겨찾기
+    @Override
+    public void addFavorite(int mno, String aptSeq) throws SQLException {
+        favoriteDao.insertFavorite(mno, aptSeq);
+    }
+
+    @Override
+    public void removeFavorite(int mno, String aptSeq) throws SQLException {
+        favoriteDao.deleteFavorite(mno, aptSeq);
+    }
+
+    @Override
+    public List<HouseInfo> getFavorites(int mno) throws SQLException {
+        return favoriteDao.selectFavoritesByMember(mno);
     }
 }

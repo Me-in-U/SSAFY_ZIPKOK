@@ -1,6 +1,7 @@
 package com.ssafy.house.restcontroller;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.dao.DataAccessException;
@@ -11,11 +12,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
@@ -104,6 +107,55 @@ public class MemberRestController implements RestControllerHelper {
             mService.delete(mno);
             return handleSuccess(Map.of("result", mno));
         } catch (DataAccessException e) {
+            return handleFail(e);
+        }
+    }
+
+    @PostMapping("/{mno}/favorites/{aptSeq}")
+    @Operation(summary = "즐겨찾기 추가", description = "회원의 즐겨찾기에 아파트를 추가한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "추가 성공"),
+            @ApiResponse(responseCode = "500", description = "추가 실패")
+    })
+    public ResponseEntity<?> addFavorite(
+            @PathVariable int mno,
+            @PathVariable String aptSeq) {
+        try {
+            mService.addFavorite(mno, aptSeq);
+            return handleSuccess(Map.of("mno", mno, "aptSeq", aptSeq));
+        } catch (DataAccessException | SQLException e) {
+            return handleFail(e);
+        }
+    }
+
+    @DeleteMapping("/{mno}/favorites/{aptSeq}")
+    @Operation(summary = "즐겨찾기 삭제", description = "회원의 즐겨찾기에서 아파트를 삭제한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "삭제 성공"),
+            @ApiResponse(responseCode = "500", description = "삭제 실패")
+    })
+    public ResponseEntity<?> removeFavorite(
+            @PathVariable int mno,
+            @PathVariable String aptSeq) {
+        try {
+            mService.removeFavorite(mno, aptSeq);
+            return handleSuccess(Map.of("mno", mno, "aptSeq", aptSeq));
+        } catch (DataAccessException | SQLException e) {
+            return handleFail(e);
+        }
+    }
+
+    @GetMapping("/{mno}/favorites")
+    @Operation(summary = "즐겨찾기 조회", description = "회원의 즐겨찾기 목록을 조회한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "500", description = "조회 실패")
+    })
+    public ResponseEntity<?> listFavorites(@PathVariable int mno) {
+        try {
+            List<HouseInfo> list = mService.getFavorites(mno);
+            return handleSuccess(Map.of("result", list));
+        } catch (DataAccessException | SQLException e) {
             return handleFail(e);
         }
     }
