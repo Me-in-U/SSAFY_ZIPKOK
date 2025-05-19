@@ -1,4 +1,3 @@
-<!-- src/views/HomeContent.vue -->
 <template>
   <main class="container mx-auto px-4 mt-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-4">
     <!-- 사이드바 -->
@@ -24,6 +23,7 @@
     >
       <PropertyFilters @filter-change="handleFilterChange" @move-to="handleMoveTo" />
 
+      <!-- Todo: 이동예정 -->
       <!-- 토글 버튼 그룹 -->
       <div class="flex justify-end space-x-2 mb-2 px-2">
         <button
@@ -72,31 +72,31 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import axios from 'axios'
-import PropertyFilters from '@/components/PropertyFilters.vue'
 import MapComponent from '@/components/MapComponent.vue'
+import PropertyFilters from '@/components/PropertyFilters.vue'
 import ChatbotInterface from '@/components/ChatbotInterface.vue'
 import PropertyDetailsSidebar from '@/components/PropertyDetailsSidebar.vue'
 
+// refs
 // 토글 상태
 const showBaseMarkers = ref(true)
 const showFavoriteMarkers = ref(true)
 const showSearchMarkers = ref(false)
-
-// 전역
-const user = inject('user')
-const favoriteSeqs = inject('favoriteSeqs')
-
 // 지도 & 검색
 const mapRef = ref(null)
 const searchResults = ref([])
-
-// 사이드바
-const showDetailInfo = ref(false)
-const selectedAptSeq = ref('') // string
-
-// 전체 매물 + 필터
+// 전체 매물
 const properties = ref([])
 const activeFilters = ref({ propertyType: '', priceRange: [0, 100], area: '', dealType: '' })
+// 사이드바
+const showDetailInfo = ref(false)
+const selectedAptSeq = ref('')
+
+// injects(전역 상태)
+const user = inject('user')
+const favoriteSeqs = inject('favoriteSeqs')
+
+// computed
 const filteredProperties = computed(() =>
   properties.value.filter((p) => {
     if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType)
@@ -143,10 +143,5 @@ async function onToggleFavorite(aptSeq) {
     await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
     favoriteSeqs.value.push(aptSeq)
   }
-}
-
-// 상담 신청
-function onConsult(aptSeq) {
-  console.log('📨 상담 신청:', aptSeq)
 }
 </script>

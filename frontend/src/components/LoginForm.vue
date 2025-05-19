@@ -1,4 +1,3 @@
-<!-- src/components/LoginForm.vue -->
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
     <div class="relative max-w-md w-full bg-white p-8 rounded-lg shadow-md">
@@ -163,23 +162,18 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+// emit props
 const emit = defineEmits(['login-success'])
-const router = useRouter()
+
+// refs
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
 const error = ref('')
 
-// 닫기
-function close() {
-  router.push('/')
-}
-
-// 회원가입 페이지로 이동
-function goRegister() {
-  router.replace('/register')
-}
+// router
+const router = useRouter()
 
 // 로그인 처리
 async function handleLogin() {
@@ -208,5 +202,15 @@ async function handleLogin() {
   } finally {
     isLoading.value = false
   }
+}
+
+// 닫기
+function close() {
+  router.push('/')
+}
+
+// 회원가입 페이지로 이동
+function goRegister() {
+  router.replace('/register')
 }
 </script>

@@ -20,17 +20,19 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 
+// emit props
+const emit = defineEmits(['done'])
 const props = defineProps({
   text: String,
   speed: { type: Number, default: 200 },
 })
 
-const emit = defineEmits(['done'])
-
+// refs
 const displayedWords = ref([])
 const revealedIndexes = ref([])
 const isTyping = ref(true)
 
+// onMounted
 onMounted(() => {
   const words = props.text.split(' ')
   let index = 0

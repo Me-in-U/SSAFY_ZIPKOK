@@ -1,4 +1,3 @@
-<!-- src/components/RegisterForm.vue -->
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
     <div class="relative max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
@@ -192,9 +191,11 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+// emit props
 const emit = defineEmits(['register-success'])
 const router = useRouter()
 
+// refs
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -205,6 +206,7 @@ const passwordFocused = ref(false)
 const isLoading = ref(false)
 const error = ref('')
 
+// computed
 // 비밀번호 유효성 검사
 const validLength = computed(() => password.value.length >= 8 && password.value.length <= 25)
 const hasLetter = computed(() => /[A-Za-z]/.test(password.value))
@@ -221,21 +223,10 @@ const allValid = computed(
     hasSpecial.value &&
     noInvalidChars.value,
 )
-
 // 비밀번호 확인 일치 여부
 const confirmMatch = computed(
   () => confirmPassword.value !== '' && password.value === confirmPassword.value,
 )
-
-// 닫기
-function close() {
-  router.push('/')
-}
-
-// 로그인 페이지로 이동
-function goLogin() {
-  router.replace('/login')
-}
 
 // 회원가입 처리
 async function handleRegister() {
@@ -269,5 +260,15 @@ async function handleRegister() {
   } finally {
     isLoading.value = false
   }
+}
+
+// 닫기
+function close() {
+  router.push('/')
+}
+
+// 로그인 페이지로 이동
+function goLogin() {
+  router.replace('/login')
 }
 </script>

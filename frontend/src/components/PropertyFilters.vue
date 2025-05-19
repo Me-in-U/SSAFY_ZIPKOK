@@ -250,16 +250,18 @@ import axios from 'axios'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
+// emit props
 const emit = defineEmits(['filter-change', 'move-to'])
 
+// ref
 const searchQuery = ref('')
 const showAdvanced = ref(false)
 const showMoreFilters = ref(false)
-
 const sidoList = ref([])
 const gugunList = ref([])
 const dongList = ref([])
 
+// reactive
 const filters = reactive({
   sido: '',
   gugun: '',
@@ -272,6 +274,9 @@ const filters = reactive({
   household: '',
   availableIn: '',
 })
+
+// onMounted
+onMounted(loadSido)
 
 function onMove() {
   emit('move-to', { address: `${filters.dong} ${filters.gugun} ${filters.sido}` })
@@ -328,8 +333,6 @@ function resetFilters() {
   dongList.value = []
   applyFilters()
 }
-
-onMounted(loadSido)
 </script>
 
 <style scoped>

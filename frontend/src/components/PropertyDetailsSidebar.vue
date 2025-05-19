@@ -172,6 +172,8 @@ import { ref, watch } from 'vue'
 import axios from 'axios'
 import catPlaceholder from '@/assets/cat-placeholder.png'
 
+// emit props
+const emit = defineEmits(['close', 'toggle-favorite', 'consult'])
 const props = defineProps({
   property: {
     type: Object,
@@ -184,13 +186,15 @@ const props = defineProps({
   isFavorite: { type: Boolean, default: false },
   aptSeq: { type: String, required: true },
 })
-const emit = defineEmits(['close', 'toggle-favorite', 'consult'])
+
+// refs
 const activeTab = ref('info')
 const loading = ref(false)
 const error = ref('')
 const detail = ref(null)
 const schools = ref([])
 
+// constants
 const tabs = [
   { id: 'info', name: '정보' },
   { id: 'schools', name: '학교' },
