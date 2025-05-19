@@ -100,6 +100,35 @@ function initMap() {
   })
   fetchBase()
   window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchBase)
+
+  // 현재 위치 가져오기
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const userLatLng = new window.kakao.maps.LatLng(latitude, longitude)
+
+        // 1) 사용자 위치 마커
+        new window.kakao.maps.Marker({
+          position: userLatLng,
+          map: mapInstance.value,
+          title: '현재 위치',
+          // 원한다면 커스텀 아이콘 지정 가능
+        })
+
+        // 2) (선택) 지도 센터를 사용자 위치로 이동
+        mapInstance.value.setCenter(userLatLng)
+      },
+      (err) => {
+        console.warn('위치 정보를 가져올 수 없습니다.', err)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    )
+  }
 }
 
 // 기본 매물 로드

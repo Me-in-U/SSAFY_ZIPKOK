@@ -7,7 +7,7 @@
       class="transition-[width] duration-300 ease-in-out overflow-hidden"
     >
       <PropertyDetailsSidebar
-        v-if="showPropertyDetails"
+        :isOpen="showPropertyDetails"
         :property="selectedProperty"
         @close="showPropertyDetails = false"
       />
