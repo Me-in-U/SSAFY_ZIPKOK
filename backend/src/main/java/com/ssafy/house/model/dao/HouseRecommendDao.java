@@ -6,7 +6,7 @@ import com.ssafy.house.model.dto.HouseRecommend;
 
 public interface HouseRecommendDao {
     List<HouseRecommend> selectRecentProperties(int limit);
-    List<HouseRecommend> selectMostTradedProperties(int limit);
-    List<HouseRecommend> selectRecommendedCompositeProperties(int limit);
+    List<HouseRecommend> selectNearStationProperties(int limit);
+    List<HouseRecommend> selectNewlywedsProperties(int limit);
 }
 
