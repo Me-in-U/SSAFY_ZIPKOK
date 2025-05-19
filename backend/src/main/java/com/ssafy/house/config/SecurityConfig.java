@@ -50,11 +50,16 @@ public class SecurityConfig {
                         // allow all preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // unauthenticated users can login / register
+                        // 유저 관리
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/members/login",
-                                "/api/v1/members")
+                                "/api/v1/members/regist",
+                                "/api/v1/members/reset-password")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/members/me")
+                        .permitAll()
+
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/house/**")
                         .permitAll()
