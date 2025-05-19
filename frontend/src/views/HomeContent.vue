@@ -3,7 +3,7 @@
   <main class="container mx-auto px-4 mt-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-4">
     <!-- 사이드바 -->
     <div
-      :class="showDetailInfo ? 'w-1/3 rounded-lg bg-white shadow-lg' : 'w-0'"
+      :class="showDetailInfo ? 'w-2/5 rounded-lg bg-white shadow-lg' : 'w-0'"
       class="transition-[width] duration-300 ease-in-out overflow-hidden"
     >
       <PropertyDetailsSidebar
@@ -19,7 +19,7 @@
 
     <!-- 지도 -->
     <section
-      :class="showDetailInfo ? 'w-2/3' : 'w-full'"
+      :class="showDetailInfo ? 'w-4/5' : 'w-full'"
       class="transition-all duration-300 ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5"
     >
       <PropertyFilters @filter-change="handleFilterChange" @move-to="handleMoveTo" />
@@ -61,7 +61,7 @@
     </section>
 
     <!-- 챗봇 -->
-    <aside class="flex-shrink-0 w-1/4 overflow-auto shadow-lg">
+    <aside class="flex-shrink-0 w-1/5 overflow-auto shadow-lg">
       <ChatbotInterface class="h-full" @search-houses="onSearchHouses" />
     </aside>
   </main>
