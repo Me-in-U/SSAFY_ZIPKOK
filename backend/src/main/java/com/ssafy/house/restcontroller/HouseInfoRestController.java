@@ -1,3 +1,4 @@
+// src/main/java/com/ssafy/house/restcontroller/HouseInfoRestController.java
 package com.ssafy.house.restcontroller;
 
 import java.sql.SQLException;
@@ -8,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.ssafy.house.model.dto.HouseFullInfo;
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.SchoolInfo;
 import com.ssafy.house.model.service.HouseInfoService;
 
 @RestController
@@ -22,10 +25,11 @@ import com.ssafy.house.model.service.HouseInfoService;
         "http://192.168.204.108:5173/",
         "http://172.22.16.1:5173/" })
 public class HouseInfoRestController {
+
     @Autowired
     private HouseInfoService service;
 
-    // 1) 단일 조회
+    // 1) 단일 조회 (기존)
     @GetMapping("/{aptSeq}")
     public ResponseEntity<HouseInfo> getById(@PathVariable String aptSeq) throws Exception {
         HouseInfo info = service.getHouseInfo(aptSeq);
@@ -34,31 +38,52 @@ public class HouseInfoRestController {
                 : ResponseEntity.notFound().build();
     }
 
-    // 2) 범위 조회
+    // 2) 범위 조회 (기존)
     @GetMapping("/search")
     public ResponseEntity<List<HouseInfo>> getByBounds(
             @RequestParam String minLat,
             @RequestParam String maxLat,
             @RequestParam String minLng,
             @RequestParam String maxLng) throws Exception {
-        // DAO/Service/Mapper 모두 SELECT * → List<HouseInfo> 로 리턴하게 변경되어야 합니다
         List<HouseInfo> list = service.getHouseInfoByBounds(minLat, maxLat, minLng, maxLng);
         return ResponseEntity.ok(list);
     }
 
-    // 3) 이름 일부 검색
+    // 3) 이름 일부 검색 (기존)
     @GetMapping("/search/name")
     public ResponseEntity<List<String>> searchByName(
             @RequestParam String partialName) throws SQLException {
-        return ResponseEntity.ok(
-                service.searchByAptName(partialName));
+        return ResponseEntity.ok(service.searchByAptName(partialName));
     }
 
-    /** 복수 apt_seq 를 comma-separated 로 받아서 List<HouseInfo> 반환 */
+    // 4) 복수 조회 (기존)
     @GetMapping("/batch")
-    public ResponseEntity<List<HouseInfo>> getBySeqList(@RequestParam("seqs") String commaSeqs) throws SQLException {
+    public ResponseEntity<List<HouseInfo>> getBySeqList(
+            @RequestParam("seqs") String commaSeqs) throws Exception {
         List<String> seqList = Arrays.asList(commaSeqs.split(","));
         List<HouseInfo> list = service.getHouseInfoBySeqList(seqList);
         return ResponseEntity.ok(list);
+    }
+
+    /**
+     * 5) 아파트 상세 정보 조회
+     *    house_info + house_detail + 대표이미지 + 최신 거래를 모두 묶어서 반환
+     */
+    @GetMapping("/{aptSeq}/detail")
+    public ResponseEntity<HouseFullInfo> getFullInfo(@PathVariable String aptSeq) throws Exception {
+        HouseFullInfo full = service.getHouseFullInfo(aptSeq);
+        return full != null
+                ? ResponseEntity.ok(full)
+                : ResponseEntity.notFound().build();
+    }
+
+    /**
+     * 6) 해당 아파트의 학교 리스트 조회
+     *    school_detail 과 house_school 을 조인해 반환
+     */
+    @GetMapping("/{aptSeq}/schools")
+    public ResponseEntity<List<SchoolInfo>> getSchools(@PathVariable String aptSeq) throws Exception {
+        List<SchoolInfo> schools = service.getSchoolsByAptSeq(aptSeq);
+        return ResponseEntity.ok(schools);
     }
 }
