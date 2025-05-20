@@ -78,7 +78,7 @@ const props = defineProps({
   showFavorite: Boolean, // 즐겨찾기 마커 토글
   showSearch: Boolean, // 검색 결과 토글
 })
-const { searchResults, favoriteSeqs, showBase, showFavorite, showSearch, } = toRefs(props)
+const { searchResults, favoriteSeqs, showBase, showFavorite, showSearch } = toRefs(props)
 
 // refs
 const mapContainer = ref(null)
@@ -256,7 +256,7 @@ function drawByZoom(level) {
           fillColor: 'rgba(0, 0, 0, 0.0)',
           zIndex: 0,
           fillOpacity: 0,
-          strokeWeight: 3,
+          strokeWeight: 2.5,
         },
       ],
       [
@@ -266,7 +266,7 @@ function drawByZoom(level) {
           fillColor: 'rgba(0, 0, 0, 0.0)',
           zIndex: 2,
           fillOpacity: 0,
-          strokeWeight: 3,
+          strokeWeight: 2.5,
         },
       ],
     ].forEach(([key, style]) => {
@@ -280,7 +280,7 @@ function drawByZoom(level) {
       if (!inViewport(featureBBoxes.sigungu[i], bounds)) return
       drawSingleFeature(
         feat,
-        { strokeColor: '#888', fillColor: '#ee7777', zIndex: 5, fillOpacity: 0.1 },
+        { strokeColor: '#888', fillColor: '#ee7777', zIndex: 5, fillOpacity: 0.05 },
         'sigungu',
       )
     })
@@ -294,8 +294,8 @@ function drawByZoom(level) {
           strokeColor: '#ff2222',
           fillColor: '#ee7777',
           zIndex: 6,
-          fillOpacity: 0.01,
-          strokeWeight: 3,
+          fillOpacity: 0.001,
+          strokeWeight: 2.5,
         },
         'sigungu',
       )
@@ -309,7 +309,7 @@ function drawByZoom(level) {
           strokeColor: '#888',
           fillColor: '#ee7777',
           zIndex: 10,
-          fillOpacity: 0.1,
+          fillOpacity: 0.001,
           strokeWeight: 1.5,
         },
         'emd',
@@ -529,10 +529,7 @@ watch(
     houses.forEach((h) => {
       // 위도/경도가 있으면 바로 사용
       if (h.latitude && h.longitude) {
-        const pos = new window.kakao.maps.LatLng(
-          parseFloat(h.latitude),
-          parseFloat(h.longitude)
-        )
+        const pos = new window.kakao.maps.LatLng(parseFloat(h.latitude), parseFloat(h.longitude))
         createMarker(pos, h)
         bounds.extend(pos)
 
@@ -556,14 +553,14 @@ watch(
 
     updateVisibility()
   },
-  { immediate: true }
+  { immediate: true },
 )
 // 검색 결과 마커 클릭 시
 function createMarker(position, house) {
   const m = new window.kakao.maps.Marker({ position, map: mapInstance.value, zIndex: 3 })
   const ov = new window.kakao.maps.CustomOverlay({
     position,
-    content: `<div style="padding:2px 4px; background:rgba(255,245,235,0.9); 
+    content: `<div style="padding:2px 4px; background:rgba(255,245,235,0.9);
                      border:3px solid #a0d2f0; border-radius:4px; font-size:12px; color:#000">
                 ${house.aptNm}
               </div>`,
@@ -618,7 +615,7 @@ defineExpose({
     mapInstance.value.panTo(c)
     mapInstance.value.setLevel(5)
     console.log('[좌표 기반 검색]:', latitude, longitude)
-  }
+  },
 })
 </script>
 
