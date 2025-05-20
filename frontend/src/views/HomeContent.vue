@@ -84,8 +84,8 @@ const showFavoriteMarkers = ref(true)
 const showSearchMarkers = ref(false)
 // 지도 & 검색
 const mapRef = ref(null)
-const rawSearchResults = ref([])       // 1 원본 검색 결과를 저장할 변수
-const searchResults = ref([])          // 2 지도에 표시할(필터 적용된) 결과
+const rawSearchResults = ref([]) // 1 원본 검색 결과를 저장할 변수
+const searchResults = ref([]) // 2 지도에 표시할(필터 적용된) 결과
 // 전체 매물
 const properties = ref([])
 const activeFilters = ref({
@@ -95,7 +95,7 @@ const activeFilters = ref({
   area: '',
   builtYear: '',
   household: '',
-  availableIn: ''
+  availableIn: '',
 })
 // 사이드바
 const showDetailInfo = ref(false)
@@ -106,23 +106,34 @@ const userStore = useUserStore()
 
 // computed
 const filteredProperties = computed(() =>
-  properties.value.filter(p => {
-    if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType) return false
+  properties.value.filter((p) => {
+    if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType)
+      return false
     if (activeFilters.value.dealType && p.dealType !== activeFilters.value.dealType) return false
     const [minP, maxP] = activeFilters.value.priceRange
     if (p.priceValue < minP * 1e8 || p.priceValue > maxP * 1e8) return false
     if (activeFilters.value.area) {
-      const minA = p.sizeValue, maxA = p.sizeValue
+      const minA = p.sizeValue,
+        maxA = p.sizeValue
       switch (activeFilters.value.area) {
-        case 'small': if (maxA > 20) return false; break
-        case 'medium': if (minA < 20 || maxA > 30) return false; break
-        case 'large': if (minA < 30 || maxA > 40) return false; break
-        case 'xlarge': if (minA < 40) return false; break
+        case 'small':
+          if (maxA > 20) return false
+          break
+        case 'medium':
+          if (minA < 20 || maxA > 30) return false
+          break
+        case 'large':
+          if (minA < 30 || maxA > 40) return false
+          break
+        case 'xlarge':
+          if (minA < 40) return false
+          break
       }
     }
-    if (activeFilters.value.builtYear && p.buildYear < Number(activeFilters.value.builtYear)) return false
+    if (activeFilters.value.builtYear && p.buildYear < Number(activeFilters.value.builtYear))
+      return false
     return true
-  })
+  }),
 )
 //지역 필터로 이동
 function handleMoveTo({ address }) {
@@ -130,9 +141,13 @@ function handleMoveTo({ address }) {
 }
 
 // activeFilters 변경 시 rawSearchResults 기반 상세 필터 적용
-watch(activeFilters, () => {
-  if (rawSearchResults.value.length) applyDetailedFilters()
-}, { deep: true })
+watch(
+  activeFilters,
+  () => {
+    if (rawSearchResults.value.length) applyDetailedFilters()
+  },
+  { deep: true },
+)
 
 // 필터/검색 처리
 async function handleFilterChange({
@@ -146,9 +161,17 @@ async function handleFilterChange({
   area,
   builtYear,
   household,
-  availableIn
+  availableIn,
 }) {
-  activeFilters.value = { propertyType, dealType, priceRange, area, builtYear, household, availableIn }
+  activeFilters.value = {
+    propertyType,
+    dealType,
+    priceRange,
+    area,
+    builtYear,
+    household,
+    availableIn,
+  }
 
   try {
     const [minPrice, maxPrice] = priceRange
@@ -163,8 +186,8 @@ async function handleFilterChange({
         builtYear,
         minPrice: minPrice * 1e8,
         maxPrice: maxPrice * 1e8,
-        areaOption: area
-      }
+        areaOption: area,
+      },
     })
     rawSearchResults.value = Array.isArray(houses) ? houses : []
     applyDetailedFilters()
@@ -176,7 +199,7 @@ async function handleFilterChange({
       const first = rawSearchResults.value[0]
       mapRef.value.panToCoords({
         latitude: first.latitude,
-        longitude: first.longitude
+        longitude: first.longitude,
       })
     }
   } catch (e) {
@@ -190,19 +213,30 @@ async function handleFilterChange({
 // 상세 필터 적용 후 지도 표시
 function applyDetailedFilters() {
   let filtered = rawSearchResults.value
-  if (activeFilters.value.propertyType) filtered = filtered.filter(h => h.propertyType === activeFilters.value.propertyType)
-  if (activeFilters.value.dealType) filtered = filtered.filter(h => h.dealType === activeFilters.value.dealType)
+  if (activeFilters.value.propertyType)
+    filtered = filtered.filter((h) => h.propertyType === activeFilters.value.propertyType)
+  if (activeFilters.value.dealType)
+    filtered = filtered.filter((h) => h.dealType === activeFilters.value.dealType)
   const [minP, maxP] = activeFilters.value.priceRange
-  filtered = filtered.filter(h => (h.latestPrice >= minP * 1e8 && h.latestPrice <= maxP * 1e8))
+  filtered = filtered.filter((h) => h.latestPrice >= minP * 1e8 && h.latestPrice <= maxP * 1e8)
   if (activeFilters.value.area) {
     switch (activeFilters.value.area) {
-      case 'small': filtered = filtered.filter(h => h.areaMax <= 20); break
-      case 'medium': filtered = filtered.filter(h => h.areaMin >= 20 && h.areaMax <= 30); break
-      case 'large': filtered = filtered.filter(h => h.areaMin >= 30 && h.areaMax <= 40); break
-      case 'xlarge': filtered = filtered.filter(h => h.areaMin >= 40); break
+      case 'small':
+        filtered = filtered.filter((h) => h.areaMax <= 20)
+        break
+      case 'medium':
+        filtered = filtered.filter((h) => h.areaMin >= 20 && h.areaMax <= 30)
+        break
+      case 'large':
+        filtered = filtered.filter((h) => h.areaMin >= 30 && h.areaMax <= 40)
+        break
+      case 'xlarge':
+        filtered = filtered.filter((h) => h.areaMin >= 40)
+        break
     }
   }
-  if (activeFilters.value.builtYear) filtered = filtered.filter(h => h.buildYear >= Number(activeFilters.value.builtYear))
+  if (activeFilters.value.builtYear)
+    filtered = filtered.filter((h) => h.buildYear >= Number(activeFilters.value.builtYear))
 
   searchResults.value = filtered
   showSearchMarkers.value = filtered.length > 0
@@ -224,10 +258,10 @@ function handleSelectProperty(house) {
 async function onToggleFavorite(aptSeq) {
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
-    await axios.delete(`/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs = userStore.favoriteSeqs.filter((seq) => seq !== aptSeq)
   } else {
-    await axios.post(`/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs.push(aptSeq)
   }
 }
