@@ -161,6 +161,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useUserStore } from '@/stores/user'
 
 // emit props
 const emit = defineEmits(['login-success'])
@@ -175,6 +176,8 @@ const error = ref('')
 // router
 const router = useRouter()
 
+// user store
+const userStore = useUserStore()
 // 로그인 처리
 async function handleLogin() {
   error.value = ''
@@ -186,12 +189,11 @@ async function handleLogin() {
     })
     if (res.data.status === 'SUCCESS') {
       const { token, user } = res.data.data
-      localStorage.setItem('jwtToken', token)
+      userStore.setUser({ user, token })
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      // 로그인 성공 후 뒤로가기
+      emit('login-success')
+      console.log('[로그인 성공]:', res.data)
       router.back()
-      // 부모로 로그인 성공 이벤트 전송
-      emit('login-success', user)
       close()
     } else {
       error.value = res.data.message || '로그인에 실패했습니다.'

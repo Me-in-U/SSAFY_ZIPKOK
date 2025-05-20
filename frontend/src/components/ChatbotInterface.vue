@@ -149,7 +149,7 @@
       </div>
 
       <!-- 추천 질문 -->
-      <div v-if="messages.length <= 1 && !isTyping" class="px-4 py-2 border-t">
+      <!-- <div v-if="messages.length <= 1 && !isTyping" class="px-4 py-2 border-t">
         <p class="text-sm text-gray-500 mb-2">추천 질문:</p>
         <div class="flex flex-wrap gap-2">
           <button
@@ -161,7 +161,7 @@
             {{ question }}
           </button>
         </div>
-      </div>
+      </div> -->
 
       <!-- 입력창 -->
       <div class="p-4 border-t flex-none bg-white">
@@ -169,12 +169,12 @@
           <input
             type="text"
             placeholder="질문을 입력하세요..."
-            class="flex-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="flex-1 min-w-0 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
             v-model="inputMessage"
             @keyup.enter="sendMessage"
           />
           <button
-            class="p-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition"
+            class="flex-none p-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition"
             @click="sendMessage"
           >
             <svg

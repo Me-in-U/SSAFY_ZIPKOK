@@ -109,6 +109,7 @@ function clearMarkers(markers, overlays) {
 }
 
 function loadKakaoMap() {
+  console.log('[카카오맵 로드]')
   if (window.kakao?.maps) return initMap()
   const s = document.createElement('script')
   s.src =
@@ -142,14 +143,14 @@ function initMap() {
           position: userLatLng,
           map: mapInstance.value,
           title: '현재 위치',
-          // 원한다면 커스텀 아이콘 지정 가능
+          clickable: false,
+          zIndex: 10,
         })
-
-        // 2) (선택) 지도 센터를 사용자 위치로 이동
         mapInstance.value.setCenter(userLatLng)
+        console.log('[현재 위치] 위도:', latitude, '경도:', longitude)
       },
       (err) => {
-        console.warn('위치 정보를 가져올 수 없습니다.', err)
+        console.warn('[위치 정보 오류]:', err)
       },
       {
         enableHighAccuracy: true,
@@ -166,6 +167,7 @@ function fetchBase() {
     clearMarkers(baseMarkers.value, baseOverlays.value)
     return
   }
+  // console.log('[기본 매물] 마커 추가')
   const bounds = mapInstance.value.getBounds()
   axios
     .get('https://api.ssafy.blog/api/v1/house/search', {
@@ -205,6 +207,7 @@ async function loadFavorites(seqs) {
     console.log('[즐겨찾기] 없음')
     return updateVisibility()
   }
+  console.log('[즐겨찾기] 마커 추가')
   const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
     params: { seqs: seqs.join(',') },
   })
@@ -236,6 +239,7 @@ watch(favoriteSeqs, loadFavorites, { deep: true })
 watch(
   searchResults,
   async (raw) => {
+    console.log('[검색 결과] 변경:', raw)
     clearMarkers(searchMarkers.value, searchOverlays.value)
     if (!raw || raw.length === 0) {
       return updateVisibility()
@@ -279,6 +283,7 @@ watch(
       searchMarkers.value.push(m)
       searchOverlays.value.push(ov)
       bounds.extend(pos)
+      console.log('[검색 결과] 반영 완료')
     })
     if (!bounds.isEmpty()) mapInstance.value.setBounds(bounds)
     updateVisibility()
@@ -294,16 +299,19 @@ function setMapType(type) {
   const { MapTypeId } = window.kakao.maps
   mapInstance.value.setMapTypeId(type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.SKYVIEW)
   selectedMapType.value = type
+  console.log('[지도 타입 변경]:', type)
 }
 
 // 확대
 function zoomIn() {
   mapInstance.value.setLevel(mapInstance.value.getLevel() - 1)
+  console.log('[확대]:', mapInstance.value.getLevel())
 }
 
 // 축소
 function zoomOut() {
   mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
+  console.log('[축소]:', mapInstance.value.getLevel())
 }
 
 // 주소기반 검색 후 지도 이동
@@ -316,6 +324,7 @@ defineExpose({
         mapInstance.value.setLevel(5)
       }
     })
+    console.log('[주소 기반 검색]:', address)
   },
 })
 </script>

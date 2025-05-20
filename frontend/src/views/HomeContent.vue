@@ -9,10 +9,9 @@
         v-if="showDetailInfo"
         :aptSeq="selectedAptSeq"
         :isOpen="showDetailInfo"
-        :is-favorite="favoriteSeqs.includes(selectedAptSeq)"
+        :is-favorite="userStore.favoriteSeqs.includes(selectedAptSeq)"
         @close="showDetailInfo = false"
         @toggle-favorite="onToggleFavorite"
-        @consult="onConsult"
       />
     </div>
 
@@ -53,7 +52,7 @@
         ref="mapRef"
         :properties="filteredProperties"
         :search-results="searchResults"
-        :favorite-seqs="favoriteSeqs"
+        :favorite-seqs="userStore.favoriteSeqs"
         :show-base="showBaseMarkers"
         :show-favorite="showFavoriteMarkers"
         :show-search="showSearchMarkers"
@@ -63,14 +62,15 @@
     </section>
 
     <!-- 챗봇 -->
-    <aside class="flex-shrink-0 w-1/5 overflow-auto shadow-lg">
+    <aside class="flex-shrink-0 w-1/5 min-w-[220px] overflow-auto shadow-lg">
       <ChatbotInterface class="h-full" @search-houses="onSearchHouses" />
     </aside>
   </main>
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed } from 'vue'
+import { useUserStore } from '@/stores/user'
 import axios from 'axios'
 import MapComponent from '@/components/MapComponent.vue'
 import PropertyFilters from '@/components/PropertyFilters.vue'
@@ -92,9 +92,8 @@ const activeFilters = ref({ propertyType: '', priceRange: [0, 100], area: '', de
 const showDetailInfo = ref(false)
 const selectedAptSeq = ref('')
 
-// injects(전역 상태)
-const user = inject('user')
-const favoriteSeqs = inject('favoriteSeqs')
+// userStore
+const userStore = useUserStore()
 
 // computed
 const filteredProperties = computed(() =>
@@ -135,13 +134,13 @@ function handleSelectProperty(house) {
 
 // 즐겨찾기 등록/해제
 async function onToggleFavorite(aptSeq) {
-  const mno = user.value.mno
-  if (favoriteSeqs.value.includes(aptSeq)) {
-    await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
-    favoriteSeqs.value = favoriteSeqs.value.filter((seq) => seq !== aptSeq)
+  const mno = userStore.profile.mno
+  if (userStore.favoriteSeqs.includes(aptSeq)) {
+    await axios.delete(`/api/v1/members/${mno}/favorites/${aptSeq}`)
+    userStore.favoriteSeqs = userStore.favoriteSeqs.filter((seq) => seq !== aptSeq)
   } else {
-    await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
-    favoriteSeqs.value.push(aptSeq)
+    await axios.post(`/api/v1/members/${mno}/favorites/${aptSeq}`)
+    userStore.favoriteSeqs.push(aptSeq)
   }
 }
 </script>

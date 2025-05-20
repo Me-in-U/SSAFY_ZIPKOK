@@ -5,6 +5,7 @@ import router from './router'
 import './assets/tailwind.css'
 import './assets/global.css'
 import axios from 'axios'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 // Axios 기본 설정
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api'
@@ -16,6 +17,8 @@ if (token) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
 const app = createApp(App)
-app.use(createPinia())
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+app.use(pinia)
 app.use(router)
 app.mount('#app')
