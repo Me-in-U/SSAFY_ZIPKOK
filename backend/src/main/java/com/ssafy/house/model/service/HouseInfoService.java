@@ -18,6 +18,8 @@ public interface HouseInfoService {
 
     List<String> searchByAptName(String partialName) throws SQLException;
 
+    List<HouseInfo> searchByName(String partialName) throws SQLException;
+
     List<String> findBySidoGugun(String sido, String gugun) throws SQLException;
 
     List<String> findBySidoGugunDong(String sido, String gugun, String dong) throws SQLException;
@@ -27,7 +29,20 @@ public interface HouseInfoService {
     List<String> findByOptionsAndAptName(
             String sido, String gugun, String dong, String aptNm) throws SQLException;
 
+    List<HouseFullInfo> searchFullInfoByOptionsAndName(
+                String partialName,
+                String sido,
+                String gugun,
+                String dong,
+                String propertyType,
+                String dealType,
+                Integer builtYear,
+                Long minPrice,
+                Long maxPrice,
+                String areaOption) throws SQLException;   
+                 
     HouseFullInfo getHouseFullInfo(String aptSeq) throws SQLException;
 
     List<SchoolInfo> getSchoolsByAptSeq(String aptSeq) throws SQLException;
+
 }

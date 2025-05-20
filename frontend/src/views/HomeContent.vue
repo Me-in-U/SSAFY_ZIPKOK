@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import axios from 'axios'
 import MapComponent from '@/components/MapComponent.vue'
@@ -84,10 +84,19 @@ const showFavoriteMarkers = ref(true)
 const showSearchMarkers = ref(false)
 // 지도 & 검색
 const mapRef = ref(null)
-const searchResults = ref([])
+const rawSearchResults = ref([])       // 1 원본 검색 결과를 저장할 변수
+const searchResults = ref([])          // 2 지도에 표시할(필터 적용된) 결과
 // 전체 매물
 const properties = ref([])
-const activeFilters = ref({ propertyType: '', priceRange: [0, 100], area: '', dealType: '' })
+const activeFilters = ref({
+  propertyType: '',
+  dealType: '',
+  priceRange: [0, 100],
+  area: '',
+  builtYear: '',
+  household: '',
+  availableIn: ''
+})
 // 사이드바
 const showDetailInfo = ref(false)
 const selectedAptSeq = ref('')
@@ -97,28 +106,107 @@ const userStore = useUserStore()
 
 // computed
 const filteredProperties = computed(() =>
-  properties.value.filter((p) => {
-    if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType)
-      return false
-    if (activeFilters.value.area) {
-      const [minA, maxA] = activeFilters.value.area.split('-').map(Number)
-      if (p.sizeValue < minA || p.sizeValue > maxA) return false
-    }
+  properties.value.filter(p => {
+    if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType) return false
+    if (activeFilters.value.dealType && p.dealType !== activeFilters.value.dealType) return false
     const [minP, maxP] = activeFilters.value.priceRange
     if (p.priceValue < minP * 1e8 || p.priceValue > maxP * 1e8) return false
-    if (activeFilters.value.dealType && p.dealType !== activeFilters.value.dealType) return false
+    if (activeFilters.value.area) {
+      const minA = p.sizeValue, maxA = p.sizeValue
+      switch (activeFilters.value.area) {
+        case 'small': if (maxA > 20) return false; break
+        case 'medium': if (minA < 20 || maxA > 30) return false; break
+        case 'large': if (minA < 30 || maxA > 40) return false; break
+        case 'xlarge': if (minA < 40) return false; break
+      }
+    }
+    if (activeFilters.value.builtYear && p.buildYear < Number(activeFilters.value.builtYear)) return false
     return true
-  }),
+  })
 )
-
-// 필터/이동
-function handleFilterChange(filters) {
-  activeFilters.value = filters
-}
+//지역 필터로 이동
 function handleMoveTo({ address }) {
   mapRef.value.panToAddress(address)
 }
 
+// activeFilters 변경 시 rawSearchResults 기반 상세 필터 적용
+watch(activeFilters, () => {
+  if (rawSearchResults.value.length) applyDetailedFilters()
+}, { deep: true })
+
+// 필터/검색 처리
+async function handleFilterChange({
+  searchQuery,
+  sido,
+  gugun,
+  dong,
+  propertyType,
+  dealType,
+  priceRange,
+  area,
+  builtYear,
+  household,
+  availableIn
+}) {
+  activeFilters.value = { propertyType, dealType, priceRange, area, builtYear, household, availableIn }
+
+  try {
+    const [minPrice, maxPrice] = priceRange
+    const { data: houses } = await axios.get('http://localhost:8080/api/v1/house/search/full', {
+      params: {
+        partialName: searchQuery,
+        sido,
+        gugun,
+        dong,
+        propertyType,
+        dealType,
+        builtYear,
+        minPrice: minPrice * 1e8,
+        maxPrice: maxPrice * 1e8,
+        areaOption: area
+      }
+    })
+    rawSearchResults.value = Array.isArray(houses) ? houses : []
+    applyDetailedFilters()
+    showSearchMarkers.value = true
+    showBaseMarkers.value = false
+    console.log('🔍 백엔드 응답:', houses)
+    // 첫 번째 매물의 위도/경도로 이동
+    if (rawSearchResults.value.length > 0) {
+      const first = rawSearchResults.value[0]
+      mapRef.value.panToCoords({
+        latitude: first.latitude,
+        longitude: first.longitude
+      })
+    }
+  } catch (e) {
+    console.error('검색(full) 오류', e)
+    rawSearchResults.value = []
+    searchResults.value = []
+    showSearchMarkers.value = false
+  }
+}
+
+// 상세 필터 적용 후 지도 표시
+function applyDetailedFilters() {
+  let filtered = rawSearchResults.value
+  if (activeFilters.value.propertyType) filtered = filtered.filter(h => h.propertyType === activeFilters.value.propertyType)
+  if (activeFilters.value.dealType) filtered = filtered.filter(h => h.dealType === activeFilters.value.dealType)
+  const [minP, maxP] = activeFilters.value.priceRange
+  filtered = filtered.filter(h => (h.latestPrice >= minP * 1e8 && h.latestPrice <= maxP * 1e8))
+  if (activeFilters.value.area) {
+    switch (activeFilters.value.area) {
+      case 'small': filtered = filtered.filter(h => h.areaMax <= 20); break
+      case 'medium': filtered = filtered.filter(h => h.areaMin >= 20 && h.areaMax <= 30); break
+      case 'large': filtered = filtered.filter(h => h.areaMin >= 30 && h.areaMax <= 40); break
+      case 'xlarge': filtered = filtered.filter(h => h.areaMin >= 40); break
+    }
+  }
+  if (activeFilters.value.builtYear) filtered = filtered.filter(h => h.buildYear >= Number(activeFilters.value.builtYear))
+
+  searchResults.value = filtered
+  showSearchMarkers.value = filtered.length > 0
+}
 // 챗봇 이벤트
 function onSearchHouses(houses) {
   searchResults.value = houses
@@ -136,10 +224,10 @@ function handleSelectProperty(house) {
 async function onToggleFavorite(aptSeq) {
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
-    await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.delete(`/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs = userStore.favoriteSeqs.filter((seq) => seq !== aptSeq)
   } else {
-    await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.post(`/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs.push(aptSeq)
   }
 }

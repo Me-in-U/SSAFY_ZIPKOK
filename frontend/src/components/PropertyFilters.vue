@@ -24,6 +24,7 @@
             type="text"
             placeholder="지역, 단지명, 매물번호 검색"
             v-model="searchQuery"
+            @keyup.enter="applyFilters"
             class="w-full pl-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -245,6 +246,7 @@
 </template>
 
 <script setup>
+
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import VueSlider from 'vue-slider-component'
@@ -274,9 +276,6 @@ const filters = reactive({
   household: '',
   availableIn: '',
 })
-
-// onMounted
-onMounted(loadSido)
 
 function onMove() {
   emit('move-to', { address: `${filters.dong} ${filters.gugun} ${filters.sido}` })
@@ -333,6 +332,9 @@ function resetFilters() {
   dongList.value = []
   applyFilters()
 }
+
+// onMounted
+onMounted(loadSido)
 </script>
 
 <style scoped>

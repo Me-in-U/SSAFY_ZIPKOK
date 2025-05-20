@@ -42,6 +42,11 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     }
 
     @Override
+    public List<HouseInfo> searchByName(String partialName) throws SQLException {
+        String keyword = "%" + partialName + "%";
+        return dao.searchByName(keyword);
+    }
+    @Override
     public List<String> findBySidoGugun(String sido, String gugun) throws SQLException {
         return dao.findBySidoGugun(sido, gugun);
     }
@@ -61,8 +66,30 @@ public class HouseInfoServiceImpl implements HouseInfoService {
             String sido, String gugun, String dong, String aptNm) throws SQLException {
         return dao.findByOptionsAndAptName(sido, gugun, dong, aptNm);
     }
-
-    // ↓ 추가된 구현
+    @Override
+    public List<HouseFullInfo> searchFullInfoByOptionsAndName(
+        String partialName,
+        String sido,
+        String gugun,
+        String dong,
+        String propertyType,
+        String dealType,
+        Integer builtYear,
+        Long minPrice,
+        Long maxPrice,
+        String areaOption
+    ) throws SQLException {
+        // 와일드카드
+        String kw = "%" + (partialName == null ? "" : partialName) + "%";
+        // 호출
+        return dao.searchFullInfoByOptionsAndName(
+            kw, sido, gugun, dong,
+            propertyType, dealType,
+            builtYear,
+            minPrice, maxPrice,
+            areaOption
+        );
+    }
     @Override
     public HouseFullInfo getHouseFullInfo(String aptSeq) throws SQLException {
         return dao.selectHouseFullInfo(aptSeq);

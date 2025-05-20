@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class HouseFullInfo {
     private String aptSeq;
     private String aptNm;
+    private String latitude; 
+    private String longitude;
     private String roadAddress;
     private String jibunAddress;
     private Integer buildYear;

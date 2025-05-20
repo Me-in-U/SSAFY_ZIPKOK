@@ -67,12 +67,13 @@ const emit = defineEmits(['select-property'])
 const props = defineProps({
   properties: Array, // 화면에 보여줄 주택 리스트
   searchResults: Array, // 검색 결과 리스트
+  searchQuery: String, // 검색어
   favoriteSeqs: Array, // 즐겨찾기 aptSeq 리스트
   showBase: Boolean, // 기본 마커 토글
   showFavorite: Boolean, // 즐겨찾기 마커 토글
   showSearch: Boolean, // 검색 결과 토글
 })
-const { searchResults, favoriteSeqs, showBase, showFavorite, showSearch } = toRefs(props)
+const { searchResults, favoriteSeqs, showBase, showFavorite, showSearch, } = toRefs(props)
 
 // refs
 const mapContainer = ref(null)
@@ -290,6 +291,65 @@ watch(
   },
   { immediate: true },
 )
+watch(
+  searchResults,
+  (houses) => {
+    clearMarkers(searchMarkers.value, searchOverlays.value)
+    if (!houses || houses.length === 0) return updateVisibility()
+
+    const bounds = new window.kakao.maps.LatLngBounds()
+    const geocoder = new window.kakao.maps.services.Geocoder()
+
+    houses.forEach((h) => {
+      // 위도/경도가 있으면 바로 사용
+      if (h.latitude && h.longitude) {
+        const pos = new window.kakao.maps.LatLng(
+          parseFloat(h.latitude),
+          parseFloat(h.longitude)
+        )
+        createMarker(pos, h)
+        bounds.extend(pos)
+
+        // 그렇지 않으면 도로명 주소로 지오코딩
+      } else if (h.roadAddress) {
+        geocoder.addressSearch(h.roadAddress, (results, status) => {
+          if (status === window.kakao.maps.services.Status.OK) {
+            const r = results[0]
+            const pos = new window.kakao.maps.LatLng(r.y, r.x)
+            createMarker(pos, h)
+            bounds.extend(pos)
+            mapInstance.value.setBounds(bounds)
+          }
+        })
+      }
+    })
+
+    if (!bounds.isEmpty()) {
+      mapInstance.value.setBounds(bounds)
+    }
+
+    updateVisibility()
+  },
+  { immediate: true }
+)
+// 검색 결과 마커 클릭 시
+function createMarker(position, house) {
+  const m = new window.kakao.maps.Marker({ position, map: mapInstance.value, zIndex: 3 })
+  const ov = new window.kakao.maps.CustomOverlay({
+    position,
+    content: `<div style="padding:2px 4px; background:rgba(255,245,235,0.9); 
+                     border:3px solid #a0d2f0; border-radius:4px; font-size:12px; color:#000">
+                ${house.aptNm}
+              </div>`,
+    yAnchor: 2,
+    zIndex: 3,
+  })
+  m.setMap(mapInstance.value)
+  ov.setMap(mapInstance.value)
+  window.kakao.maps.event.addListener(m, 'click', () => emit('select-property', house))
+  searchMarkers.value.push(m)
+  searchOverlays.value.push(ov)
+}
 
 // 토글만 바뀔 때 updateVisibility
 watch([showBase, showSearch, showFavorite], updateVisibility)
@@ -326,6 +386,13 @@ defineExpose({
     })
     console.log('[주소 기반 검색]:', address)
   },
+  panToCoords: ({ latitude, longitude }) => {
+    if (!latitude || !longitude) return
+    const c = new window.kakao.maps.LatLng(parseFloat(latitude), parseFloat(longitude))
+    mapInstance.value.panTo(c)
+    mapInstance.value.setLevel(5)
+    console.log('[좌표 기반 검색]:', latitude, longitude)
+  }
 })
 </script>
 
