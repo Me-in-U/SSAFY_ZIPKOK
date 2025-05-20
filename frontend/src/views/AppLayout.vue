@@ -19,7 +19,7 @@
           </button>
           <a href="#" class="text-gray-600 hover:text-emerald-600 font-medium">시장 동향</a>
 
-          <template v-if="!user">
+          <template v-if="!userStore.isLogged">
             <router-link to="/login" class="text-gray-600 hover:text-emerald-600 font-medium"
               >로그인</router-link
             >
@@ -28,8 +28,8 @@
             >
           </template>
           <template v-else>
-            <span class="text-gray-800 font-medium">{{ user.name }}님</span>
-            <router-link to="/mypage" class="text-gray-600 hover:text-emerald-600 font-medium"
+            <span class="text-gray-800 font-medium">{{ userStore.profile?.name }}님</span>
+            <router-link to="/" class="text-gray-600 hover:text-emerald-600 font-medium"
               >마이페이지</router-link
             >
             <button @click="handleLogout" class="text-gray-600 hover:text-emerald-600 font-medium">
@@ -59,29 +59,40 @@
       <!-- 모바일 메뉴 -->
       <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
         <div class="container mx-auto px-4 py-2 space-y-2">
+          <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            >투자 분석</a
+          >
           <button
-            @click.prevent="$emit('openRecommended')"
-            class="block w-full py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            @click.prevent="$router.push('/recommended')"
+            class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
           >
             추천 매물
           </button>
           <a href="#" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
             >시장 동향</a
           >
-
-          <template v-if="!user">
-            <router-link to="/login" class="block py-2 text-gray-600 hover:text-emerald-600"
+          <template v-if="!userStore.isLogged">
+            <router-link
+              to="/login"
+              class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
               >로그인</router-link
             >
-            <router-link to="/register" class="block py-2 text-gray-600 hover:text-emerald-600"
+            <router-link
+              to="/register"
+              class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
               >회원가입</router-link
             >
           </template>
           <template v-else>
-            <router-link to="/mypage" class="block py-2 text-gray-600 hover:text-emerald-600"
+            <router-link
+              to="/mypage"
+              class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
               >마이페이지</router-link
             >
-            <button @click="handleLogout" class="block py-2 text-gray-600 hover:text-emerald-600">
+            <button
+              @click="handleLogout"
+              class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            >
               로그아웃
             </button>
           </template>
@@ -103,7 +114,7 @@
             <!-- 모달 컴포넌트에 이벤트 바인딩 -->
             <component
               :is="Component"
-              @login-success="handleLoginSuccess"
+              @login-success="onLoginSuccess"
               @register-success="handleRegisterSuccess"
               @close="router.push('/')"
             />
@@ -115,69 +126,44 @@
 </template>
 
 <script setup>
-import { ref, onMounted, provide } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useUserStore } from '@/stores/user'
 
 // refs
-const user = ref(null)
 const mobileMenuOpen = ref(false)
-const favoriteSeqs = ref([])
 
 // router
 const router = useRouter()
 
-// onMounted
-// 마운트 시, 로컬스토리지에 남은 JWT가 있으면 사용자 정보 가져오기
-onMounted(async () => {
-  const token = localStorage.getItem('jwtToken')
-  if (!token) return
-  try {
-    const { data } = await axios.get('https://api.ssafy.blog/api/v1/members/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    user.value = data.user
-    console.log('사용자 정보:', user.value)
-    await loadFavorites() // user 세팅 직후 즐겨찾기 불러오기
-  } catch {
-    localStorage.removeItem('jwtToken')
-  }
-})
+// useUserStore
+const userStore = useUserStore()
 
-async function loadFavorites() {
-  if (!user.value) return
-  try {
-    const token = localStorage.getItem('jwtToken')
-    const res = await axios.get(
-      `http://localhost:8080/api/v1/members/${user.value.mno}/favorites`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    )
-    favoriteSeqs.value = res.data.data.result.map((item) => item.aptSeq)
-    console.log('[즐겨찾기 목록]:', favoriteSeqs.value)
-  } catch (e) {
-    console.error('즐겨찾기 로드 실패', e)
+// onMounted
+onMounted(() => init())
+
+// 앱 로드 시 사용자와 즐겨찾기 복원
+async function init() {
+  await userStore.fetchUser()
+  if (userStore.isLogged) {
+    await userStore.loadFavorites()
   }
 }
 
-// 전역으로 제공
-provide('user', user)
-provide('favoriteSeqs', favoriteSeqs)
+// 로그인 성공 핸들러: fetchUser → loadFavorites → 모달 닫기
+async function onLoginSuccess() {
+  await init()
+  router.push('/')
+}
 
 // 로그아웃
 function handleLogout() {
-  localStorage.removeItem('jwtToken')
-  user.value = null
+  userStore.clearUser()
   router.push('/')
 }
-// 로그인 성공 핸들러
-async function handleLoginSuccess(loggedUser) {
-  user.value = loggedUser
-  await loadFavorites()
-  router.push('/')
-}
+
 // 회원가입 성공 핸들러
 function handleRegisterSuccess() {
-  // 가입 후 바로 로그인 화면으로 이동
   router.push('/login')
 }
 </script>

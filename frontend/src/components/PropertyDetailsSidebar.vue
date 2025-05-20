@@ -173,7 +173,7 @@ import axios from 'axios'
 import catPlaceholder from '@/assets/cat-placeholder.png'
 
 // emit props
-const emit = defineEmits(['close', 'toggle-favorite', 'consult'])
+const emit = defineEmits(['close', 'toggle-favorite'])
 const props = defineProps({
   property: {
     type: Object,
