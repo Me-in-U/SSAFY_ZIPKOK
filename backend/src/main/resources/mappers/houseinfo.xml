@@ -51,7 +51,7 @@
       </foreach>
   </select>
 
-  <!-- 4) 아파트명 일부 검색 -->
+  <!-- 4-1) 아파트명 일부 검색 -->
   <select id="searchByAptName"
           parameterType="string"
           resultType="string">
@@ -60,6 +60,14 @@
     WHERE apt_nm LIKE #{partialName}
   </select>
 
+  <!-- 4-2) 아파트명 일부 검색 -->
+  <select id="searchByName"
+          parameterType="string"
+          resultType="com.ssafy.house.model.dto.HouseInfo">
+    SELECT *
+    FROM house_info
+    WHERE apt_nm LIKE #{partialName}
+  </select>
   <!-- 5) 시도+구군 검색 -->
   <select id="findBySidoGugun"
           parameterType="map"
@@ -130,6 +138,8 @@
     <resultMap id="houseFullInfoMap" type="com.ssafy.house.model.dto.HouseFullInfo">
     <id     column="apt_seq"               property="aptSeq"/>
     <result column="apt_nm"                property="aptNm"/>
+    <result column="latitude"           property="latitude"/>
+    <result column="longitude"          property="longitude"/>
     <result column="road_address"          property="roadAddress"/>
     <result column="jibun"                 property="jibunAddress"/>
     <result column="build_year"            property="buildYear"/>
@@ -154,6 +164,8 @@
     SELECT
         hi.apt_seq,
         hi.apt_nm,
+        hi.latitude,
+        hi.longitude,
         CONCAT(hi.road_nm,' ',hi.road_nm_bonbun,hi.road_nm_bubun) AS road_address,
         hi.jibun,
         hi.build_year,
@@ -213,5 +225,106 @@
     JOIN school_detail sd ON sd.id = hs.school_id
     WHERE hs.apt_seq = #{aptSeq}
     ORDER BY CAST(SUBSTRING_INDEX(distance,'분',1) AS UNSIGNED)
+  </select>
+  
+  <!-- 12) 상세 필터 + 이름 조합 조회 -->
+  <select id="searchFullInfoByOptionsAndName"
+          parameterType="map"
+          resultMap="houseFullInfoMap">
+    SELECT
+      hi.apt_seq,
+      hi.apt_nm,
+      hi.latitude,
+      hi.longitude,
+      CONCAT(hi.road_nm,' ',hi.road_nm_bonbun,hi.road_nm_bubun) AS road_address,
+      hi.jibun,
+      hi.build_year,
+      hd.area_min,
+      hd.area_max,
+      hd.trade_price_min,
+      hd.trade_price_max,
+      hd.jeonse_price_min,
+      hd.jeonse_price_max,
+      hd.last_trade_detail,
+      img.img_path,
+      deal.price           AS latest_price,
+      deal.spec            AS latest_spec,
+      deal.property_type   AS latest_property_type,
+      deal.description     AS latest_description
+    FROM house_info hi
+    LEFT JOIN house_detail hd
+      ON hd.apt_seq = hi.apt_seq
+    LEFT JOIN (
+      SELECT apt_seq, MIN(img_path) AS img_path
+      FROM house_image
+      GROUP BY apt_seq
+    ) img
+      ON img.apt_seq = hi.apt_seq
+    LEFT JOIN (
+      SELECT hd1.apt_seq,
+             hd1.price,
+             hd1.spec,
+             hd1.property_type,
+             hd1.description
+      FROM house_deal hd1
+      JOIN (
+        SELECT apt_seq, MAX(confirmed_at) AS max_dt
+        FROM house_deal
+        GROUP BY apt_seq
+      ) hd2
+        ON hd1.apt_seq = hd2.apt_seq
+       AND hd1.confirmed_at = hd2.max_dt
+    ) deal
+      ON deal.apt_seq = hi.apt_seq
+
+    <!-- 지역 코드 연결 -->
+    LEFT JOIN dong_code dc
+      ON LEFT(dc.dong_code,5) = hi.sgg_cd
+     AND RIGHT(dc.dong_code,5)= hi.umd_cd
+
+    WHERE 1=1
+    <if test="partialName != null and partialName != ''">
+      AND hi.apt_nm LIKE #{partialName}
+    </if>
+    <if test="sido != null and sido != ''">
+      AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+    </if>
+    <if test="gugun != null and gugun != ''">
+      AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+    </if>
+    <if test="dong != null and dong != ''">
+      AND dc.dong_name LIKE CONCAT('%', #{dong}, '%')
+    </if>
+    <if test="propertyType != null and propertyType != ''">
+      AND deal.property_type = #{propertyType}
+    </if>
+    <if test="dealType != null and dealType != ''">
+      AND deal.property_type = #{dealType}
+    </if>
+    <if test="builtYear != null">
+      AND hi.build_year &gt;= #{builtYear}
+    </if>
+    <if test="minPrice != null">
+      AND deal.price &gt;= #{minPrice}
+    </if>
+    <if test="maxPrice != null">
+      AND deal.price &lt;= #{maxPrice}
+    </if>
+    <if test="areaOption != null and areaOption != ''">
+      <choose>
+        <when test="areaOption == 'small'">
+          AND hd.area_max &lt;= 20
+        </when>
+        <when test="areaOption == 'medium'">
+          AND hd.area_min &gt;= 20 AND hd.area_max &lt;= 30
+        </when>
+        <when test="areaOption == 'large'">
+          AND hd.area_min &gt;= 30 AND hd.area_max &lt;= 40
+        </when>
+        <when test="areaOption == 'xlarge'">
+          AND hd.area_min &gt;= 40
+        </when>
+      </choose>
+    </if>
   </select>
 </mapper>
