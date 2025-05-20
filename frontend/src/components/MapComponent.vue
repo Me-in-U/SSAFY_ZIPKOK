@@ -61,6 +61,11 @@
 <script setup>
 import { ref, onMounted, watch, toRefs } from 'vue'
 import axios from 'axios'
+import sido from '@/assets/geojson/sido.json'
+import gwangju from '@/assets/geojson/29_Gwangju.json'
+import sigungu from '@/assets/geojson/sigungu.json'
+import emd from '@/assets/geojson/emd.json'
+import * as turf from '@turf/turf'
 
 // emit props
 const emit = defineEmits(['select-property'])
@@ -85,6 +90,10 @@ const favoriteOverlays = ref([])
 const searchMarkers = ref([])
 const searchOverlays = ref([])
 const selectedMapType = ref('roadmap')
+const sidoPolygons = ref([])
+const sigunguPolygons = ref([])
+const emdPolygons = ref([])
+const infoOverlay = ref(null)
 
 // onMounted
 onMounted(loadKakaoMap)
@@ -126,13 +135,38 @@ function initMap() {
     center: new window.kakao.maps.LatLng(37.54336, 127.01908),
     level: 5,
   })
+  // 첫 렌더
+  drawByZoom(mapInstance.value.getLevel())
 
   // base 마커 불러오기
   fetchBase()
   window.kakao.maps.event.addListener(mapInstance.value, 'idle', fetchBase)
+
+  // 줌이 바뀔 때마다
+  window.kakao.maps.event.addListener(mapInstance.value, 'zoom_changed', () => {
+    drawByZoom(mapInstance.value.getLevel())
+    // console.log('[줌 변경]', mapInstance.value.getLevel())
+  })
+
+  // 3) 팬·드래그(=idle) 이후에도 다시 그리기
+  window.kakao.maps.event.addListener(mapInstance.value, 'idle', () =>
+    drawByZoom(mapInstance.value.getLevel()),
+  )
+
   // 맵이 준비되자마자 즐겨찾기 로드
   loadFavorites(favoriteSeqs.value)
+
   // 현재 위치 가져오기
+  getMyLocation()
+
+  infoOverlay.value = new window.kakao.maps.CustomOverlay({
+    yAnchor: 1.3,
+    zIndex: 999,
+  })
+  infoOverlay.value.setMap(mapInstance.value)
+}
+
+function getMyLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -140,13 +174,20 @@ function initMap() {
         const userLatLng = new window.kakao.maps.LatLng(latitude, longitude)
 
         // 1) 사용자 위치 마커
-        new window.kakao.maps.Marker({
+        const html = `
+          <div class="my-loc-overlay">
+            <div class="pulse"></div>
+            <div class="dot"></div>
+          </div>
+        `
+        const overlay = new window.kakao.maps.CustomOverlay({
           position: userLatLng,
-          map: mapInstance.value,
-          title: '현재 위치',
-          clickable: false,
+          content: html,
+          yAnchor: 0.5,
+          xAnchor: 0.5,
           zIndex: 10,
         })
+        overlay.setMap(mapInstance.value)
         mapInstance.value.setCenter(userLatLng)
         console.log('[현재 위치] 위도:', latitude, '경도:', longitude)
       },
@@ -160,6 +201,191 @@ function initMap() {
       },
     )
   }
+}
+
+// geojson 들을 한데 모아 놓고
+const allGeoJSON = { sido, gwangju, sigungu, emd }
+
+// 각 geojson type 별로 feature별 bbox 생성
+const featureBBoxes = {}
+for (const [key, geojson] of Object.entries(allGeoJSON)) {
+  featureBBoxes[key] = geojson.features.map((feat) => turf.bbox(feat)) // [minX,minY,maxX,maxY]
+}
+
+function inViewport(bbox, bounds) {
+  const [minLng, minLat, maxLng, maxLat] = bbox
+  return !(
+    maxLat < bounds.getSouthWest().getLat() ||
+    minLat > bounds.getNorthEast().getLat() ||
+    maxLng < bounds.getSouthWest().getLng() ||
+    minLng > bounds.getNorthEast().getLng()
+  )
+}
+
+function drawByZoom(level) {
+  // clear old
+  sidoPolygons.value.forEach((p) => p.setMap(null))
+  sigunguPolygons.value.forEach((p) => p.setMap(null))
+  emdPolygons.value.forEach((p) => p.setMap(null))
+  sidoPolygons.value = []
+  sigunguPolygons.value = []
+  emdPolygons.value = []
+
+  const bounds = mapInstance.value.getBounds()
+  if (level >= 10) {
+    // 시도 + 광주
+    ;[
+      ['sido', { strokeColor: '#888', fillColor: '#ee7777', zIndex: 0 }],
+      [
+        'gwangju',
+        { strokeColor: '#888', fillColor: 'rgba(0, 0, 0, 0.0)', zIndex: 2, fillOpacity: 0 },
+      ],
+    ].forEach(([key, style]) => {
+      allGeoJSON[key].features.forEach((feat, i) => {
+        if (!inViewport(featureBBoxes[key][i], bounds)) return
+        drawSingleFeature(feat, style, 'sido')
+      })
+    })
+  } else if (level >= 8) {
+    // 시도 + 광주
+    ;[
+      [
+        'sido',
+        {
+          strokeColor: '#ff2222',
+          fillColor: 'rgba(0, 0, 0, 0.0)',
+          zIndex: 0,
+          fillOpacity: 0,
+          strokeWeight: 3,
+        },
+      ],
+      [
+        'gwangju',
+        {
+          strokeColor: '#ff2222',
+          fillColor: 'rgba(0, 0, 0, 0.0)',
+          zIndex: 2,
+          fillOpacity: 0,
+          strokeWeight: 3,
+        },
+      ],
+    ].forEach(([key, style]) => {
+      allGeoJSON[key].features.forEach((feat, i) => {
+        if (!inViewport(featureBBoxes[key][i], bounds)) return
+        drawSingleFeature(feat, style, 'sido')
+      })
+    })
+    // 시군구
+    allGeoJSON.sigungu.features.forEach((feat, i) => {
+      if (!inViewport(featureBBoxes.sigungu[i], bounds)) return
+      drawSingleFeature(
+        feat,
+        { strokeColor: '#888', fillColor: '#ee7777', zIndex: 5, fillOpacity: 0.1 },
+        'sigungu',
+      )
+    })
+  } else {
+    // 시군구
+    allGeoJSON.sigungu.features.forEach((feat, i) => {
+      if (!inViewport(featureBBoxes.sigungu[i], bounds)) return
+      drawSingleFeature(
+        feat,
+        {
+          strokeColor: '#ff2222',
+          fillColor: '#ee7777',
+          zIndex: 6,
+          fillOpacity: 0.01,
+          strokeWeight: 3,
+        },
+        'sigungu',
+      )
+    })
+    // EMD (읍·면·동)
+    allGeoJSON.emd.features.forEach((feat, i) => {
+      if (!inViewport(featureBBoxes.emd[i], bounds)) return
+      drawSingleFeature(
+        feat,
+        {
+          strokeColor: '#888',
+          fillColor: '#ee7777',
+          zIndex: 10,
+          fillOpacity: 0.1,
+          strokeWeight: 1.5,
+        },
+        'emd',
+      )
+    })
+  }
+}
+
+function drawSingleFeature(feat, style, where) {
+  const coords = feat.geometry.coordinates
+  const rings = feat.geometry.type === 'Polygon' ? [coords] : coords
+  rings.forEach((pg) =>
+    pg.forEach((ring) => {
+      const path = ring.map(([lng, lat]) => new window.kakao.maps.LatLng(lat, lng))
+      const orig = style.fillOpacity ?? 0.1
+      const hover = Math.min(orig + 0.2, 1)
+      const poly = new window.kakao.maps.Polygon({
+        map: mapInstance.value,
+        path,
+        strokeWeight: style.strokeWeight ?? 2,
+        strokeColor: style.strokeColor,
+        strokeOpacity: 0.8,
+        fillColor: style.fillColor,
+        fillOpacity: orig,
+        zIndex: style.zIndex,
+      })
+      window.kakao.maps.event.addListener(poly, 'mouseover', () =>
+        poly.setOptions({ fillOpacity: hover }),
+      )
+      window.kakao.maps.event.addListener(poly, 'mouseout', () =>
+        poly.setOptions({ fillOpacity: orig }),
+      )
+      window.kakao.maps.event.addListener(poly, 'click', () => {
+        // 클릭된 폴리곤 전체 경계 생성
+        const bounds = new window.kakao.maps.LatLngBounds()
+        path.forEach((pt) => bounds.extend(pt))
+
+        // SW, NE 가져와서 중간 좌표 계산
+        const sw = bounds.getSouthWest()
+        const ne = bounds.getNorthEast()
+        const center = new window.kakao.maps.LatLng(
+          (sw.getLat() + ne.getLat()) / 2,
+          (sw.getLng() + ne.getLng()) / 2,
+        )
+
+        // 3) 부드럽게 이동
+        mapInstance.value.panTo(center)
+      })
+
+      // 마우스 포인터 위에 이름 오버레이
+      window.kakao.maps.event.addListener(poly, 'mousemove', (mouseEvent) => {
+        let name = ''
+        if (where === 'sido') name = feat.properties.CTP_KOR_NM
+        else if (where === 'sigungu') name = feat.properties.SIG_KOR_NM
+        else if (where === 'emd') name = feat.properties.EMD_KOR_NM
+
+        infoOverlay.value.setContent(
+          `<div style="padding:4px 8px; background:rgba(0,0,0,0.6); color:white; border-radius:4px; font-size:12px;">
+              ${name}
+            </div>`,
+        )
+
+        // 2) 지도에 붙이고 위치 갱신
+        infoOverlay.value.setMap(mapInstance.value)
+        infoOverlay.value.setPosition(mouseEvent.latLng)
+      })
+
+      window.kakao.maps.event.addListener(poly, 'mouseout', () => {
+        infoOverlay.value.setMap(null)
+      })
+
+      if (where === 'sido') sidoPolygons.value.push(poly)
+      else if (where === 'sigungu') sigunguPolygons.value.push(poly)
+      else if (where === 'emd') emdPolygons.value.push(poly)
+    }),
+  )
 }
 
 // 기본 매물
@@ -396,12 +622,55 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style>
 html,
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
+}
+/* CustomOverlay content */
+.my-loc-overlay {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.my-loc-overlay .dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  background: #00bb73;
+  border: 2px solid white;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.my-loc-overlay .pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: rgba(0, 255, 76, 0.3);
+  animation: pulse 1.5s ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(8);
+    opacity: 0;
+  }
 }
 </style>
