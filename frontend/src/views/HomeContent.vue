@@ -136,10 +136,10 @@ function handleSelectProperty(house) {
 async function onToggleFavorite(aptSeq) {
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
-    await axios.delete(`/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs = userStore.favoriteSeqs.filter((seq) => seq !== aptSeq)
   } else {
-    await axios.post(`/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs.push(aptSeq)
   }
 }
