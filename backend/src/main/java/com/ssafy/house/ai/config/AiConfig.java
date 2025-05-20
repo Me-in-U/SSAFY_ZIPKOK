@@ -33,11 +33,11 @@ public class AiConfig {
     ChatClient advisedChatClient(ChatClient.Builder builder, ChatMemory chatMemory, HouseTools houseTools) {
         return builder
                 .defaultSystem(systemPrompt)
-                // .defaultAdvisors(
-                // // 1) 요청·응답 로그(properties에서 log.level 설정)
-                // new SimpleLoggerAdvisor(Ordered.LOWEST_PRECEDENCE - 1),
-                // // 2) 대화 메모리 관리
-                // MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .defaultAdvisors(
+                        // 1) 요청·응답 로그(properties에서 log.level 설정)
+                        new SimpleLoggerAdvisor(Ordered.LOWEST_PRECEDENCE - 1),
+                        // 2) 대화 메모리 관리
+                        MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
     }
 }
