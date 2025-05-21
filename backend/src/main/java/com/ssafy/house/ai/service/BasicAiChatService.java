@@ -12,8 +12,6 @@ import com.ssafy.house.ai.tools.DateTimeTools;
 import com.ssafy.house.ai.tools.HouseTools;
 import com.ssafy.house.ai.tools.MemberTools;
 import com.ssafy.house.model.dto.ChatResponseDto;
-import com.ssafy.house.model.dto.HouseInfo;
-import com.ssafy.house.model.service.HouseInfoService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
