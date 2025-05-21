@@ -5,6 +5,7 @@ import HomeContent from '@/views/HomeContent.vue'
 import LoginForm from '@/components/LoginForm.vue'
 import RegisterForm from '@/components/RegisterForm.vue'
 import RecommendedPropertiesModal from '@/components/RecommendedPropertiesModal.vue'
+import MyPage from '@/views/MyPage.vue'
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,5 +29,15 @@ export default createRouter({
         },
       ],
     },
+    {
+      path: '/mypage',
+      component: MyPage,
+      children: [
+        {
+          path: '',
+          component: MyPage,
+        }
+      ]
+    }
   ],
 })
