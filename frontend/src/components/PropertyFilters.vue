@@ -116,7 +116,7 @@
   })
 
   // emit 정의
-  const emit = defineEmits(['filter-change', 'move-to'])
+  const emit = defineEmits(['filter-change', 'move-to', 'toggle-base', 'toggle-favorite', 'toggle-search'])
 
   const searchQuery = ref('')
   const showAdvanced = ref(false)
