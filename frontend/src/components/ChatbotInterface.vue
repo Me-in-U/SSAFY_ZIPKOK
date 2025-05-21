@@ -148,8 +148,8 @@
         </div>
       </div>
 
-      <!-- 추천 질문 -->
-      <!-- <div v-if="messages.length <= 1 && !isTyping" class="px-4 py-2 border-t">
+      <!-- 추천 질문: API 응답 후 관련 질문이 있을 때만 출력 -->
+      <div v-if="suggestedQuestions.length > 0 && !isTyping" class="px-4 py-2 border-t bg-white">
         <p class="text-sm text-gray-500 mb-2">추천 질문:</p>
         <div class="flex flex-wrap gap-2">
           <button
@@ -161,7 +161,7 @@
             {{ question }}
           </button>
         </div>
-      </div> -->
+      </div>
 
       <!-- 입력창 -->
       <div class="p-4 border-t flex-none bg-white">
@@ -211,6 +211,7 @@ const inputMessage = ref('')
 const messages = ref([])
 const isTyping = ref(false)
 const messagesContainer = ref(null)
+const suggestedQuestions = ref([])
 
 // onMounted
 onMounted(() => clearChat())
@@ -240,10 +241,13 @@ async function sendMessage() {
     // 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
     const result = await res.json()
     console.log('[Chat Result]', result)
-    const { message, aptSeqList } = result
+    const { message, aptSeqList, relatedQuestionList } = result
 
     // 채팅에는 message 만 보여주기
     messages.value.push({ content: message, sender: 'bot' })
+
+    // 추천 질문 세팅
+    suggestedQuestions.value = relatedQuestionList || []
 
     // 부모(App.vue)로 검색 결과 전달
     if (aptSeqList.length > 0) {
@@ -273,6 +277,10 @@ function clearChat() {
       options: ['투자 추천 매물 보여줘', '요즘 부동산 시장 어때?', '투자 수익률 높은 지역은?'],
     },
   ]
+}
+function quickReply(text) {
+  inputMessage.value = text
+  sendMessage()
 }
 
 function scrollToBottom() {
