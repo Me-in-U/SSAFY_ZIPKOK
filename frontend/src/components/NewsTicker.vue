@@ -8,7 +8,7 @@
           rel="noopener noreferrer"
           class="hover:underline"
         >
-          {{ news.title }}
+          {{ decodeHtml(news.title) }}
         </a>
       </li>
     </ul>
@@ -18,7 +18,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useNewsStore } from '@/stores/news'
-
+import { decodeHtml } from '@/utils/html'
 // 스토어
 const newsStore = useNewsStore()
 
