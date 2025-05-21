@@ -246,7 +246,9 @@ async function sendMessage() {
     messages.value.push({ content: message, sender: 'bot' })
 
     // 부모(App.vue)로 검색 결과 전달
-    emit('search-houses', aptSeqList || [])
+    if (aptSeqList.length > 0) {
+      emit('search-houses', aptSeqList || [])
+    }
   } catch (error) {
     console.error('[Chat Error]', error)
     messages.value.push({
