@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full rounded-lg shadow overflow-hidden">
+  <div class="relative w-full rounded-lg shadow-lg overflow-hidden">
     <!-- Kakao Maps -->
     <div ref="mapContainer" id="map" class="w-full h-full relative overflow-hidden z-0"></div>
 

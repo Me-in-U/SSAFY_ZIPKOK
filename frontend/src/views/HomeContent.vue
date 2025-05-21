@@ -1,29 +1,55 @@
 <template>
-  <main class="container mx-auto px-4 mt-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-4">
-    <!-- 사이드바 -->
-    <div :class="showDetailInfo ? 'w-2/5 min-w-[220px] rounded-lg bg-white shadow-lg' : 'w-0'"
-      class="transition-[width] duration-300 ease-in-out overflow-hidden">
-      <PropertyDetailsSidebar v-if="showDetailInfo" :aptSeq="selectedAptSeq" :isOpen="showDetailInfo"
-        :is-favorite="userStore.favoriteSeqs.includes(selectedAptSeq)" @close="showDetailInfo = false"
-        @toggle-favorite="onToggleFavorite" />
+  <main class="container mx-auto mt-3 pb-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-3.5">
+    <!-- 왼쪽 사이드바 -->
+    <div
+      :class="showDetailInfo ? 'w-2/5 min-w-[220px] rounded-lg bg-white shadow-lg' : 'w-0'"
+      class="transition-[width] duration-300 ease-in-out overflow-hidden"
+    >
+      <PropertyDetailsSidebar
+        v-if="showDetailInfo"
+        :aptSeq="selectedAptSeq"
+        :isOpen="showDetailInfo"
+        :is-favorite="userStore.favoriteSeqs.includes(selectedAptSeq)"
+        @close="showDetailInfo = false"
+        @toggle-favorite="onToggleFavorite"
+      />
     </div>
 
-    <!-- 지도 -->
-    <section :class="showDetailInfo ? 'w-4/5' : 'w-full'"
-      class="transition-all duration-300 min-w-[320px] ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5">
-      <PropertyFilters :no-results="!isLoading && searchResults.length === 0 && hasSearched"
-        :show-base="showBaseMarkers" :show-favorite="showFavoriteMarkers" :show-search="showSearchMarkers"
-        @filter-change="handleFilterChange" @move-to="handleMoveTo" @toggle-base="showBaseMarkers = !showBaseMarkers"
+    <!-- 중간영역 -->
+    <section
+      :class="showDetailInfo ? 'w-4/5' : 'w-full'"
+      class="transition-all duration-300 min-w-[320px] ease-in-out flex flex-col rounded-lg overflow-hidden space-y-4"
+    >
+      <!-- 상세 필터 -->
+      <PropertyFilters
+        :no-results="!isLoading && searchResults.length === 0 && hasSearched"
+        :show-base="showBaseMarkers"
+        :show-favorite="showFavoriteMarkers"
+        :show-search="showSearchMarkers"
+        @filter-change="handleFilterChange"
+        @move-to="handleMoveTo"
+        @toggle-base="showBaseMarkers = !showBaseMarkers"
         @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
-        @toggle-search="showSearchMarkers = !showSearchMarkers" />
-
-      <MapComponent ref="mapRef" :properties="filteredProperties" :search-results="searchResults"
-        :favorite-seqs="userStore.favoriteSeqs" :show-base="showBaseMarkers" :show-favorite="showFavoriteMarkers"
-        :show-search="showSearchMarkers" @select-property="handleSelectProperty" class="flex-1" />
+        @toggle-search="showSearchMarkers = !showSearchMarkers"
+      />
+      <!-- 지도 -->
+      <MapComponent
+        ref="mapRef"
+        :properties="filteredProperties"
+        :search-results="searchResults"
+        :favorite-seqs="userStore.favoriteSeqs"
+        :show-base="showBaseMarkers"
+        :show-favorite="showFavoriteMarkers"
+        :show-search="showSearchMarkers"
+        @select-property="handleSelectProperty"
+        class="flex-1"
+      />
     </section>
 
-    <!-- 챗봇 -->
-    <aside class="flex-shrink-0 w-1/5 min-w-[180px] overflow-auto shadow-lg">
+    <!-- 오른쪽 챗봇 -->
+    <aside
+      class="flex-shrink-0 flex flex-col w-1/5 min-w-[180px] overflow-auto shadow-lg rounded-lg"
+    >
       <ChatbotInterface class="h-full" @search-houses="onSearchHouses" />
     </aside>
   </main>
@@ -76,23 +102,33 @@ const userStore = useUserStore()
 const filteredProperties = computed(() =>
   properties.value.filter((p) => {
     // (기존 로직 유지)
-    if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType) return false
+    if (activeFilters.value.propertyType && p.type !== activeFilters.value.propertyType)
+      return false
     if (activeFilters.value.dealType && p.dealType !== activeFilters.value.dealType) return false
     const [minP, maxP] = activeFilters.value.priceRange
     if (p.priceValue < minP * 1e8 || p.priceValue > maxP * 1e8) return false
     if (activeFilters.value.area) {
-      const minA = p.sizeValue, maxA = p.sizeValue
+      const minA = p.sizeValue,
+        maxA = p.sizeValue
       switch (activeFilters.value.area) {
-        case 'small': if (maxA > 20) return false; break
-        case 'medium': if (minA < 20 || maxA > 30) return false; break
-        case 'large': if (minA < 30 || maxA > 40) return false; break
-        case 'xlarge': if (minA < 40) return false; break
+        case 'small':
+          if (maxA > 20) return false
+          break
+        case 'medium':
+          if (minA < 20 || maxA > 30) return false
+          break
+        case 'large':
+          if (minA < 30 || maxA > 40) return false
+          break
+        case 'xlarge':
+          if (minA < 40) return false
+          break
       }
     }
     if (activeFilters.value.builtYear && p.buildYear < Number(activeFilters.value.builtYear))
       return false
     return true
-  })
+  }),
 )
 
 // 지역 필터로 지도 이동
@@ -106,7 +142,7 @@ watch(
   () => {
     if (rawSearchResults.value.length) applyDetailedFilters()
   },
-  { deep: true }
+  { deep: true },
 )
 
 async function handleFilterChange(filters) {
@@ -132,10 +168,7 @@ async function handleFilterChange(filters) {
   // 3) 마커 전용 API 호출
   let list = []
   try {
-    const res = await axios.get(
-      'http://localhost:8080/api/v1/house/search/markers',
-      { params }
-    )
+    const res = await axios.get('http://localhost:8080/api/v1/house/search/markers', { params })
     list = Array.isArray(res.data) ? res.data : []
   } catch (e) {
     console.error('검색(markers) 오류', e)
@@ -157,28 +190,35 @@ async function handleFilterChange(filters) {
   }
 }
 
-
 // client-side 상세 필터 함수
 function applyDetailedFilters() {
   let filtered = rawSearchResults.value
   if (activeFilters.value.propertyType)
-    filtered = filtered.filter(h => h.propertyType === activeFilters.value.propertyType)
+    filtered = filtered.filter((h) => h.propertyType === activeFilters.value.propertyType)
   if (activeFilters.value.dealType)
-    filtered = filtered.filter(h => h.dealType === activeFilters.value.dealType)
+    filtered = filtered.filter((h) => h.dealType === activeFilters.value.dealType)
 
   const [minP, maxP] = activeFilters.value.priceRange
-  filtered = filtered.filter(h => h.latestPrice >= minP * 1e8 && h.latestPrice <= maxP * 1e8)
+  filtered = filtered.filter((h) => h.latestPrice >= minP * 1e8 && h.latestPrice <= maxP * 1e8)
 
   if (activeFilters.value.area) {
     switch (activeFilters.value.area) {
-      case 'small': filtered = filtered.filter(h => h.areaMax <= 20); break
-      case 'medium': filtered = filtered.filter(h => h.areaMin >= 20 && h.areaMax <= 30); break
-      case 'large': filtered = filtered.filter(h => h.areaMin >= 30 && h.areaMax <= 40); break
-      case 'xlarge': filtered = filtered.filter(h => h.areaMin >= 40); break
+      case 'small':
+        filtered = filtered.filter((h) => h.areaMax <= 20)
+        break
+      case 'medium':
+        filtered = filtered.filter((h) => h.areaMin >= 20 && h.areaMax <= 30)
+        break
+      case 'large':
+        filtered = filtered.filter((h) => h.areaMin >= 30 && h.areaMax <= 40)
+        break
+      case 'xlarge':
+        filtered = filtered.filter((h) => h.areaMin >= 40)
+        break
     }
   }
   if (activeFilters.value.builtYear)
-    filtered = filtered.filter(h => h.buildYear >= Number(activeFilters.value.builtYear))
+    filtered = filtered.filter((h) => h.buildYear >= Number(activeFilters.value.builtYear))
 
   searchResults.value = filtered
   showSearchMarkers.value = filtered.length > 0
@@ -201,7 +241,7 @@ async function onToggleFavorite(aptSeq) {
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
     await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
-    userStore.favoriteSeqs = userStore.favoriteSeqs.filter(s => s !== aptSeq)
+    userStore.favoriteSeqs = userStore.favoriteSeqs.filter((s) => s !== aptSeq)
   } else {
     await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs.push(aptSeq)
