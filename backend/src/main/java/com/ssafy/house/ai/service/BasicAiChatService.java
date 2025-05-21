@@ -40,8 +40,7 @@ public class BasicAiChatService implements AiChatService {
         String json = advisedChatClient
                 .prompt()
                 .system(c -> c.param("language", "Korean").param("character", "Chill한"))
-                .user(userInput
-                        + "몇개 찾았는지 message 필드에 알려줘" + "\n\n" + format)
+                .user(userInput + "\n\n" + format)
                 .tools(houseTools)
                 .tools(dateTimeTools)
                 .tools(memberTools)
