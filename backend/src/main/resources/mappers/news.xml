@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.house.model.dao.NewsDao">
+
+    <select id="selectLatest" parameterType="int" resultType="com.ssafy.house.model.dto.News">
+        SELECT
+            id,
+            title,
+            originallink,
+            naverlink,
+            description,
+            pub_date AS pubDate
+        FROM real_estate_news
+        ORDER BY pub_date DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+</mapper>
