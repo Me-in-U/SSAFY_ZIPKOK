@@ -29,16 +29,39 @@
       </button>
     </div>
 
-    <!-- 3. 제어 버튼 -->
-    <div class="flex items-center gap-2 mb-4">
-      <span v-if="props.noResults" class="text-red-600 mr-auto text-sm"> 검색결과가 없습니다. 필터 초기화를 누르고 다시 검색해주세요!! </span>
-      <button @click="showAdvanced = !showAdvanced"
-        class="px-3 py-1 border border-emerald-600 text-emerald-600 rounded hover:bg-emerald-50 transition">
-        {{ showAdvanced ? '필터 접기' : '상세 필터 보기' }}
-      </button>
-      <button @click="resetFilters" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-        필터 초기화
-      </button>
+    <!-- 3. 제어 버튼 (고정 레이아웃) -->
+    <div class="relative mb-4 h-8">
+      <!-- (왼쪽) 검색결과 없음 메시지 -->
+      <span v-if="noResults" class="absolute left-0 top-1/2 -translate-y-1/2 text-red-600 text-sm">
+        검색결과가 없습니다.<br>
+        필터 초기화를 눌러 다시 검색해주세요!
+      </span>
+
+      <!-- (오른쪽) 버튼 그룹 -->
+      <div class="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        <button @click="showAdvanced = !showAdvanced"
+          class="px-3 py-1 border border-emerald-600 text-emerald-600 rounded hover:bg-emerald-50 transition">
+          {{ showAdvanced ? '필터 접기' : '상세 필터 보기' }}
+        </button>
+        <button @click="resetFilters" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+          필터 초기화
+        </button>
+        <button @click="$emit('toggle-base')"
+          :class="showBase ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+          class="px-3 py-1 rounded transition">
+          기본 {{ showBase ? '숨기기' : '보기' }}
+        </button>
+        <button @click="$emit('toggle-favorite')"
+          :class="showFavorite ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+          class="px-3 py-1 rounded transition">
+          즐겨찾기 {{ showFavorite ? '숨기기' : '보기' }}
+        </button>
+        <button @click="$emit('toggle-search')"
+          :class="showSearch ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+          class="px-3 py-1 rounded transition">
+          검색 {{ showSearch ? '숨기기' : '보기' }}
+        </button>
+      </div>
     </div>
 
     <!-- 4. 상세 필터 -->
@@ -84,8 +107,12 @@
   import VueSlider from 'vue-slider-component'
   import 'vue-slider-component/theme/default.css'
 
+  // eslint-disable-next-line no-unused-vars
   const props = defineProps({
-    noResults:Boolean
+    noResults:Boolean,
+    showBase: Boolean,
+    showFavorite: Boolean,
+    showSearch: Boolean,
   })
 
   // emit 정의

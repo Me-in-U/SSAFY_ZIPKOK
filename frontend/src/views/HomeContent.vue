@@ -11,27 +11,11 @@
     <!-- 지도 -->
     <section :class="showDetailInfo ? 'w-4/5' : 'w-full'"
       class="transition-all duration-300 min-w-[320px] ease-in-out flex flex-col rounded-lg overflow-hidden space-y-5">
-      <PropertyFilters :no-results="!isLoading && searchResults.length === 0 && hasSearched" @filter-change="handleFilterChange"
-        @move-to="handleMoveTo" />
-
-      <!-- 토글 버튼 그룹 -->
-      <div class="flex justify-end space-x-2 mb-2 px-2">
-        <button @click="showBaseMarkers = !showBaseMarkers"
-          :class="showBaseMarkers ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-3 py-1 rounded">
-          기본 {{ showBaseMarkers ? '숨기기' : '보기' }}
-        </button>
-        <button @click="showFavoriteMarkers = !showFavoriteMarkers"
-          :class="showFavoriteMarkers ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-3 py-1 rounded">
-          즐겨찾기 {{ showFavoriteMarkers ? '숨기기' : '보기' }}
-        </button>
-        <button @click="showSearchMarkers = !showSearchMarkers"
-          :class="showSearchMarkers ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-3 py-1 rounded">
-          검색 {{ showSearchMarkers ? '숨기기' : '보기' }}
-        </button>
-      </div>
+      <PropertyFilters :no-results="!isLoading && searchResults.length === 0 && hasSearched"
+        :show-base="showBaseMarkers" :show-favorite="showFavoriteMarkers" :show-search="showSearchMarkers"
+        @filter-change="handleFilterChange" @move-to="handleMoveTo" @toggle-base="showBaseMarkers = !showBaseMarkers"
+        @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
+        @toggle-search="showSearchMarkers = !showSearchMarkers" />
 
       <MapComponent ref="mapRef" :properties="filteredProperties" :search-results="searchResults"
         :favorite-seqs="userStore.favoriteSeqs" :show-base="showBaseMarkers" :show-favorite="showFavoriteMarkers"
