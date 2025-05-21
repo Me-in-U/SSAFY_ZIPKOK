@@ -3,6 +3,7 @@ package com.ssafy.house.model.dao;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -53,8 +54,8 @@ public interface HouseInfoDao {
             @Param("gugun") String gugun,
             @Param("dong") String dong,
             @Param("aptNm") String aptNm) throws SQLException;
-    // houseFullInfo 조합 검색    
-    List<HouseFullInfo> searchFullInfoByOptionsAndName(
+    // 1) Seq 리스트만 가져오기
+    List<String> searchSeqByOptionsAndName( 
         @Param("partialName") String partialName,
         @Param("sido") String sido,
         @Param("gugun") String gugun,
@@ -64,10 +65,12 @@ public interface HouseInfoDao {
         @Param("builtYear") Integer builtYear,
         @Param("minPrice") Long minPrice,
         @Param("maxPrice") Long maxPrice,
-        @Param("areaOption") String areaOption) throws SQLException;  
-
+        @Param("areaOption") String areaOption
+    ) throws SQLException;
     // HouseFullInfo 전체 조회
     HouseFullInfo selectHouseFullInfo(@Param("aptSeq") String aptSeq) throws SQLException;
+    //마커용 조회
+    List<HouseInfo> searchMarkersByOptionsAndName(Map<String, Object> params) throws SQLException;
 
     // 주변 학교 조회
     List<SchoolInfo> selectSchoolsByAptSeq(@Param("aptSeq") String aptSeq) throws SQLException;

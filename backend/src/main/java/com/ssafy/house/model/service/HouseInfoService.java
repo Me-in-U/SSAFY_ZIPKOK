@@ -3,6 +3,7 @@ package com.ssafy.house.model.service;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import com.ssafy.house.model.dto.HouseFullInfo;
 import com.ssafy.house.model.dto.HouseInfo;
@@ -28,20 +29,10 @@ public interface HouseInfoService {
 
     List<String> findByOptionsAndAptName(
             String sido, String gugun, String dong, String aptNm) throws SQLException;
-
-    List<HouseFullInfo> searchFullInfoByOptionsAndName(
-                String partialName,
-                String sido,
-                String gugun,
-                String dong,
-                String propertyType,
-                String dealType,
-                Integer builtYear,
-                Long minPrice,
-                Long maxPrice,
-                String areaOption) throws SQLException;   
-                 
+                
     HouseFullInfo getHouseFullInfo(String aptSeq) throws SQLException;
+
+    List<HouseInfo> getMarkerHouses(Map<String, Object> params) throws SQLException;
 
     List<SchoolInfo> getSchoolsByAptSeq(String aptSeq) throws SQLException;
 
