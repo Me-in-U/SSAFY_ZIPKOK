@@ -2,6 +2,7 @@ package com.ssafy.house.model.service;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -66,35 +67,15 @@ public class HouseInfoServiceImpl implements HouseInfoService {
             String sido, String gugun, String dong, String aptNm) throws SQLException {
         return dao.findByOptionsAndAptName(sido, gugun, dong, aptNm);
     }
-    @Override
-    public List<HouseFullInfo> searchFullInfoByOptionsAndName(
-        String partialName,
-        String sido,
-        String gugun,
-        String dong,
-        String propertyType,
-        String dealType,
-        Integer builtYear,
-        Long minPrice,
-        Long maxPrice,
-        String areaOption
-    ) throws SQLException {
-        // 와일드카드
-        String kw = "%" + (partialName == null ? "" : partialName) + "%";
-        // 호출
-        return dao.searchFullInfoByOptionsAndName(
-            kw, sido, gugun, dong,
-            propertyType, dealType,
-            builtYear,
-            minPrice, maxPrice,
-            areaOption
-        );
-    }
+
     @Override
     public HouseFullInfo getHouseFullInfo(String aptSeq) throws SQLException {
         return dao.selectHouseFullInfo(aptSeq);
     }
-
+    @Override
+    public List<HouseInfo> getMarkerHouses(Map<String, Object> params) throws SQLException {
+        return dao.searchMarkersByOptionsAndName(params);
+    }
     @Override
     public List<SchoolInfo> getSchoolsByAptSeq(String aptSeq) throws SQLException {
         return dao.selectSchoolsByAptSeq(aptSeq);
