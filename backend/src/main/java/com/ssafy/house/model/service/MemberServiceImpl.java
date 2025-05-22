@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.house.exception.RecordNotFoundException;
 import com.ssafy.house.model.dao.MemberDao;
@@ -34,8 +35,12 @@ public class MemberServiceImpl implements MemberService {
 
     // 2. 회원정보 수정
     @Override
+    @Transactional
     public void update(Member member) throws SQLException {
-        memberDao.update(member);
+        int updated = memberDao.update(member);
+        if (updated != 1) {
+            throw new IllegalStateException("회원 정보 업데이트가 정상 처리되지 않았습니다. updated=" + updated);
+        }
     }
 
     // 3. 회원탈퇴

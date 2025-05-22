@@ -191,6 +191,7 @@ async function handleLogin() {
       const { token, user } = res.data.data
       userStore.setUser({ user, token })
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      await userStore.loadFavorites()
       emit('login-success')
       console.log('[로그인 성공]:', res.data)
       router.back()

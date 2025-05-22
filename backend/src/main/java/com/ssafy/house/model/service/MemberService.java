@@ -36,4 +36,5 @@ public interface MemberService {
     void removeFavorite(int mno, String aptSeq) throws SQLException;
 
     List<HouseRecommend> getFavorites(int mno) throws SQLException;
+
 }

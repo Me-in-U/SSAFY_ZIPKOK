@@ -16,12 +16,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.house.Security.JwtUtil;
 import com.ssafy.house.model.dto.Member;
+import com.ssafy.house.model.dto.MemberUpdateDto;
 import com.ssafy.house.model.service.MemberService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +41,7 @@ import lombok.RequiredArgsConstructor;
         "http://172.22.16.1:5173/", "http://localhost:8080/" })
 @Tag(name = "AuthRestController", description = "로그인 인증 관련 기능 제공")
 public class AuthRestController implements RestControllerHelper {
-    private final MemberService mService;
+    private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private Logger logger = LoggerFactory.getLogger(AuthRestController.class);
@@ -52,7 +54,7 @@ public class AuthRestController implements RestControllerHelper {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     public ResponseEntity<?> login(@RequestBody Member m) {
-        Member user = mService.selectByEmail(m.getEmail());
+        Member user = memberService.selectByEmail(m.getEmail());
         if (user == null ||
                 !passwordEncoder.matches(m.getPassword(), user.getPassword())) {
             return handleFail(new RuntimeException("Invalid credentials"),
@@ -74,7 +76,7 @@ public class AuthRestController implements RestControllerHelper {
     private ResponseEntity<?> registMember(@RequestBody Member member) throws SQLException {
         try {
             member.setPassword(passwordEncoder.encode(member.getPassword()));
-            mService.insert(member);
+            memberService.insert(member);
             return handleSuccess(Map.of("member", member), HttpStatus.CREATED);
         } // 중복 키(Unique constraint) 위반 시 409 Conflict
         catch (DataIntegrityViolationException e) {
@@ -89,34 +91,44 @@ public class AuthRestController implements RestControllerHelper {
         }
     }
 
-    @PostMapping("/reset-password")
-    @Operation(summary = "비밀번호 초기화", description = "이메일로 비밀번호를 초기화하고 임시 비밀번호를 반환한다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "초기화 성공"),
-            @ApiResponse(responseCode = "404", description = "회원 없음"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        try {
-            Member member = mService.selectByEmail(email);
-            if (member == null) {
-                return handleFail(
-                        new RuntimeException("Member not found"),
-                        HttpStatus.NOT_FOUND);
-            }
-            // 임시 비밀번호 생성 (예: 8자리 랜덤 알파벳+숫자)
-            String tempPwd = RandomStringUtils.randomAlphanumeric(8);
-            // BCryptPasswordEncoder 등으로 암호화 후 저장
-            member.setPassword(passwordEncoder.encode(tempPwd));
-            mService.update(member);
-            return handleSuccess(
-                    Map.of(
-                            "email", email,
-                            "temporaryPassword", tempPwd));
-        } catch (DataAccessException | SQLException e) {
-            return handleFail(e);
+    @PutMapping("/update")
+    public ResponseEntity<?> updateMember(@RequestBody MemberUpdateDto dto, Authentication authentication)
+            throws SQLException {
+        // 1) 토큰에서 이메일 꺼내기
+        String email = authentication.getName();
+        logger.warn("Current user email: {}", email);
+        // 2) DB에서 Member 조회
+        Member existing = memberService.selectByEmail(email);
+        if (existing == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAIL", "message", "회원 정보가 없습니다."));
         }
+
+        // 3) 현재 비밀번호 검증 및 새 비밀번호 설정
+        logger.warn("Current password: {}", dto.getCurrentPassword());
+        logger.warn("New password: {}", dto.getNewPassword());
+        logger.warn("Current password hash: {}", existing.getPassword());
+        logger.warn("New password hash: {}", passwordEncoder.encode(dto.getNewPassword()));
+        logger.warn("Password matches: {}", passwordEncoder.matches(dto.getCurrentPassword(), existing.getPassword()));
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+            if (dto.getCurrentPassword() == null ||
+                    !passwordEncoder.matches(dto.getCurrentPassword(), existing.getPassword())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("status", "FAIL", "message", "현재 비밀번호가 일치하지 않습니다."));
+            }
+            existing.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        }
+
+        // 4) 이름 변경
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            existing.setName(dto.getName());
+        }
+
+        // 5) 저장
+        memberService.update(existing);
+
+        // 6) 응답
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "user", existing));
     }
 
     @GetMapping("/me")
@@ -126,7 +138,7 @@ public class AuthRestController implements RestControllerHelper {
         logger.info("Current authentication: {}", auth);
         String email = auth.getName();
         logger.info("Current user email: {}", email);
-        Member member = mService.selectByEmail(email);
+        Member member = memberService.selectByEmail(email);
         logger.info("Current user info: {}", member);
         if (member == null) {
             // 인증은 되었지만 DB에 회원 정보가 없을 때
