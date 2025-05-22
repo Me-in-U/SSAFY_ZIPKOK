@@ -6,13 +6,22 @@ import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.model.tool.DefaultToolCallingManager;
+import org.springframework.ai.model.tool.ToolCallingManager;
+import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.ai.tool.metadata.ToolMetadata;
+import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.util.ReflectionUtils;
 
+import com.ssafy.house.ai.tools.DateTimeTools;
 import com.ssafy.house.ai.tools.HouseTools;
+import com.ssafy.house.ai.tools.MemberTools;
 
 @Configuration
 public class AiConfig {
@@ -39,5 +48,10 @@ public class AiConfig {
                         // 2) 대화 메모리 관리
                         MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
+    }
+
+    @Bean
+    public ToolCallingManager toolCallingManager() {
+        return DefaultToolCallingManager.builder().build();
     }
 }

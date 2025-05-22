@@ -32,6 +32,13 @@ public class HouseTools {
         }
     }
 
+    @Tool(description = "시도(sido)로 아파트 검색 (부분 매칭)")
+    public List<String> searchBySido(
+            @ToolParam(description = "시도 이름 일부") String sido) throws SQLException {
+        logger.warn("searchBySido called with sido={}", sido);
+        return houseInfoService.findBySido(sido);
+    }
+
     @Tool(description = "시도(sido), 구군(gugun)으로 아파트 검색 (부분 매칭)")
     public List<String> searchByGugun(
             @ToolParam(description = "시도 이름 일부") String sido,

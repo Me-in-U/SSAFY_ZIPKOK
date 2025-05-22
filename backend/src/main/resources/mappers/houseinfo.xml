@@ -5,34 +5,30 @@
 <mapper namespace="com.ssafy.house.model.dao.HouseInfoDao">
   <!-- resultMap -->
   <resultMap id="houseInfoMap" type="com.ssafy.house.model.dto.HouseInfo">
-    <id     column="apt_seq"            property="aptSeq"/>
-    <result column="sgg_cd"             property="sggCd"/>
-    <result column="umd_cd"             property="umdCd"/>
-    <result column="umd_nm"             property="umdNm"/>
-    <result column="jibun"              property="jibun"/>
-    <result column="road_nm_sgg_cd"     property="roadNmSggCd"/>
-    <result column="road_nm"            property="roadNm"/>
-    <result column="road_nm_bonbun"     property="roadNmBonbun"/>
-    <result column="road_nm_bubun"      property="roadNmBubun"/>
-    <result column="apt_nm"             property="aptNm"/>
-    <result column="build_year"         property="buildYear"/>
-    <result column="latitude"           property="latitude"/>
-    <result column="longitude"          property="longitude"/>
+    <id column="apt_seq" property="aptSeq"/>
+    <result column="sgg_cd" property="sggCd"/>
+    <result column="umd_cd" property="umdCd"/>
+    <result column="umd_nm" property="umdNm"/>
+    <result column="jibun" property="jibun"/>
+    <result column="road_nm_sgg_cd" property="roadNmSggCd"/>
+    <result column="road_nm" property="roadNm"/>
+    <result column="road_nm_bonbun" property="roadNmBonbun"/>
+    <result column="road_nm_bubun" property="roadNmBubun"/>
+    <result column="apt_nm" property="aptNm"/>
+    <result column="build_year" property="buildYear"/>
+    <result column="latitude" property="latitude"/>
+    <result column="longitude" property="longitude"/>
   </resultMap>
 
   <!-- 1) 단일 조회 -->
-  <select id="selectHouseInfo"
-          parameterType="string"
-          resultMap="houseInfoMap">
+  <select id="selectHouseInfo" parameterType="string" resultMap="houseInfoMap">
     SELECT *
     FROM house_info
     WHERE apt_seq = #{aptSeq}
   </select>
 
   <!-- 2) 범위 조회 -->
-  <select id="selectByBounds"
-          parameterType="map"
-          resultMap="houseInfoMap">
+  <select id="selectByBounds" parameterType="map" resultMap="houseInfoMap">
     SELECT *
     FROM house_info
     WHERE latitude  BETWEEN #{minLat} AND #{maxLat}
@@ -40,38 +36,38 @@
   </select>
 
   <!-- 3) 리스트 조회 -->
-  <select id="selectBySeqList"
-          parameterType="list"
-          resultMap="houseInfoMap">
+  <select id="selectBySeqList" parameterType="list" resultMap="houseInfoMap">
     SELECT *
     FROM house_info
     WHERE apt_seq IN
-      <foreach item="seq" collection="list" open="(" separator="," close=")">
+    <foreach item="seq" collection="list" open="(" separator="," close=")">
         #{seq}
-      </foreach>
+    </foreach>
   </select>
 
   <!-- 4-1) 아파트명 일부 검색 -->
-  <select id="searchByAptName"
-          parameterType="string"
-          resultType="string">
+  <select id="searchByAptName" parameterType="string" resultType="string">
     SELECT DISTINCT apt_seq
     FROM house_info
     WHERE apt_nm LIKE #{partialName}
   </select>
 
   <!-- 4-2) 아파트명 일부 검색 -->
-  <select id="searchByName"
-          parameterType="string"
-          resultType="com.ssafy.house.model.dto.HouseInfo">
+  <select id="searchByName" parameterType="string" resultType="com.ssafy.house.model.dto.HouseInfo">
     SELECT *
     FROM house_info
     WHERE apt_nm LIKE #{partialName}
   </select>
+  <!-- 5) 시도 검색 -->
+  <select id="findBySido" parameterType="map" resultType="string">
+    SELECT DISTINCT hi.apt_seq
+    FROM house_info hi
+    JOIN dong_code dc
+      ON LEFT(dc.dong_code,5) = hi.sgg_cd
+    WHERE dc.sido_name  LIKE CONCAT('%', #{sido}, '%')
+  </select>
   <!-- 5) 시도+구군 검색 -->
-  <select id="findBySidoGugun"
-          parameterType="map"
-          resultType="string">
+  <select id="findBySidoGugun" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
@@ -81,9 +77,7 @@
   </select>
 
   <!-- 6) 시도+구군+동 검색 -->
-  <select id="findBySidoGugunDong"
-          parameterType="map"
-          resultType="string">
+  <select id="findBySidoGugunDong" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
@@ -95,9 +89,7 @@
   </select>
 
   <!-- 7) 조합 검색 -->
-  <select id="findByOptions"
-          parameterType="map"
-          resultType="string">
+  <select id="findByOptions" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
@@ -115,9 +107,7 @@
   </select>
 
   <!-- 8) 조합 + 아파트명 -->
-  <select id="findByOptionsAndAptName"
-          parameterType="map"
-          resultType="string">
+  <select id="findByOptionsAndAptName" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
@@ -132,35 +122,33 @@
     <if test="dong != null">
       AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
     </if>
-    </select>
-    
-    <!-- 9) full info 매핑 -->
-    <resultMap id="houseFullInfoMap" type="com.ssafy.house.model.dto.HouseFullInfo">
-    <id     column="apt_seq"               property="aptSeq"/>
-    <result column="apt_nm"                property="aptNm"/>
-    <result column="latitude"           property="latitude"/>
-    <result column="longitude"          property="longitude"/>
-    <result column="road_address"          property="roadAddress"/>
-    <result column="jibun"                 property="jibunAddress"/>
-    <result column="build_year"            property="buildYear"/>
-    <result column="area_min"              property="areaMin"/>
-    <result column="area_max"              property="areaMax"/>
-    <result column="trade_price_min"       property="tradePriceMin"/>
-    <result column="trade_price_max"       property="tradePriceMax"/>
-    <result column="jeonse_price_min"      property="jeonsePriceMin"/>
-    <result column="jeonse_price_max"      property="jeonsePriceMax"/>
-    <result column="last_trade_detail"     property="lastTradeDetail"/>
-    <result column="img_path"              property="imgPath"/>
-    <result column="latest_price"          property="latestPrice"/>
-    <result column="latest_spec"           property="latestSpec"/>
-    <result column="latest_property_type"  property="propertyType"/>
-    <result column="latest_description"    property="description"/>
-    </resultMap>
+  </select>
 
-    <!-- 10) 아파트 상세정보 -->
-    <select id="selectHouseFullInfo"
-            parameterType="string"
-            resultMap="houseFullInfoMap">
+  <!-- 9) full info 매핑 -->
+  <resultMap id="houseFullInfoMap" type="com.ssafy.house.model.dto.HouseFullInfo">
+    <id column="apt_seq" property="aptSeq"/>
+    <result column="apt_nm" property="aptNm"/>
+    <result column="latitude" property="latitude"/>
+    <result column="longitude" property="longitude"/>
+    <result column="road_address" property="roadAddress"/>
+    <result column="jibun" property="jibunAddress"/>
+    <result column="build_year" property="buildYear"/>
+    <result column="area_min" property="areaMin"/>
+    <result column="area_max" property="areaMax"/>
+    <result column="trade_price_min" property="tradePriceMin"/>
+    <result column="trade_price_max" property="tradePriceMax"/>
+    <result column="jeonse_price_min" property="jeonsePriceMin"/>
+    <result column="jeonse_price_max" property="jeonsePriceMax"/>
+    <result column="last_trade_detail" property="lastTradeDetail"/>
+    <result column="img_path" property="imgPath"/>
+    <result column="latest_price" property="latestPrice"/>
+    <result column="latest_spec" property="latestSpec"/>
+    <result column="latest_property_type" property="propertyType"/>
+    <result column="latest_description" property="description"/>
+  </resultMap>
+
+  <!-- 10) 아파트 상세정보 -->
+  <select id="selectHouseFullInfo" parameterType="string" resultMap="houseFullInfoMap">
     SELECT
         hi.apt_seq,
         hi.apt_nm,
@@ -208,13 +196,13 @@
         ON deal.apt_seq = hi.apt_seq
     WHERE hi.apt_seq = #{aptSeq}
     LIMIT 1
-    </select>
+  </select>
 
-    <!-- 11) 주변 학교 매핑 -->
+  <!-- 11) 주변 학교 매핑 -->
   <resultMap id="schoolInfoMap" type="com.ssafy.house.model.dto.SchoolInfo">
     <result column="school_name" property="schoolName"/>
     <result column="school_type" property="schoolType"/>
-    <result column="distance"    property="distance"/>
+    <result column="distance" property="distance"/>
   </resultMap>
   <select id="selectSchoolsByAptSeq" parameterType="string" resultMap="schoolInfoMap">
     SELECT
@@ -227,9 +215,7 @@
     ORDER BY CAST(SUBSTRING_INDEX(distance,'분',1) AS UNSIGNED)
   </select>
   <!-- 12) 마커 표시용 경량 쿼리 -->
-  <select id="searchMarkersByOptionsAndName"
-          parameterType="map"
-          resultType="com.ssafy.house.model.dto.HouseInfo">
+  <select id="searchMarkersByOptionsAndName" parameterType="map" resultType="com.ssafy.house.model.dto.HouseInfo">
     SELECT
       hi.apt_seq    AS aptSeq,
       hi.apt_nm     AS aptNm,
@@ -237,7 +223,7 @@
       hi.longitude  AS longitude
     FROM house_info hi
 
-    <!-- 시·군·구 코드 매칭 -->
+                <!-- 시·군·구 코드 매칭 -->
     LEFT JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
 
