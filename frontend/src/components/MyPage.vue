@@ -293,7 +293,7 @@ onMounted(async () => {
     if (!userStore.profile?.mno) await userStore.fetchUser()
     const mno = userStore.profile.mno
     // 백엔드에서 HouseInfo 리스트 가져오기
-    const res = await axios.get(`http://localhost:8080/api/v1/members/${mno}/favorites`)
+    const res = await axios.get(`https://api.ssafy.blog/api/v1/members/${mno}/favorites`)
     console.log('favorites API response:', res.data)
     favorites.value = res.data.data.result
     console.log('favorites.value set:', favorites.value)
@@ -312,7 +312,7 @@ async function updateProfile() {
       currentPassword: form.currentPassword,
       newPassword: form.newPassword, // ← 이 필드에 제대로 값이 실립니다
     }
-    await axios.put('http://localhost:8080/api/v1/members', payload)
+    await axios.put('https://api.ssafy.blog/api/v1/members', payload)
     alert('회원 정보가 수정되었습니다.')
     userStore.profile.name = form.name
     // 비밀번호 필드 초기화

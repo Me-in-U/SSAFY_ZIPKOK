@@ -3,7 +3,6 @@ package com.ssafy.house.model.service;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;

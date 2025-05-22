@@ -60,7 +60,7 @@
 </template>
 <script setup>
 import { ref, onMounted, watch, toRefs } from 'vue'
-import { useRoute } from 'vue-router' 
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import sido from '@/assets/geojson/sido.json'
 import gwangju from '@/assets/geojson/29_Gwangju.json'
@@ -564,8 +564,8 @@ watch(
   async (aptSeq) => {
     if (!aptSeq || !mapInstance.value) return
     try {
-      const { data: list } = await axios.get('http://localhost:8080/api/v1/house/batch', {
-        params: { seqs: aptSeq }
+      const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
+        params: { seqs: aptSeq },
       })
       console.log('단일 매물 좌표 조회', list)
       const house = Array.isArray(list) ? list[0] : null
@@ -574,7 +574,7 @@ watch(
       console.error('단일 매물 좌표 조회 실패', err)
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // 지도 이동 헬퍼
@@ -587,7 +587,6 @@ function panToCoords({ latitude, longitude }) {
   mapInstance.value.setCenter(pos)
   mapInstance.value.setLevel(5)
 }
-
 
 // 검색 결과 마커 클릭 시
 function createMarker(position, house) {

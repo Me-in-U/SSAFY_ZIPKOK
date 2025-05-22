@@ -8,9 +8,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import com.ssafy.house.model.dao.SidogunguDao;
-import com.ssafy.house.model.dto.Dong;
-import com.ssafy.house.model.dto.Gugun;
-import com.ssafy.house.model.dto.Sido;
 
 @Service
 @RequiredArgsConstructor

@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.house.exception.RecordNotFoundException;
 import com.ssafy.house.model.dao.MemberDao;
 import com.ssafy.house.model.dao.MemberFavoriteDao;
-import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;

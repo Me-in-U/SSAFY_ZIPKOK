@@ -3,7 +3,6 @@ package com.ssafy.house.restcontroller;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -16,14 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.house.Security.JwtUtil;
 import com.ssafy.house.model.dto.Member;
-import com.ssafy.house.model.dto.MemberUpdateDto;
 import com.ssafy.house.model.service.MemberService;
 
 import io.swagger.v3.oas.annotations.Operation;

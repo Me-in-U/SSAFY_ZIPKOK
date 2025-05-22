@@ -41,7 +41,7 @@ export const useUserStore = defineStore('user', {
       // 즐겨찾기 불러오기 액션
       if (!this.profile) return
       const { mno } = this.profile
-      const { data } = await axios.get(`http://localhost:8080/api/v1/members/${mno}/favorites`, {
+      const { data } = await axios.get(`https://api.ssafy.blog/api/v1/members/${mno}/favorites`, {
         headers: { Authorization: `Bearer ${this.token}` },
       })
       this.favoriteSeqs = data.data.result.map((item) => item.aptSeq)
