@@ -21,7 +21,6 @@
       FROM ssafyproj.house_deal
       WHERE price IS NOT NULL
       GROUP BY apt_seq
-      /* ORDER BY, LIMIT 제거! */
     ) p
     JOIN (
       SELECT apt_seq, MIN(img_path) AS img_path

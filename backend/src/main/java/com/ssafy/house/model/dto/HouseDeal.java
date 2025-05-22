@@ -14,7 +14,7 @@ public class HouseDeal {
     private Integer dealId;
     private String aptSeq;
     private String listingName;
-    private String tradeType;
+    private String dealType;
     private long price;
     private String propertyType;
     private String spec;

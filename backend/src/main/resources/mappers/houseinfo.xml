@@ -142,6 +142,9 @@
     <result column="last_trade_detail" property="lastTradeDetail"/>
     <result column="img_path" property="imgPath"/>
     <result column="latest_price" property="latestPrice"/>
+    <result column="deal_type" property="dealType"/>
+    <result column="deposit" property="deposit"/>
+    <result column="monthly_rent" property="monthlyRent"/>
     <result column="latest_spec" property="latestSpec"/>
     <result column="latest_property_type" property="propertyType"/>
     <result column="latest_description" property="description"/>
@@ -168,7 +171,10 @@
         deal.price           AS latest_price,
         deal.spec            AS latest_spec,
         deal.property_type   AS latest_property_type,
-        deal.description     AS latest_description
+        deal.description     AS latest_description,
+        deal.trade_type         AS deal_type,    
+        deal.deposit            AS deposit,             
+        deal.monthly_rent       AS monthly_rent
     FROM house_info hi
     LEFT JOIN house_detail hd
         ON hd.apt_seq = hi.apt_seq
@@ -183,7 +189,10 @@
                 hd1.price,
                 hd1.spec,
                 hd1.property_type,
-                hd1.description
+                hd1.description,
+                hd1.trade_type,     
+                hd1.deposit,        
+                hd1.monthly_rent   
         FROM house_deal hd1
         JOIN (
         SELECT apt_seq, MAX(confirmed_at) AS max_dt
