@@ -8,10 +8,17 @@
     </insert>
 
     <!-- 2. 회원정보 수정 -->
-    <update id="update"> 
-        update member 
-        set name=#{name}, password=#{password}
-        where email=#{email} 
+    <update id="update" parameterType="com.ssafy.house.model.dto.Member">
+    UPDATE member
+        <set>
+            <if test="name != null">
+        name = #{name},
+            </if>
+            <if test="password != null and password != ''">
+        password = #{password},
+            </if>
+        </set>
+    WHERE mno = #{mno}
     </update>
 
     <!-- 3. 회원탈퇴 -->
