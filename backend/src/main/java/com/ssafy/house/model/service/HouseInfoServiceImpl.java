@@ -47,6 +47,12 @@ public class HouseInfoServiceImpl implements HouseInfoService {
         String keyword = "%" + partialName + "%";
         return dao.searchByName(keyword);
     }
+
+    @Override
+    public List<String> findBySido(String sido) throws SQLException {
+        return dao.findBySido(sido);
+    }
+
     @Override
     public List<String> findBySidoGugun(String sido, String gugun) throws SQLException {
         return dao.findBySidoGugun(sido, gugun);
@@ -72,10 +78,12 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     public HouseFullInfo getHouseFullInfo(String aptSeq) throws SQLException {
         return dao.selectHouseFullInfo(aptSeq);
     }
+
     @Override
     public List<HouseInfo> getMarkerHouses(Map<String, Object> params) throws SQLException {
         return dao.searchMarkersByOptionsAndName(params);
     }
+
     @Override
     public List<SchoolInfo> getSchoolsByAptSeq(String aptSeq) throws SQLException {
         return dao.selectSchoolsByAptSeq(aptSeq);

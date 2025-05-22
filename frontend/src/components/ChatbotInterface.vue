@@ -247,7 +247,8 @@ async function sendMessage() {
 
   try {
     // API 호출
-    const res = await fetch('http://localhost:8080/ai/house', {
+    //const res = await fetch('http://localhost:8080/ai/house', {
+    const res = await fetch('http://localhost:8080/ai/user-controlled', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: sanitizedText }),
@@ -260,7 +261,7 @@ async function sendMessage() {
     // 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
     const result = await res.json()
     console.log('[Chat Result]', result)
-    const { message, aptSeqList, relatedQuestionList } = result
+    const { message, toolResultList, relatedQuestionList } = result
 
     // 채팅에는 message 만 보여주기
     messages.value.push({
@@ -271,8 +272,8 @@ async function sendMessage() {
     })
 
     // 부모(App.vue)로 검색 결과 전달
-    if (aptSeqList.length > 0) {
-      emit('search-houses', aptSeqList || [])
+    if (toolResultList.length > 0) {
+      emit('search-houses', toolResultList || [])
     }
   } catch (error) {
     console.error('[Chat Error]', error)

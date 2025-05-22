@@ -1,6 +1,7 @@
 package com.ssafy.house.ai.controller;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.house.ai.service.AiChatService;
 import com.ssafy.house.model.dto.ChatResponseDto;
+import com.ssafy.house.model.dto.CustomChatResponseDto;
 import com.ssafy.house.restcontroller.RestControllerHelper;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,17 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AIChatController implements RestControllerHelper {
     private final AiChatService chatService;
 
-    @PostMapping("/chat")
-    @Operation(summary = "잡다한 기능이 있는 Tool API", description = "잡다한 기능이 있는 Chat API")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "도구 생성 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    ResponseEntity<?> toolMemberGeneration(@RequestBody Map<String, String> userInput) {
-        Object result = chatService.chatToolGeneration(userInput.get("message"));
-        return handleSuccess(Map.of("message", result));
-    }
+    private org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AIChatController.class);
 
     @PostMapping("/house")
     @Operation(summary = "아파트 정보를 관리하는 AI TOOL Chat API", description = "아파트 정보를 관리하는 Chat API")
@@ -55,6 +47,13 @@ public class AIChatController implements RestControllerHelper {
     ResponseEntity<ChatResponseDto> toolHouseGeneration(
             @RequestBody Map<String, String> body) {
         ChatResponseDto dto = chatService.houseToolGeneration(body.get("message"));
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/user-controlled")
+    @Operation(summary = "아파트 정보, 멤버, 시간 등을 관리하는 Chat API", description = "아파트 정보, 멤버, 시간 등을 관리하는 Chat API")
+    public ResponseEntity<?> userControlledChat(@RequestBody Map<String, String> body) {
+        CustomChatResponseDto dto = chatService.userControlledChat(body.get("message"));
         return ResponseEntity.ok(dto);
     }
 }
