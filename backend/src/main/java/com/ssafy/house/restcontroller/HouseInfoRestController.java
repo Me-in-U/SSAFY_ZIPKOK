@@ -11,10 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.ssafy.house.model.dto.HouseDealDone;
 import com.ssafy.house.model.dto.HouseFullInfo;
 import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.SchoolInfo;
+import com.ssafy.house.model.service.HouseDealsDoneService;
 import com.ssafy.house.model.service.HouseInfoService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/house")
@@ -26,10 +30,10 @@ import com.ssafy.house.model.service.HouseInfoService;
         "http://api.ssafy.blog",
         "http://192.168.204.108:5173/",
         "http://172.22.16.1:5173/" })
+@RequiredArgsConstructor
 public class HouseInfoRestController {
-
-    @Autowired
-    private HouseInfoService service;
+    private final HouseInfoService service;
+    private final HouseDealsDoneService dealsService;
 
     // 1) 단일 조회 (기존)
     @GetMapping("/{aptSeq}")
@@ -57,11 +61,13 @@ public class HouseInfoRestController {
             @RequestParam String partialName) throws SQLException {
         return ResponseEntity.ok(service.searchByAptName(partialName));
     }
+
     // 3-2) 이름 일부 검색 (검색창용)
     @GetMapping("/search/name/apt")
     public ResponseEntity<List<HouseInfo>> searchByName(@RequestParam String partialName) throws SQLException {
-    return ResponseEntity.ok(service.searchByName(partialName));
+        return ResponseEntity.ok(service.searchByName(partialName));
     }
+
     // 4) 복수 조회 (기존)
     @GetMapping("/batch")
     public ResponseEntity<List<HouseInfo>> getBySeqList(
@@ -70,10 +76,10 @@ public class HouseInfoRestController {
         List<HouseInfo> list = service.getHouseInfoBySeqList(seqList);
         return ResponseEntity.ok(list);
     }
-    
+
     /**
      * 6) 아파트 상세 정보 조회
-     *    house_info + house_detail + 대표이미지 + 최신 거래를 모두 묶어서 반환
+     * house_info + house_detail + 대표이미지 + 최신 거래를 모두 묶어서 반환
      */
     @GetMapping("/{aptSeq}/detail")
     public ResponseEntity<HouseFullInfo> getFullInfo(@PathVariable String aptSeq) throws Exception {
@@ -85,7 +91,7 @@ public class HouseInfoRestController {
 
     /**
      * 7) 해당 아파트의 학교 리스트 조회
-     *    school_detail 과 house_school 을 조인해 반환
+     * school_detail 과 house_school 을 조인해 반환
      */
     @GetMapping("/{aptSeq}/schools")
     public ResponseEntity<List<SchoolInfo>> getSchools(@PathVariable String aptSeq) throws Exception {
@@ -95,13 +101,18 @@ public class HouseInfoRestController {
 
     /**
      * 8) 지도 마커용 아파트 리스트 조회
-     *    검색어 + 지역 + 거래유형 + 매물유형 + 가격범위 + 면적옵션 조합으로 조회
+     * 검색어 + 지역 + 거래유형 + 매물유형 + 가격범위 + 면적옵션 조합으로 조회
      */
     @GetMapping("/search/markers")
     public ResponseEntity<List<HouseInfo>> searchMarkers(
-        @RequestParam Map<String, String> allParams
-    ) throws SQLException {
+            @RequestParam Map<String, String> allParams) throws SQLException {
         List<HouseInfo> markers = service.getMarkerHouses(new HashMap<>(allParams));
         return ResponseEntity.ok(markers);
+    }
+
+    @GetMapping("/{aptSeq}/dealsDone")
+    public ResponseEntity<List<HouseDealDone>> getDeals(@PathVariable String aptSeq) {
+        List<HouseDealDone> deals = dealsService.getDealsByAptSeq(aptSeq);
+        return ResponseEntity.ok(deals);
     }
 }

@@ -34,7 +34,9 @@
         <!-- 3) 상세 정보 -->
         <div v-else-if="detail">
           <!-- 헤더 -->
-          <div class="p-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+          <div
+            class="pt-1 pb-1 pl-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 border rounded-lg"
+          >
             <h3 class="font-semibold text-lg">{{ detail.aptNm }}</h3>
             <button class="p-2 rounded-full hover:bg-gray-100" @click="closeSidebar">
               <svg
@@ -122,7 +124,7 @@
           </div>
 
           <!-- 정보 탭 -->
-          <div v-if="activeTab === 'info'" class="space-y-4">
+          <div v-show="activeTab === 'info'" class="space-y-4">
             <div class="border rounded-md p-4">
               <h4 class="font-medium mb-2">매매·전세 범위</h4>
               <p class="text-sm">
@@ -134,10 +136,26 @@
                 {{ formatCurrency(detail.jeonsePriceMax) }}
               </p>
             </div>
+            <!-- 면적별 필터 드롭다운 -->
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-gray-700">면적 선택:</label>
+              <select v-model="areaFilter" class="border rounded px-2 py-1 text-sm">
+                <option value="all">전체</option>
+                <option v-for="ar in areaOptions" :key="ar" :value="ar">{{ ar }}㎡</option>
+              </select>
+            </div>
+
+            <!-- 거래 내역 그래프 -->
+            <div class="border rounded-md p-4 h-80 flex flex-col overflow-hidden">
+              <h4 class="font-medium mb-2">월별 매매 가격 추이</h4>
+              <div class="flex-1">
+                <canvas ref="dealsChart" class="w-full h-full"></canvas>
+              </div>
+            </div>
           </div>
 
           <!-- 학교 탭 -->
-          <div v-if="activeTab === 'schools'" class="border rounded-md p-4">
+          <div v-show="activeTab === 'schools'" class="border rounded-md p-4">
             <h4 class="font-medium mb-2">주변 학교</h4>
             <ul class="space-y-2 text-sm">
               <li v-for="(sc, idx) in schools" :key="idx" class="flex justify-between">
@@ -168,9 +186,11 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import axios from 'axios'
 import catPlaceholder from '@/assets/cat-placeholder.png'
+import { Chart, registerables } from 'chart.js'
+Chart.register(...registerables)
 
 // emit props
 const emit = defineEmits(['close', 'toggle-favorite'])
@@ -193,12 +213,22 @@ const loading = ref(false)
 const error = ref('')
 const detail = ref(null)
 const schools = ref([])
+const dealsData = ref([])
+const dealsChart = ref(null)
+const areaFilter = ref('all') // 선택된 면적 (‘all’ or 숫자)
+
+// 데이터가 바뀔 때마다 고유 면적 목록을 뽑아서 정렬
+const areaOptions = computed(() => {
+  const set = new Set(dealsData.value.map((d) => Number(d.excluUseAr)))
+  return Array.from(set).sort((a, b) => a - b)
+})
 
 // constants
 const tabs = [
   { id: 'info', name: '정보' },
   { id: 'schools', name: '학교' },
 ]
+let chartInstance = null
 
 // 사이드바 열림/닫힘 로그
 watch(
@@ -210,32 +240,114 @@ watch(
   },
 )
 
-// 데이터 fetch
 watch(
   () => props.aptSeq,
   async (seq) => {
     if (!seq) return
     loading.value = true
     error.value = ''
-    console.log('🛎️ API 호출 시작 for aptSeq=', seq)
     try {
-      const [dRes, sRes] = await Promise.all([
+      // (1) 기존 detail & schools API 호출
+      const [dRes, sRes, dealsRes] = await Promise.all([
         axios.get(`http://localhost:8080/api/v1/house/${seq}/detail`),
         axios.get(`http://localhost:8080/api/v1/house/${seq}/schools`),
+        axios.get(`http://localhost:8080/api/v1/house/${seq}/dealsDone`),
       ])
-      console.log('✅ /detail →', dRes.data)
-      console.log('✅ /schools →', sRes.data)
       detail.value = dRes.data
       schools.value = sRes.data
+      dealsData.value = dealsRes.data
     } catch (e) {
-      console.error('🔴 API 호출 오류', e)
+      console.error('🔴 API 오류', e)
       error.value = '데이터를 불러오는 중 오류가 발생했습니다.'
     } finally {
       loading.value = false
+      if (activeTab.value === 'info') {
+        await drawChart()
+      }
     }
   },
   { immediate: true },
 )
+
+// 탭이 info 로 바뀔 때
+watch([activeTab, areaFilter], ([tab]) => {
+  if (tab === 'info') {
+    drawChart()
+  }
+})
+async function drawChart() {
+  if (activeTab.value !== 'info') return
+  await nextTick()
+  const canvas = dealsChart.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (chartInstance) chartInstance.destroy()
+
+  // 전체 거래 내역 중 필터링(금액이 있는 것만)
+  const allValid = dealsData.value.filter((d) => d.dealAmount)
+
+  // (1) 공통 라벨: YYYY-MM 형태로 유니크하게 정렬
+  const allLabels = Array.from(
+    new Set(allValid.map((d) => `${d.dealYear}-${String(d.dealMonth).padStart(2, '0')}`)),
+  ).sort()
+
+  const datasets = []
+
+  if (areaFilter.value === 'all') {
+    // (2) 면적 옵션마다 데이터 생성
+    areaOptions.value.forEach((area) => {
+      const filtered = allValid.filter((d) => Number(d.excluUseAr) === area)
+      // 라벨에 맞춰 값 매핑, 없으면 null
+      const data = allLabels.map((label) => {
+        const rec = filtered.find((d) => {
+          const m = `${d.dealYear}-${String(d.dealMonth).padStart(2, '0')}`
+          return m === label
+        })
+        return rec ? Number(rec.dealAmount.replace(/,/g, '')) : null
+      })
+      datasets.push({
+        label: `${area}㎡`,
+        data,
+        fill: false,
+        tension: 0.2,
+      })
+    })
+  } else {
+    // 단일 면적 필터 모드
+    const filtered = allValid.filter((d) => Number(d.excluUseAr) === Number(areaFilter.value))
+    const data = allLabels.map((label) => {
+      const rec = filtered.find((d) => {
+        const m = `${d.dealYear}-${String(d.dealMonth).padStart(2, '0')}`
+        return m === label
+      })
+      return rec ? Number(rec.dealAmount.replace(/,/g, '')) : null
+    })
+    datasets.push({
+      label: `${areaFilter.value}㎡ 거래가`,
+      data,
+      fill: false,
+      tension: 0.2,
+    })
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets,
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          title: { display: true, text: '거래 월' },
+        },
+        y: { title: { display: true, text: '가격(만원)' } },
+      },
+    },
+  })
+}
 
 function closeSidebar() {
   emit('close')
@@ -258,24 +370,6 @@ function formatCurrency(val) {
 
   return `${eok > 0 ? eok + '억' : ''}${man > 0 ? man + '만' : ''}${remainder != 0 ? remainder + '원' : '원'}`
 }
-// 아이콘 컴포넌트
-// const HomeIcon = {
-//   template: `
-//     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-//   `,
-// }
-
-// const CalendarIcon = {
-//   template: `
-//     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-//   `,
-// }
-
-// const BarChartIcon = {
-//   template: `
-//     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
-//   `,
-// }
 </script>
 
 <style scoped>

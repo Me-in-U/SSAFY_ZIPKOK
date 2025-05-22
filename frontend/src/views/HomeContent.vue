@@ -238,6 +238,7 @@ function handleSelectProperty(house) {
 
 // 즐겨찾기 토글
 async function onToggleFavorite(aptSeq) {
+  console.log('[유저 정보]: ', userStore.profile)
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
     await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)

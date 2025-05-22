@@ -12,7 +12,7 @@ axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api'
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 // 토큰이 있으면 헤더에 추가
-const token = localStorage.getItem('token')
+const token = localStorage.getItem('jwtToken')
 if (token) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
