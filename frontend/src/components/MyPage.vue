@@ -61,9 +61,10 @@
                         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div v-for="item in favorites" :key="item.aptSeq"
                                 class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition flex flex-col">
-                                <div class="h-48">
-                                    <img :src="item.imgPath || '/placeholder.svg'" alt="아파트"
-                                        class="w-full h-full object-cover" />
+                                <div class="h-48 bg-gray-50 flex items-center justify-center">
+                                    <img :src="item.imgPath || catPlaceholder" alt="아파트" class="w-full h-full" :class="item.imgPath
+                                        ? 'object-cover'
+                                        : 'object-contain p-4'" />
                                 </div>
                                 <div class="p-4 flex-1 flex flex-col">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ item.listingName }}</h3>
@@ -90,6 +91,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import axios from 'axios'
+import catPlaceholder from '@/assets/cat-placeholder.png'
 
 const router = useRouter()
 const userStore = useUserStore()
