@@ -83,7 +83,7 @@
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="flex flex-col">
               <span class="text-sm text-gray-500">가격</span>
-              <span class="font-semibold">{{ formatCurrency(detail.latestPrice) }}</span>
+              <span class="font-semibold">{{ priceDisplay }}</span>
             </div>
             <div class="flex flex-col">
               <span class="text-sm text-gray-500">면적</span>
@@ -239,6 +239,19 @@ watch(
     }
   },
 )
+// dealType 기반으로 보여줄 가격 문자열 생성
+const priceDisplay = computed(() => {
+  console.log('🟢 priceDisplay', detail.value)
+  if (!detail.value) return '-'
+  const { dealType, deposit, monthlyRent, latestPrice } = detail.value
+
+  if (dealType === '월세') {
+    // deposit: 보증금, monthlyRent: 월세
+    return `${formatCurrency(deposit)} / ${formatCurrency(monthlyRent)}`
+  }
+  // 전세나 매매는 latestPrice 필드 사용
+  return formatCurrency(latestPrice)
+})
 
 watch(
   () => props.aptSeq,
@@ -256,6 +269,7 @@ watch(
       detail.value = dRes.data
       schools.value = sRes.data
       dealsData.value = dealsRes.data
+      console.log('🟢 상세 정보', detail.value)
     } catch (e) {
       console.error('🔴 API 오류', e)
       error.value = '데이터를 불러오는 중 오류가 발생했습니다.'
