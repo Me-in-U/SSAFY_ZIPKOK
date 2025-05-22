@@ -4,9 +4,13 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
+import com.ssafy.house.model.dto.MemberUpdateDto;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
 import com.ssafy.house.model.service.MemberService;
@@ -46,8 +51,9 @@ import lombok.extern.slf4j.Slf4j;
         "http://172.22.16.1:5173/" })
 @Tag(name = "MemberRestController", description = "멤버 관련 기능 제공")
 public class MemberRestController implements RestControllerHelper {
-
-    private final MemberService mService;
+    private Logger logger = LoggerFactory.getLogger(AuthRestController.class);
+    private final MemberService memberService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/{email}")
     @Operation(summary = "회원 상세 조회", description = "회원의 상세 정보를 반환한다.")
@@ -56,7 +62,7 @@ public class MemberRestController implements RestControllerHelper {
             @ApiResponse(responseCode = "500", description = "회원 정보 조회 실패"), })
     private ResponseEntity<?> memberDetail(@PathVariable String email) throws SQLException {
         try {
-            Member member = mService.selectByEmail(email);
+            Member member = memberService.selectByEmail(email);
             if (member == null) {
                 return handleSuccess(Map.of("result", email), HttpStatus.NO_CONTENT);
             } else {
@@ -79,7 +85,7 @@ public class MemberRestController implements RestControllerHelper {
             condition.setKey(keyMap.getOrDefault(key, ""));
         }
         try {
-            Page<Member> page = mService.search(condition);
+            Page<Member> page = memberService.search(condition);
             return handleSuccess(Map.of("result", page));
         } catch (DataAccessException e) {
             return handleFail(e);
@@ -87,16 +93,43 @@ public class MemberRestController implements RestControllerHelper {
     }
 
     @PutMapping
-    @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정한다.")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "회원 정보 수정 성공"),
-            @ApiResponse(responseCode = "500", description = "회원 정보 수정 실패"), })
-    private ResponseEntity<?> memberModify(@RequestBody Member member) throws SQLException {
-        try {
-            mService.update(member);
-            return handleSuccess(Map.of("result", member));
-        } catch (DataAccessException e) {
-            return handleFail(e);
+    public ResponseEntity<?> updateMember(@RequestBody MemberUpdateDto dto, Authentication authentication)
+            throws SQLException {
+        // 1) 토큰에서 이메일 꺼내기
+        String email = authentication.getName();
+        logger.warn("Current user email: {}", email);
+        // 2) DB에서 Member 조회
+        Member existing = memberService.selectByEmail(email);
+        if (existing == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAIL", "message", "회원 정보가 없습니다."));
         }
+
+        // 3) 현재 비밀번호 검증 및 새 비밀번호 설정
+        logger.warn("Current password: {}", dto.getCurrentPassword());
+        logger.warn("New password: {}", dto.getNewPassword());
+        logger.warn("Current password hash: {}", existing.getPassword());
+        logger.warn("New password hash: {}", passwordEncoder.encode(dto.getNewPassword()));
+        logger.warn("Password matches: {}", passwordEncoder.matches(dto.getCurrentPassword(), existing.getPassword()));
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+            if (dto.getCurrentPassword() == null ||
+                    !passwordEncoder.matches(dto.getCurrentPassword(), existing.getPassword())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("status", "FAIL", "message", "현재 비밀번호가 일치하지 않습니다."));
+            }
+            existing.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        }
+
+        // 4) 이름 변경
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            existing.setName(dto.getName());
+        }
+
+        // 5) 저장
+        memberService.update(existing);
+
+        // 6) 응답
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "user", existing));
     }
 
     @DeleteMapping("/{mno}")
@@ -105,7 +138,7 @@ public class MemberRestController implements RestControllerHelper {
             @ApiResponse(responseCode = "500", description = "회원 삭제 실패"), })
     private ResponseEntity<?> memberDelete(@PathVariable Integer mno) throws SQLException {
         try {
-            mService.delete(mno);
+            memberService.delete(mno);
             return handleSuccess(Map.of("result", mno));
         } catch (DataAccessException e) {
             return handleFail(e);
@@ -122,7 +155,7 @@ public class MemberRestController implements RestControllerHelper {
             @PathVariable int mno,
             @PathVariable String aptSeq) {
         try {
-            mService.addFavorite(mno, aptSeq);
+            memberService.addFavorite(mno, aptSeq);
             return handleSuccess(Map.of("mno", mno, "aptSeq", aptSeq));
         } catch (DataAccessException | SQLException e) {
             return handleFail(e);
@@ -139,7 +172,7 @@ public class MemberRestController implements RestControllerHelper {
             @PathVariable int mno,
             @PathVariable String aptSeq) {
         try {
-            mService.removeFavorite(mno, aptSeq);
+            memberService.removeFavorite(mno, aptSeq);
             return handleSuccess(Map.of("mno", mno, "aptSeq", aptSeq));
         } catch (DataAccessException | SQLException e) {
             return handleFail(e);
@@ -154,7 +187,7 @@ public class MemberRestController implements RestControllerHelper {
     })
     public ResponseEntity<?> listFavorites(@PathVariable int mno) {
         try {
-            List<HouseRecommend> list = mService.getFavorites(mno);
+            List<HouseRecommend> list = memberService.getFavorites(mno);
             return handleSuccess(Map.of("result", list));
         } catch (DataAccessException | SQLException e) {
             return handleFail(e);

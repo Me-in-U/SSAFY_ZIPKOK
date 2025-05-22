@@ -91,46 +91,6 @@ public class AuthRestController implements RestControllerHelper {
         }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<?> updateMember(@RequestBody MemberUpdateDto dto, Authentication authentication)
-            throws SQLException {
-        // 1) 토큰에서 이메일 꺼내기
-        String email = authentication.getName();
-        logger.warn("Current user email: {}", email);
-        // 2) DB에서 Member 조회
-        Member existing = memberService.selectByEmail(email);
-        if (existing == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", "FAIL", "message", "회원 정보가 없습니다."));
-        }
-
-        // 3) 현재 비밀번호 검증 및 새 비밀번호 설정
-        logger.warn("Current password: {}", dto.getCurrentPassword());
-        logger.warn("New password: {}", dto.getNewPassword());
-        logger.warn("Current password hash: {}", existing.getPassword());
-        logger.warn("New password hash: {}", passwordEncoder.encode(dto.getNewPassword()));
-        logger.warn("Password matches: {}", passwordEncoder.matches(dto.getCurrentPassword(), existing.getPassword()));
-        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
-            if (dto.getCurrentPassword() == null ||
-                    !passwordEncoder.matches(dto.getCurrentPassword(), existing.getPassword())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("status", "FAIL", "message", "현재 비밀번호가 일치하지 않습니다."));
-            }
-            existing.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-        }
-
-        // 4) 이름 변경
-        if (dto.getName() != null && !dto.getName().isBlank()) {
-            existing.setName(dto.getName());
-        }
-
-        // 5) 저장
-        memberService.update(existing);
-
-        // 6) 응답
-        return ResponseEntity.ok(Map.of("status", "SUCCESS", "user", existing));
-    }
-
     @GetMapping("/me")
     @Operation(summary = "현재 로그인한 회원 정보 조회")
     public ResponseEntity<?> me() {
