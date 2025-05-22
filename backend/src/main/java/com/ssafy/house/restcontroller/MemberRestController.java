@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
@@ -153,7 +154,7 @@ public class MemberRestController implements RestControllerHelper {
     })
     public ResponseEntity<?> listFavorites(@PathVariable int mno) {
         try {
-            List<HouseInfo> list = mService.getFavorites(mno);
+            List<HouseRecommend> list = mService.getFavorites(mno);
             return handleSuccess(Map.of("result", list));
         } catch (DataAccessException | SQLException e) {
             return handleFail(e);

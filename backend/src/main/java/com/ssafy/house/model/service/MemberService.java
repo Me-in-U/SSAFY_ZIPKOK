@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
@@ -34,5 +35,5 @@ public interface MemberService {
 
     void removeFavorite(int mno, String aptSeq) throws SQLException;
 
-    List<HouseInfo> getFavorites(int mno) throws SQLException;
+    List<HouseRecommend> getFavorites(int mno) throws SQLException;
 }

@@ -17,11 +17,45 @@
     </delete>
 
     <!-- 3. 회원별 즐겨찾기 조회 -->
-    <select id="selectFavoritesByMember" resultType="com.ssafy.house.model.dto.HouseInfo">
-    SELECT hi.*
-      FROM house_info hi
-      JOIN member_favorite mf ON hi.apt_seq = mf.apt_seq
-     WHERE mf.mno = #{mno}
+    <select id="selectFavoritesByMember" resultType="com.ssafy.house.model.dto.HouseRecommend">
+    SELECT
+        mf.apt_seq                       AS aptSeq,
+        hi.apt_nm                        AS listingName,
+        img.img_path                     AS imgPath,
+        hd.price                         AS price,
+        hd.spec                          AS spec,
+        CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description
+    FROM member_favorite mf
+    -- 기본 아파트 정보
+    JOIN house_info hi
+      ON hi.apt_seq = mf.apt_seq
+    -- 최신 거래 정보 (confirmed_at 기준)
+    JOIN (
+        SELECT d1.apt_seq,
+                d1.listing_name,
+                d1.price,
+                d1.spec,
+                d1.description
+        FROM house_deal d1
+        JOIN (
+            SELECT apt_seq, MAX(confirmed_at) AS max_date
+            FROM house_deal
+            GROUP BY apt_seq
+        ) d2
+          ON d1.apt_seq = d2.apt_seq
+          AND d1.confirmed_at = d2.max_date
+    ) hd
+      ON hd.apt_seq = mf.apt_seq
+    -- 대표 이미지: apt_seq별 최소 id를 가진 이미지
+    LEFT JOIN (
+        SELECT hi2.apt_seq, hi2.img_path
+        FROM house_image hi2
+        WHERE hi2.id = (
+            SELECT MIN(id) FROM house_image WHERE apt_seq = hi2.apt_seq
+        )
+    ) img
+      ON img.apt_seq = mf.apt_seq
+    WHERE mf.mno = #{mno}
     </select>
 
 </mapper>
