@@ -1,7 +1,6 @@
 package com.ssafy.house.ai.controller;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,8 +33,6 @@ import lombok.extern.slf4j.Slf4j;
         "http://172.22.16.1:5173/" })
 public class AIChatController implements RestControllerHelper {
     private final AiChatService chatService;
-
-    private org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AIChatController.class);
 
     @PostMapping("/house")
     @Operation(summary = "아파트 정보를 관리하는 AI TOOL Chat API", description = "아파트 정보를 관리하는 Chat API")

@@ -8,7 +8,7 @@
       </div>
       <!-- 네비게이션 -->
       <nav class="hidden md:flex items-center space-x-6">
-        <router-link to="/analysis" class="text-gray-600 hover:text-emerald-600 font-medium"
+        <router-link to="/" class="text-gray-600 hover:text-emerald-600 font-medium"
           >투자 분석</router-link
         >
         <button
@@ -17,7 +17,7 @@
         >
           추천 매물
         </button>
-        <router-link to="/trend" class="text-gray-600 hover:text-emerald-600 font-medium"
+        <router-link to="/" class="text-gray-600 hover:text-emerald-600 font-medium"
           >시장 동향</router-link
         >
 
@@ -61,9 +61,7 @@
     <!-- 모바일 메뉴 -->
     <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
       <div class="container mx-auto px-4 py-2 space-y-2">
-        <router-link
-          to="/analysis"
-          class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+        <router-link to="/" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
           >투자 분석</router-link
         >
         <button
@@ -72,7 +70,7 @@
         >
           추천 매물
         </button>
-        <router-link to="/trend" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+        <router-link to="/" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
           >시장 동향</router-link
         >
 

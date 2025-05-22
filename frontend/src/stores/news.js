@@ -13,7 +13,7 @@ export const useNewsStore = defineStore('news', {
      */
     async fetchLatest(options = { limit: 20, offset: 0 }) {
       try {
-        const response = await axios.get('http://localhost:8080/api/v1/news/latest', {
+        const response = await axios.get('https://api.ssafy.blog/api/v1/news/latest', {
           params: {
             limit: options.limit,
             offset: options.offset || 0,
@@ -21,7 +21,7 @@ export const useNewsStore = defineStore('news', {
         })
         // 페이지별로 가져온 뉴스를 상태에 설정
         this.list = response.data.data.news
-        console.log(`뉴스 목록 (page ${options.offset / options.limit}):`, this.list)
+        // console.log(`뉴스 목록 (page ${options.offset / options.limit}):`, this.list)
       } catch (error) {
         console.error('뉴스 불러오기 실패:', error)
       }

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,16 +25,17 @@ import lombok.RequiredArgsConstructor;
         "http://localhost:5173",
         "http://localhost:5174",
         "https://ssafy.blog",
-        "https://api.ssafy.blog",
         "http://api.ssafy.blog",
-        "http://192.168.204.108:5173/",
-        "http://172.22.16.1:5173/" })
+        "http://192.168.204.108:5173",
+        "http://172.22.16.1:5173",
+        "http://localhost:8080"
+}, allowedHeaders = "*", allowCredentials = "true", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 @RequiredArgsConstructor
 public class HouseInfoRestController {
     private final HouseInfoService service;
     private final HouseDealsDoneService dealsService;
 
-    // 1) 단일 조회 (기존)
+    // !단일 조회 (기존)
     @GetMapping("/{aptSeq}")
     public ResponseEntity<HouseInfo> getById(@PathVariable String aptSeq) throws Exception {
         HouseInfo info = service.getHouseInfo(aptSeq);
@@ -44,7 +44,7 @@ public class HouseInfoRestController {
                 : ResponseEntity.notFound().build();
     }
 
-    // 2) 범위 조회 (기존)
+    // !범위 조회 (지도 이동시 조회)
     @GetMapping("/search")
     public ResponseEntity<List<HouseInfo>> getByBounds(
             @RequestParam String minLat,
@@ -55,20 +55,7 @@ public class HouseInfoRestController {
         return ResponseEntity.ok(list);
     }
 
-    // 3-1) 이름 일부 검색 (챗봇용)
-    @GetMapping("/search/name")
-    public ResponseEntity<List<String>> searchByAptName(
-            @RequestParam String partialName) throws SQLException {
-        return ResponseEntity.ok(service.searchByAptName(partialName));
-    }
-
-    // 3-2) 이름 일부 검색 (검색창용)
-    @GetMapping("/search/name/apt")
-    public ResponseEntity<List<HouseInfo>> searchByName(@RequestParam String partialName) throws SQLException {
-        return ResponseEntity.ok(service.searchByName(partialName));
-    }
-
-    // 4) 복수 조회 (기존)
+    // 복수 조회 (GPT -> 검색결과 마커 or 즐겨찾기 마커 표시)
     @GetMapping("/batch")
     public ResponseEntity<List<HouseInfo>> getBySeqList(
             @RequestParam("seqs") String commaSeqs) throws Exception {
@@ -77,6 +64,7 @@ public class HouseInfoRestController {
         return ResponseEntity.ok(list);
     }
 
+    // ! 상세 조회 용도
     /**
      * 6) 아파트 상세 정보 조회
      * house_info + house_detail + 대표이미지 + 최신 거래를 모두 묶어서 반환
@@ -110,6 +98,7 @@ public class HouseInfoRestController {
         return ResponseEntity.ok(markers);
     }
 
+    // !매매 완료 그래프 용도
     @GetMapping("/{aptSeq}/dealsDone")
     public ResponseEntity<List<HouseDealDone>> getDeals(@PathVariable String aptSeq) {
         List<HouseDealDone> deals = dealsService.getDealsByAptSeq(aptSeq);

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.MemberUpdateDto;

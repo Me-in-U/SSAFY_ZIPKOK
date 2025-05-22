@@ -2,7 +2,6 @@ package com.ssafy.house.ai.tools;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

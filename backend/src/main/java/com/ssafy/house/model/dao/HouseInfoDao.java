@@ -25,34 +25,34 @@ public interface HouseInfoDao {
         // apt_seq 리스트 조회
         List<HouseInfo> selectBySeqList(List<String> aptSeqList) throws SQLException;
 
-        // 아파트명 일부 검색
+        // 아파트명 일부 검색(GPT)
         List<String> searchByAptName(@Param("partialName") String partialName) throws SQLException;
 
-        // 아파트명 일부 검색
+        // 아파트명 일부 검색(GPT)
         List<HouseInfo> searchByName(@Param("partialName") String partialName) throws SQLException;
 
-        // 시도 검색
+        // 시도 검색(GPT)
         List<String> findBySido(
                         @Param("sido") String sido) throws SQLException;
 
-        // 시도+구군 검색
+        // 시도+구군 검색(GPT)
         List<String> findBySidoGugun(
                         @Param("sido") String sido,
                         @Param("gugun") String gugun) throws SQLException;
 
-        // 시도+구군+동 검색
+        // 시도+구군+동 검색(GPT)
         List<String> findBySidoGugunDong(
                         @Param("sido") String sido,
                         @Param("gugun") String gugun,
                         @Param("dong") String dong) throws SQLException;
 
-        // 조합 검색
+        // 조합 검색(GPT)
         List<String> findByOptions(
                         @Param("sido") String sido,
                         @Param("gugun") String gugun,
                         @Param("dong") String dong) throws SQLException;
 
-        // 조합 + 아파트명
+        // 조합 + 아파트명(GPT)
         List<String> findByOptionsAndAptName(
                         @Param("sido") String sido,
                         @Param("gugun") String gugun,

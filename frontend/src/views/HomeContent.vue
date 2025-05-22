@@ -168,7 +168,7 @@ async function handleFilterChange(filters) {
   // 3) 마커 전용 API 호출
   let list = []
   try {
-    const res = await axios.get('http://localhost:8080/api/v1/house/search/markers', { params })
+    const res = await axios.get('https://api.ssafy.blog/api/v1/house/search/markers', { params })
     list = Array.isArray(res.data) ? res.data : []
   } catch (e) {
     console.error('검색(markers) 오류', e)
@@ -241,10 +241,10 @@ async function onToggleFavorite(aptSeq) {
   console.log('[유저 정보]: ', userStore.profile)
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
-    await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.delete(`https://api.ssafy.blog/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs = userStore.favoriteSeqs.filter((s) => s !== aptSeq)
   } else {
-    await axios.post(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.post(`https://api.ssafy.blog/api/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs.push(aptSeq)
   }
 }
