@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.house.model.dao.HouseDealDoneDao">
+    <resultMap id="dealDoneResult" type="com.ssafy.house.model.dto.HouseDealDone">
+        <id property="no" column="no"/>
+        <result property="aptSeq" column="apt_seq"/>
+        <result property="aptDong" column="apt_dong"/>
+        <result property="floor" column="floor"/>
+        <result property="dealYear" column="deal_year"/>
+        <result property="dealMonth" column="deal_month"/>
+        <result property="dealDay" column="deal_day"/>
+        <result property="excluUseAr" column="exclu_use_ar"/>
+        <result property="dealAmount" column="deal_amount"/>
+    </resultMap>
+
+    <select id="selectDealsByAptSeq" parameterType="string" resultMap="dealDoneResult">
+    SELECT *
+      FROM house_deals_done
+     WHERE apt_seq = #{aptSeq}
+     ORDER BY deal_year, deal_month, deal_day
+    </select>
+</mapper>

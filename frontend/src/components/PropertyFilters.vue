@@ -41,11 +41,11 @@
               @keyup.enter="onSearch"
               type="text"
               placeholder=" "
-              class="h-full peer mr-3 border rounded-md focus:ring-emerald-500"
+              class="peer w-full h-full pl-3 mr-3 border rounded-md focus:outline-none focus:ring-emerald-500"
             />
             <label
               for="search"
-              class="absolute left-2 transition-all duration-200 bg-white px-1 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-emerald-600"
+              class="absolute left-2 bg-white px-1 transition-all duration-200 -top-2 text-xs text-gray-500 peer-placeholder-shown:top-2 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-emerald-600"
             >
               단지명 검색
             </label>
