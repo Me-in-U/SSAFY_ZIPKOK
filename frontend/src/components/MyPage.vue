@@ -312,7 +312,7 @@ async function updateProfile() {
       currentPassword: form.currentPassword,
       newPassword: form.newPassword, // ← 이 필드에 제대로 값이 실립니다
     }
-    await axios.put('http://localhost:8080/api/v1/members/update', payload)
+    await axios.put('http://localhost:8080/api/v1/members', payload)
     alert('회원 정보가 수정되었습니다.')
     userStore.profile.name = form.name
     // 비밀번호 필드 초기화
