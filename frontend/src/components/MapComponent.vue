@@ -60,6 +60,7 @@
 </template>
 <script setup>
 import { ref, onMounted, watch, toRefs } from 'vue'
+import { useRoute } from 'vue-router' 
 import axios from 'axios'
 import sido from '@/assets/geojson/sido.json'
 import gwangju from '@/assets/geojson/29_Gwangju.json'
@@ -68,6 +69,7 @@ import emd from '@/assets/geojson/emd.json'
 import * as turf from '@turf/turf'
 
 // emit props
+const route = useRoute()
 const emit = defineEmits(['select-property'])
 const props = defineProps({
   properties: Array, // 화면에 보여줄 주택 리스트
@@ -555,6 +557,38 @@ watch(
   },
   { immediate: true },
 )
+
+// 즐겨찾기 매물 클릭시 지도 이동 (URL detail 쿼리 감지 → batch API 호출 → panToCoords)
+watch(
+  () => route.query.detail,
+  async (aptSeq) => {
+    if (!aptSeq || !mapInstance.value) return
+    try {
+      const { data: list } = await axios.get('http://localhost:8080/api/v1/house/batch', {
+        params: { seqs: aptSeq }
+      })
+      console.log('단일 매물 좌표 조회', list)
+      const house = Array.isArray(list) ? list[0] : null
+      if (house) panToCoords(house)
+    } catch (err) {
+      console.error('단일 매물 좌표 조회 실패', err)
+    }
+  },
+  { immediate: true }
+)
+
+// 지도 이동 헬퍼
+function panToCoords({ latitude, longitude }) {
+  if (!latitude || !longitude || !mapInstance.value) return
+  const lat = parseFloat(latitude)
+  const lng = parseFloat(longitude)
+  console.log('[지도 이동] 좌표:', lat, lng)
+  const pos = new window.kakao.maps.LatLng(lat, lng)
+  mapInstance.value.setCenter(pos)
+  mapInstance.value.setLevel(5)
+}
+
+
 // 검색 결과 마커 클릭 시
 function createMarker(position, house) {
   const m = new window.kakao.maps.Marker({ position, map: mapInstance.value, zIndex: 3 })

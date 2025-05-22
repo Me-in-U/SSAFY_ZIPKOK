@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.HouseRecommend;
 
 @Mapper
 public interface MemberFavoriteDao {
@@ -16,5 +17,5 @@ public interface MemberFavoriteDao {
     int deleteFavorite(@Param("mno") int mno, @Param("aptSeq") String aptSeq);
 
     // 회원의 즐겨찾기 목록 조회 (HouseInfo 반환)
-    List<HouseInfo> selectFavoritesByMember(@Param("mno") int mno);
+    List<HouseRecommend> selectFavoritesByMember(@Param("mno") int mno);
 }

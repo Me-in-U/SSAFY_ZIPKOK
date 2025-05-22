@@ -11,6 +11,7 @@ import com.ssafy.house.exception.RecordNotFoundException;
 import com.ssafy.house.model.dao.MemberDao;
 import com.ssafy.house.model.dao.MemberFavoriteDao;
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.HouseRecommend;
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
 import com.ssafy.house.model.dto.SearchCondition;
@@ -91,7 +92,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<HouseInfo> getFavorites(int mno) throws SQLException {
+    public List<HouseRecommend> getFavorites(int mno) throws SQLException {
         return favoriteDao.selectFavoritesByMember(mno);
     }
 }
