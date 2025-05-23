@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.house.model.dao.CommunityCommentDao">
+
+  <resultMap id="CommentMap" type="com.ssafy.house.model.dto.Comment">
+    <id     property="commentId" column="comment_id"/>
+    <result property="postId"     column="post_id"/>
+    <result property="authorId"   column="author_id"/>
+    <result property="authorName"       column="author_name"/>
+    <result property="content"    column="content"/>
+    <result property="createdAt"  column="created_at"/>
+  </resultMap>
+
+    <select id="selectCommentsByPostId" parameterType="int" resultMap="CommentMap">
+    SELECT
+        c.comment_id,
+        c.post_id,
+        c.author_id,
+        m.name        AS author_name,
+        c.content,
+        c.created_at
+    FROM community_comment c
+    JOIN member m
+        ON c.author_id = m.mno
+    WHERE c.post_id = #{postId}
+    ORDER BY c.created_at ASC
+    </select>
+
+  <insert id="insertComment" parameterType="com.ssafy.house.model.dto.Comment">
+    INSERT INTO community_comment(post_id, author_id, content)
+    VALUES (#{postId}, #{authorId}, #{content})
+  </insert>
+</mapper>
