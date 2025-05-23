@@ -17,7 +17,7 @@ try:
           h.apt_seq,
           CONCAT(d.gugun_name, ' ', d.dong_name, ' ', h.apt_nm) AS full_address
         FROM house_info h
-        JOIN dongcodes d
+        JOIN dong_code d
           ON d.dong_code = CONCAT(h.sgg_cd, h.umd_cd)
         """
         cursor.execute(sql)

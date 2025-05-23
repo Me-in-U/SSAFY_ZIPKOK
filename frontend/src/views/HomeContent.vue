@@ -23,14 +23,8 @@
       <!-- 상세 필터 -->
       <PropertyFilters
         :no-results="!isLoading && searchResults.length === 0 && hasSearched"
-        :show-base="showBaseMarkers"
-        :show-favorite="showFavoriteMarkers"
-        :show-search="showSearchMarkers"
         @filter-change="handleFilterChange"
         @move-to="handleMoveTo"
-        @toggle-base="showBaseMarkers = !showBaseMarkers"
-        @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
-        @toggle-search="showSearchMarkers = !showSearchMarkers"
       />
       <!-- 지도 -->
       <MapComponent
@@ -43,6 +37,14 @@
         :show-search="showSearchMarkers"
         @select-property="handleSelectProperty"
         class="flex-1"
+      />
+      <MarkerButtons
+        :show-base="showBaseMarkers"
+        :show-favorite="showFavoriteMarkers"
+        :show-search="showSearchMarkers"
+        @toggle-base="showBaseMarkers = !showBaseMarkers"
+        @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
+        @toggle-search="showSearchMarkers = !showSearchMarkers"
       />
     </section>
 
@@ -63,6 +65,7 @@ import MapComponent from '@/components/MapComponent.vue'
 import PropertyFilters from '@/components/PropertyFilters.vue'
 import ChatbotInterface from '@/components/ChatbotInterface.vue'
 import PropertyDetailsSidebar from '@/components/PropertyDetailsSidebar.vue'
+import MarkerButtons from '@/components/MarkerButtons.vue'
 
 // 토글 상태
 const showBaseMarkers = ref(true)
