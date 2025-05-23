@@ -26,7 +26,7 @@
         @filter-change="handleFilterChange"
         @move-to="handleMoveTo"
       />
-      <!-- 지도 + 버튼 래퍼 -->
+      <!-- 지도 버튼 래퍼 -->
       <div class="relative flex-1">
         <MapComponent
           ref="mapRef"
@@ -47,9 +47,12 @@
             :show-base="showBaseMarkers"
             :show-favorite="showFavoriteMarkers"
             :show-search="showSearchMarkers"
+            :map-type="selectedMapType"
             @toggle-base="showBaseMarkers = !showBaseMarkers"
             @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
             @toggle-search="showSearchMarkers = !showSearchMarkers"
+            @toggle-maptype="handleSetMapType"
+            @zoom="handleZoom"
           />
         </div>
       </div>
@@ -78,6 +81,7 @@ import MarkerButtons from '@/components/MarkerButtons.vue'
 const showBaseMarkers = ref(true)
 const showFavoriteMarkers = ref(true)
 const showSearchMarkers = ref(false)
+const selectedMapType = ref('roadmap')
 
 // 지도 & 검색
 const mapRef = ref(null)
@@ -140,6 +144,17 @@ const filteredProperties = computed(() =>
     return true
   }),
 )
+
+function handleSetMapType(type) {
+  // MapComponent.defineExpose 로 노출된 메서드 호출
+  mapRef.value.setMapType(type)
+  selectedMapType.value = type
+}
+
+function handleZoom(dir) {
+  if (dir === 'in') mapRef.value.zoomIn()
+  else mapRef.value.zoomOut()
+}
 
 // 지역 필터로 지도 이동
 function handleMoveTo({ address }) {

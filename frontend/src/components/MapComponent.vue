@@ -4,7 +4,7 @@
     <div ref="mapContainer" id="map" class="w-full h-full relative overflow-hidden z-0"></div>
 
     <!-- 지도 타입 컨트롤 -->
-    <div
+    <!-- <div
       class="absolute top-4 right-4 z-10 flex rounded border border-gray-400 text-xs font-medium overflow-hidden"
     >
       <span
@@ -29,10 +29,10 @@
       >
         스카이뷰
       </span>
-    </div>
+    </div> -->
 
     <!-- 확대/축소 컨트롤 -->
-    <div
+    <!-- <div
       class="absolute top-[50px] right-4 z-10 flex flex-col w-9 h-[80px] bg-gray-100 rounded border border-gray-400 overflow-hidden"
     >
       <span
@@ -55,7 +55,7 @@
           class="w-4 h-4"
         />
       </span>
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup>
@@ -610,26 +610,6 @@ function createMarker(position, house) {
 // 토글만 바뀔 때 updateVisibility
 watch([showBase, showSearch, showFavorite], updateVisibility)
 
-// 지도 타입 변경
-function setMapType(type) {
-  const { MapTypeId } = window.kakao.maps
-  mapInstance.value.setMapTypeId(type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.SKYVIEW)
-  selectedMapType.value = type
-  console.log('[지도 타입 변경]:', type)
-}
-
-// 확대
-function zoomIn() {
-  mapInstance.value.setLevel(mapInstance.value.getLevel() - 1)
-  console.log('[확대]:', mapInstance.value.getLevel())
-}
-
-// 축소
-function zoomOut() {
-  mapInstance.value.setLevel(mapInstance.value.getLevel() + 1)
-  console.log('[축소]:', mapInstance.value.getLevel())
-}
-
 // 주소기반 검색 후 지도 이동
 defineExpose({
   panToAddress: (address) => {
@@ -649,6 +629,13 @@ defineExpose({
     mapInstance.value.setLevel(5)
     console.log('[좌표 기반 검색]:', latitude, longitude)
   },
+  setMapType: (type) => {
+    const { MapTypeId } = window.kakao.maps
+    mapInstance.value.setMapTypeId(type === 'roadmap' ? MapTypeId.ROADMAP : MapTypeId.SKYVIEW)
+    selectedMapType.value = type
+  },
+  zoomIn: () => mapInstance.value.setLevel(mapInstance.value.getLevel() - 1),
+  zoomOut: () => mapInstance.value.setLevel(mapInstance.value.getLevel() + 1),
 })
 </script>
 
