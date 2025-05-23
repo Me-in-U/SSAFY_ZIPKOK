@@ -81,4 +81,6 @@ public interface HouseInfoDao {
         // 주변 학교 조회
         List<SchoolInfo> selectSchoolsByAptSeq(@Param("aptSeq") String aptSeq) throws SQLException;
 
+        List<HouseInfo> searchFilter(String sido, String gugun, String dong, String aptNm);
+
 }

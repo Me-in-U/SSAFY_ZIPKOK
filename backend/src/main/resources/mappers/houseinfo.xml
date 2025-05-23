@@ -94,6 +94,7 @@
     FROM house_info hi
     JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
+     AND RIGHT(dc.dong_code,5)= hi.umd_cd
     WHERE 1=1
     <if test="sido != null">
       AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
@@ -112,6 +113,25 @@
     FROM house_info hi
     JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
+      AND RIGHT(dc.dong_code,5)= hi.umd_cd
+    WHERE hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
+    <if test="sido != null">
+      AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+    </if>
+    <if test="gugun != null">
+      AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+    </if>
+    <if test="dong != null">
+      AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
+    </if>
+  </select>
+
+  <select id="searchFilter" parameterType="map" resultType="com.ssafy.house.model.dto.HouseInfo">
+    SELECT *
+    FROM house_info hi
+    JOIN dong_code dc
+      ON LEFT(dc.dong_code,5) = hi.sgg_cd
+      AND RIGHT(dc.dong_code,5)= hi.umd_cd
     WHERE hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
     <if test="sido != null">
       AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
@@ -223,41 +243,4 @@
     WHERE hs.apt_seq = #{aptSeq}
     ORDER BY CAST(SUBSTRING_INDEX(distance,'분',1) AS UNSIGNED)
   </select>
-  <!-- 12) 마커 표시용 경량 쿼리 -->
-  <select id="searchMarkersByOptionsAndName" parameterType="map" resultType="com.ssafy.house.model.dto.HouseInfo">
-    SELECT
-      hi.apt_seq    AS aptSeq,
-      hi.apt_nm     AS aptNm,
-      hi.latitude   AS latitude,
-      hi.longitude  AS longitude
-    FROM house_info hi
-
-                <!-- 시·군·구 코드 매칭 -->
-    LEFT JOIN dong_code dc
-      ON LEFT(dc.dong_code,5) = hi.sgg_cd
-
-    <where>
-      <!-- 1) 아파트명 검색 -->
-      <if test="partialName != null and partialName != ''">
-        AND hi.apt_nm LIKE CONCAT('%', #{partialName}, '%')
-      </if>
-
-      <!-- 2) 시·도 -->
-      <if test="sido != null and sido != ''">
-        AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
-      </if>
-
-      <!-- 3) 구·군 -->
-      <if test="gugun != null and gugun != ''">
-        AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
-      </if>
-
-      <!-- 동 필터가 있을 때만 umd_cd 까지 추가 매칭 -->
-      <if test="dong != null and dong != ''">
-        AND RIGHT(dc.dong_code,5) = hi.umd_cd
-        AND dc.dong_name   LIKE CONCAT('%', #{dong}, '%')
-      </if>
-    </where>
-  </select>
-
 </mapper>

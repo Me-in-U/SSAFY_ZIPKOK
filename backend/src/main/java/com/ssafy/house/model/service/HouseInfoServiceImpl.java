@@ -88,4 +88,9 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     public List<SchoolInfo> getSchoolsByAptSeq(String aptSeq) throws SQLException {
         return dao.selectSchoolsByAptSeq(aptSeq);
     }
+
+    @Override
+    public List<HouseInfo> searchFilter(String sido, String gugun, String dong, String aptNm) {
+        return dao.searchFilter(sido, gugun, dong, aptNm);
+    }
 }
