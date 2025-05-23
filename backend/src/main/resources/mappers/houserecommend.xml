@@ -15,20 +15,21 @@
       d.listing_name   AS listingName,
       d.price          AS price,
       d.spec           AS spec,
-      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description
+      CAST(d.description AS CHAR CHARACTER SET utf8mb4) AS description,
+      d.property_type AS propertyType
     FROM (
       SELECT apt_seq, MAX(confirmed_at) AS last_date
-      FROM ssafyproj.house_deal
+      FROM house_deal
       WHERE price IS NOT NULL
       GROUP BY apt_seq
     ) p
     JOIN (
       SELECT apt_seq, MIN(img_path) AS img_path
-      FROM ssafyproj.house_image
+      FROM house_image
       WHERE img_path IS NOT NULL
       GROUP BY apt_seq
     ) hi ON hi.apt_seq = p.apt_seq
-    JOIN ssafyproj.house_deal d
+    JOIN house_deal d
       ON d.apt_seq = p.apt_seq
     AND d.confirmed_at = p.last_date
     ORDER BY p.last_date DESC
@@ -44,7 +45,8 @@
       hd.listing_name,
       hd.price,
       hd.spec,
-      CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description
+      CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description,
+      hd.property_type AS propertyType
     FROM
       house_deal AS hd
     INNER JOIN
@@ -68,7 +70,8 @@
       hd.price,
       hd.spec,
       CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description,
-      hs_min.min_distance_minutes AS school_distance_minutes
+      hs_min.min_distance_minutes AS school_distance_minutes,
+      hd.property_type AS propertyType
     FROM
       house_deal AS hd
     JOIN (
