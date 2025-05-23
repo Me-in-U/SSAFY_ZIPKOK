@@ -212,6 +212,7 @@ const isTyping = ref(false)
 const messagesContainer = ref(null)
 const isClearing = ref(false)
 const isAppearing = ref(false)
+const CurrentConvoId = ref(null)
 const containerKey = computed(() => {
   if (isClearing.value) return 'clear'
   if (isAppearing.value) return 'appear'
@@ -253,7 +254,7 @@ async function sendMessage() {
     const res = await fetch('http://localhost:8080/ai/user-controlled', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: sanitizedText }),
+      body: JSON.stringify({ message: sanitizedText, convoId: CurrentConvoId.value }),
     })
 
     if (!res.ok) {
@@ -263,8 +264,8 @@ async function sendMessage() {
     // 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
     const result = await res.json()
     console.log('[Chat Result]', result)
-    const { message, toolResultList, relatedQuestionList } = result
-
+    const { message, aptSeqList, relatedQuestionList, convoId } = result
+    CurrentConvoId.value = convoId
     // 채팅에는 message 만 보여주기
     messages.value.push({
       content: message,
@@ -274,8 +275,8 @@ async function sendMessage() {
     })
 
     // 부모(App.vue)로 검색 결과 전달
-    if (toolResultList.length > 0) {
-      emit('search-gpt', toolResultList || [])
+    if (aptSeqList.length > 0) {
+      emit('search-gpt', aptSeqList || [])
     }
   } catch (error) {
     console.error('[Chat Error]', error)

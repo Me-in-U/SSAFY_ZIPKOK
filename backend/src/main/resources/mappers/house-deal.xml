@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.house.model.dao.HouseDealDao">
+    <resultMap id="DealMap" type="com.ssafy.house.model.dto.HouseDeal">
+        <id column="deal_id" property="dealId"/>
+        <result column="apt_seq" property="aptSeq"/>
+        <result column="listing_name" property="listingName"/>
+        <result column="trade_type" property="dealType"/>
+        <result column="price" property="price"/>
+        <result column="property_type" property="propertyType"/>
+        <result column="spec" property="spec"/>
+        <result column="description" property="description"/>
+        <result column="confirmed_at" property="confirmedAt"/>
+        <result column="deposit" property="deposit"/>
+        <result column="monthly_rent" property="monthlyRent"/>
+    </resultMap>
+
+    <select id="findDealsByOptionsAndType" resultMap="DealMap" parameterType="map">
+  SELECT
+    hd.deal_id,
+    hd.apt_seq,
+    hd.listing_name,
+    hd.trade_type,
+    hd.price,
+    hd.property_type,
+    hd.spec,
+    hd.description,
+    DATE_FORMAT(hd.confirmed_at, '%Y-%m-%d') AS confirmed_at,
+    hd.deposit,
+    hd.monthly_rent
+  FROM house_deal hd
+  JOIN (
+    SELECT apt_seq, MAX(confirmed_at) AS max_dt
+    FROM house_deal
+        <if test="tradeType != null">
+      WHERE trade_type = #{tradeType}
+        </if>
+    GROUP BY apt_seq
+  ) latest
+    ON hd.apt_seq = latest.apt_seq
+   AND hd.confirmed_at = latest.max_dt
+  JOIN house_info hi
+    ON hi.apt_seq = hd.apt_seq
+  JOIN dong_code dc
+    ON LEFT(dc.dong_code,5) = hi.sgg_cd
+   AND RIGHT(dc.dong_code,5)= hi.umd_cd
+  WHERE 1=1
+        <if test="sido != null">
+      AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
+        </if>
+        <if test="gugun != null">
+      AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
+        </if>
+        <if test="dong != null">
+      AND dc.dong_name LIKE CONCAT('%', #{dong}, '%')
+        </if>
+        <if test="aptNm != null">
+      AND hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
+        </if>
+    </select>
+
+
+</mapper>

@@ -59,56 +59,6 @@
     WHERE apt_nm LIKE #{partialName}
   </select>
 
-  <!-- GPT // 시도 검색 -->
-  <select id="findBySido" parameterType="map" resultType="string">
-    SELECT DISTINCT hi.apt_seq
-    FROM house_info hi
-    JOIN dong_code dc
-      ON LEFT(dc.dong_code,5) = hi.sgg_cd
-    WHERE dc.sido_name  LIKE CONCAT('%', #{sido}, '%')
-  </select>
-
-  <!-- GPT // 시도+구군 검색 -->
-  <select id="findBySidoGugun" parameterType="map" resultType="string">
-    SELECT DISTINCT hi.apt_seq
-    FROM house_info hi
-    JOIN dong_code dc
-      ON LEFT(dc.dong_code,5) = hi.sgg_cd
-    WHERE dc.sido_name  LIKE CONCAT('%', #{sido}, '%')
-      AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
-  </select>
-
-  <!-- GPT // 시도+구군+동 검색 -->
-  <select id="findBySidoGugunDong" parameterType="map" resultType="string">
-    SELECT DISTINCT hi.apt_seq
-    FROM house_info hi
-    JOIN dong_code dc
-      ON LEFT(dc.dong_code,5) = hi.sgg_cd
-      AND RIGHT(dc.dong_code,5)= hi.umd_cd
-    WHERE dc.sido_name  LIKE CONCAT('%', #{sido}, '%')
-      AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
-      AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
-  </select>
-
-  <!-- GPT // 조합 검색 -->
-  <select id="findByOptions" parameterType="map" resultType="string">
-    SELECT DISTINCT hi.apt_seq
-    FROM house_info hi
-    JOIN dong_code dc
-      ON LEFT(dc.dong_code,5) = hi.sgg_cd
-      AND RIGHT(dc.dong_code,5)= hi.umd_cd
-    WHERE 1=1
-    <if test="sido != null">
-      AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
-    </if>
-    <if test="gugun != null">
-      AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
-    </if>
-    <if test="dong != null">
-      AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
-    </if>
-  </select>
-
   <!-- GPT // 조합 + 아파트명 -->
   <select id="findByOptionsAndAptName" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
@@ -116,7 +66,10 @@
     JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
       AND RIGHT(dc.dong_code,5)= hi.umd_cd
-    WHERE hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
+    WHERE 1=1
+    <if test="aptNm != null">
+      AND hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
+    </if>
     <if test="sido != null">
       AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
     </if>

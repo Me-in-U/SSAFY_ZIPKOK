@@ -9,6 +9,8 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import com.ssafy.house.model.dto.HouseDeal;
+import com.ssafy.house.model.service.HouseDealService;
 import com.ssafy.house.model.service.HouseInfoService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,12 +19,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HouseTools {
     private final HouseInfoService houseInfoService;
+    private final HouseDealService houseDealService;
     private Logger logger = LoggerFactory.getLogger(HouseTools.class);
 
+    private static final String SIDO_DESC = "시('Metropolitan City' or 'Si'), 도('Self-Governing Province' or 'Do') 이름 일부 ";
+    private static final String GUGUN_DESC = "구('Gu')군('Gun') 이름 일부 ";
+    private static final String DONG_DESC = "읍('Eup')면('Myeon')동('Dong') 이름 일부 ";
+    private static final String APT_NM_DESC = "아파트 이름 일부 ";
+    private static final String TRADE_TYPE_DESC = "거래유형 (매매/전세/월세) ";
+
     @Tool(description = "입력한 아파트명 일부로 아파트 검색")
-    public List<String> searchHouseByPartialName(@ToolParam(description = "아파트 이름 일부") String partialName)
+    public List<String> searchHouseByPartialName(@ToolParam(description = APT_NM_DESC) String partialName)
             throws SQLException {
-        logger.warn("searchHouseByPartialName called with partialName={}", partialName);
+        logger.warn("입력한 아파트명 일부로 아파트 검색");
         try {
             return houseInfoService.searchByAptName(partialName);
         } catch (Exception e) {
@@ -31,47 +40,49 @@ public class HouseTools {
         }
     }
 
-    @Tool(description = "시도(sido)로 아파트 검색 (부분 매칭)")
+    @Tool(description = SIDO_DESC + "로 아파트 검색")
     public List<String> searchBySido(
-            @ToolParam(description = "시도 이름 일부") String sido) throws SQLException {
-        logger.warn("searchBySido called with sido={}", sido);
-        return houseInfoService.findBySido(sido);
+            @ToolParam(description = SIDO_DESC) String sido)
+            throws SQLException {
+        logger.warn("시도로 아파트 검색");
+        return houseInfoService.findByOptionsAndAptName(sido, null, null, null);
     }
 
-    @Tool(description = "시도(sido), 구군(gugun)으로 아파트 검색 (부분 매칭)")
+    @Tool(description = SIDO_DESC + GUGUN_DESC + "로 아파트 검색")
     public List<String> searchByGugun(
-            @ToolParam(description = "시도 이름 일부") String sido,
-            @ToolParam(description = "구군 이름 일부") String gugun) throws SQLException {
-        logger.warn("searchByGugun called with sido={} and gugun={}", sido, gugun);
-        return houseInfoService.findBySidoGugun(sido, gugun);
+            @ToolParam(description = SIDO_DESC) String sido,
+            @ToolParam(description = GUGUN_DESC) String gugun) throws SQLException {
+        logger.warn("시도구군으로 아파트 검색");
+        return houseInfoService.findByOptionsAndAptName(sido, gugun, null, null);
     }
 
-    @Tool(description = "시도(sido), 구군(gugun), 읍면동(dong)으로 아파트 검색 (부분 매칭)")
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + "로 아파트 검색")
     public List<String> searchByDong(
-            @ToolParam(description = "시도 이름 일부") String sido,
-            @ToolParam(description = "구군 이름 일부") String gugun,
-            @ToolParam(description = "읍면동 이름 일부") String dong) throws SQLException {
-        logger.warn("searchByDong called with sido={}, gugun={}, dong={}", sido, gugun, dong);
-        return houseInfoService.findBySidoGugunDong(sido, gugun, dong);
+            @ToolParam(description = DONG_DESC) String dong,
+            @ToolParam(description = GUGUN_DESC) String gugun,
+            @ToolParam(description = SIDO_DESC) String sido) throws SQLException {
+        logger.warn("시도구군읍면동으로 아파트 검색");
+        return houseInfoService.findByOptionsAndAptName(sido, gugun, dong, null);
     }
 
-    @Tool(description = "시도, 구군, 읍면동 조합으로 아파트 검색 (부분 매칭)")
-    public List<String> searchByOptions(
-            @ToolParam(description = "시도 이름 일부") String sido,
-            @ToolParam(description = "구군 이름 일부") String gugun,
-            @ToolParam(description = "읍면동 이름 일부") String dong) throws SQLException {
-        logger.warn("searchByOptions called with sido={}, gugun={}, dong={}", sido, gugun, dong);
-        return houseInfoService.findByOptions(sido, gugun, dong);
-    }
-
-    @Tool(description = "시도, 구군, 읍면동 + 아파트명 조합으로 검색 (부분 매칭)")
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC + "로 아파트 검색")
     public List<String> searchByOptionsAndName(
-            @ToolParam(description = "시도 이름 일부") String sido,
-            @ToolParam(description = "구군 이름 일부") String gugun,
-            @ToolParam(description = "읍면동 이름 일부") String dong,
-            @ToolParam(description = "아파트 이름 일부") String aptNm) throws SQLException {
-        logger.warn("searchByOptionsAndName called with sido={}, gugun={}, dong={}, aptNm={}",
-                sido, gugun, dong, aptNm);
+            @ToolParam(description = SIDO_DESC) String sido,
+            @ToolParam(description = GUGUN_DESC) String gugun,
+            @ToolParam(description = DONG_DESC) String dong,
+            @ToolParam(description = APT_NM_DESC) String aptNm) throws SQLException {
+        logger.warn("시도구군읍면동아파트명으로 아파트 검색");
         return houseInfoService.findByOptionsAndAptName(sido, gugun, dong, aptNm);
+    }
+
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC + TRADE_TYPE_DESC + "로 매물 조회")
+    public List<HouseDeal> searchDealsByOptionsAndType(
+            @ToolParam(description = SIDO_DESC) String sido,
+            @ToolParam(description = GUGUN_DESC) String gugun,
+            @ToolParam(description = DONG_DESC) String dong,
+            @ToolParam(description = APT_NM_DESC) String aptNm,
+            @ToolParam(description = TRADE_TYPE_DESC) String tradeType) throws SQLException {
+        logger.warn("시도구군읍면동아파트명거래유형으로 매물 조회");
+        return houseDealService.findDealsByOptionsAndType(sido, gugun, dong, aptNm, tradeType);
     }
 }

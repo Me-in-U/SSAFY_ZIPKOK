@@ -6,5 +6,5 @@ import com.ssafy.house.model.dto.CustomChatResponseDto;
 public interface AiChatService {
     ChatResponseDto houseToolGeneration(String userInput);
 
-    CustomChatResponseDto userControlledChat(String userInput);
+    CustomChatResponseDto userControlledChat(String userInput, String convoId);
 }

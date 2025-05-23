@@ -91,7 +91,7 @@ public class BasicAiChatService implements AiChatService {
     }
 
     @Override
-    public CustomChatResponseDto userControlledChat(String userInput) {
+    public CustomChatResponseDto userControlledChat(String userInput, String convoId) {
         String returnFormat = customDtoConverter.getFormat();
         userInput = userInput + "\n\n" + returnFormat;
 
@@ -101,12 +101,15 @@ public class BasicAiChatService implements AiChatService {
                 .internalToolExecutionEnabled(false)
                 .build();
 
-        // 대화 ID 생성 및 초기 메시지 메모리 저장
-        String convoId = UUID.randomUUID().toString();
-        chatMemory.add(convoId, SystemMessage.builder()
-                .text(customSystemPrompt)
-                .metadata(Map.of("language", "Korean", "character", "Chill한"))
-                .build());
+        // convoId 가 비어 있으면 신규 생성, 아니라면 그대로 재사용
+        if (convoId == null || convoId.isBlank()) {
+            convoId = UUID.randomUUID().toString();
+            // 최초 호출일 땐 시스템 메시지도 한 번만 저장
+            chatMemory.add(convoId, SystemMessage.builder()
+                    .text(customSystemPrompt)
+                    .metadata(Map.of("language", "Korean", "character", "Chill한"))
+                    .build());
+        }
         chatMemory.add(convoId, new UserMessage(userInput));
 
         // 첫 프롬프트 생성 및 모델 호출
@@ -130,7 +133,7 @@ public class BasicAiChatService implements AiChatService {
             // ToolResponseMessage.getResponses() 에서 첫 번째 응답을 꺼내고 .responseData()로 원시 문자열 추출
             lastToolRaw = toolResponseMessage.getResponses().get(0).responseData();
             logger.warn("[툴 호출 결과 원본]: " + lastToolRaw);
-            chatMemory.add(convoId, new UserMessage(lastToolRaw));
+            chatMemory.add(convoId, toolResponseMessage);
             // ─────────────────────────
 
             // 모델 재호출
@@ -146,7 +149,7 @@ public class BasicAiChatService implements AiChatService {
                 prompt = new Prompt(chatMemory.get(convoId), opts);
                 dto = CustomChatResponseDto.builder()
                         .message("모델 호출 중 오류 발생")
-                        .toolResultList(List.of())
+                        .aptSeqList(List.of())
                         .build();
             }
         }
@@ -165,22 +168,22 @@ public class BasicAiChatService implements AiChatService {
             }
         } catch (Exception e) {
             log.error("CustomChatResponseDto 변환 실패", e);
-            List<Object> fallbackList = new ArrayList<>();
+            List<String> fallbackList = new ArrayList<>();
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                List<String> list = mapper.readValue(
+                fallbackList = mapper.readValue(
                         lastToolRaw,
                         new TypeReference<List<String>>() {
                         });
-                fallbackList.addAll(list);
             } catch (IOException ex) {
                 log.error("raw JSON 파싱 실패", ex);
             }
             dto = CustomChatResponseDto.builder()
                     .message("결과가 너무 많아요.. ㅠㅠㅠ" + fallbackList.size() + "개 찾았어요.")
-                    .toolResultList(fallbackList)
+                    .aptSeqList(fallbackList)
                     .build();
         }
+        dto.setConvoId(convoId);
         return dto;
     }
 
