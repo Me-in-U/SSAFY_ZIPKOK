@@ -26,26 +26,33 @@
         @filter-change="handleFilterChange"
         @move-to="handleMoveTo"
       />
-      <!-- 지도 -->
-      <MapComponent
-        ref="mapRef"
-        :properties="filteredProperties"
-        :search-results="searchResults"
-        :favorite-seqs="userStore.favoriteSeqs"
-        :show-base="showBaseMarkers"
-        :show-favorite="showFavoriteMarkers"
-        :show-search="showSearchMarkers"
-        @select-property="handleSelectProperty"
-        class="flex-1"
-      />
-      <MarkerButtons
-        :show-base="showBaseMarkers"
-        :show-favorite="showFavoriteMarkers"
-        :show-search="showSearchMarkers"
-        @toggle-base="showBaseMarkers = !showBaseMarkers"
-        @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
-        @toggle-search="showSearchMarkers = !showSearchMarkers"
-      />
+      <!-- 지도 + 버튼 래퍼 -->
+      <div class="relative flex-1">
+        <MapComponent
+          ref="mapRef"
+          :properties="filteredProperties"
+          :search-results="searchResults"
+          :favorite-seqs="userStore.favoriteSeqs"
+          :show-base="showBaseMarkers"
+          :show-favorite="showFavoriteMarkers"
+          :show-search="showSearchMarkers"
+          @select-property="handleSelectProperty"
+          class="w-full h-full"
+        />
+        <!-- 지도의 아래 중앙에 버튼 3개 -->
+        <div
+          class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-white/80 p-2 rounded-full shadow-lg"
+        >
+          <MarkerButtons
+            :show-base="showBaseMarkers"
+            :show-favorite="showFavoriteMarkers"
+            :show-search="showSearchMarkers"
+            @toggle-base="showBaseMarkers = !showBaseMarkers"
+            @toggle-favorite="showFavoriteMarkers = !showFavoriteMarkers"
+            @toggle-search="showSearchMarkers = !showSearchMarkers"
+          />
+        </div>
+      </div>
     </section>
 
     <!-- 오른쪽 챗봇 -->
