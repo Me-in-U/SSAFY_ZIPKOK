@@ -9,7 +9,7 @@
       <!-- 네비게이션 -->
       <nav class="hidden md:flex items-center space-x-6">
         <router-link to="/community" class="text-gray-600 hover:text-emerald-600 font-medium"
-          >게시판</router-link
+          >커뮤니티</router-link
         >
         <button
           @click.prevent="goRecommended"
@@ -59,7 +59,7 @@
     <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
       <div class="container mx-auto px-4 py-2 space-y-2">
         <router-link to="/community" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
-          >게시판</router-link
+          >커뮤니티</router-link
         >
         <button
           @click.prevent="goRecommended"

@@ -88,6 +88,8 @@ public class SecurityConfig {
                         // static resources & swagger
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/fonts/**")
                         .permitAll()
+                        //게시판
+                        .requestMatchers(HttpMethod.GET, "/api/v1/community/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // everything under /api must be authenticated
                         .requestMatchers("/api/**").authenticated()
