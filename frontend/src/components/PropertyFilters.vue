@@ -85,27 +85,6 @@
         >
           필터 초기화
         </button>
-        <button
-          @click="$emit('toggle-base')"
-          :class="showBase ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="flex-shrink-0 w-full sm:w-auto whitespace-nowrap px-3 py-1 rounded transition"
-        >
-          기본 {{ showBase ? '숨기기' : '보기' }}
-        </button>
-        <button
-          @click="$emit('toggle-favorite')"
-          :class="showFavorite ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="flex-shrink-0 w-full sm:w-auto whitespace-nowrap px-3 py-1 rounded transition"
-        >
-          즐겨찾기 {{ showFavorite ? '숨기기' : '보기' }}
-        </button>
-        <button
-          @click="$emit('toggle-search')"
-          :class="showSearch ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="flex-shrink-0 w-full sm:w-auto whitespace-nowrap px-3 py-1 rounded transition"
-        >
-          검색 {{ showSearch ? '숨기기' : '보기' }}
-        </button>
       </div>
     </div>
 
