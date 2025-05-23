@@ -88,13 +88,71 @@
       />
     </svg>
   </button>
+
+  <!-- 지도 모드 토글 버튼 -->
+  <button
+    @click="$emit('toggle-maptype', mapType === 'roadmap' ? 'skyview' : 'roadmap')"
+    :class="mapType === 'roadmap' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+    class="w-10 h-10 rounded-full flex items-center justify-center transition transform active:scale-95 hover:ring-2 focus:outline-none"
+  >
+    <!-- 지형도 아이콘 -->
+    <svg
+      v-if="mapType === 'roadmap'"
+      xmlns="http://www.w3.org/2000/svg"
+      class="w-5 h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M3 6a1 1 0 011-1h3l2 6-2 6H4a1 1 0 01-1-1V6zM8 5h8l2 14H10L8 5zM16 5h3a1 1 0 011 1v12a1 1 0 01-1 1h-3V5z"
+      />
+    </svg>
+
+    <!-- 위성지도(지구) 아이콘 -->
+    <svg
+      v-else
+      xmlns="http://www.w3.org/2000/svg"
+      class="w-5 h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 2c3.866 0 7 3.134 7 7s-3.134 7-7 7V4zM5 12c0-3.866 3.134-7 7-7v14c-3.866 0-7-3.134-7-7z"
+      />
+    </svg>
+  </button>
+
+  <!-- 확대 버튼 -->
+  <button
+    @click="$emit('zoom', 'in')"
+    class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center transition transform active:scale-95 hover:ring-2 hover:ring-gray-400 focus:outline-none"
+  >
+    <span class="text-xl font-bold">＋</span>
+  </button>
+
+  <!-- 축소 버튼 -->
+  <button
+    @click="$emit('zoom', 'out')"
+    class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center transition transform active:scale-95 hover:ring-2 hover:ring-gray-400 focus:outline-none"
+  >
+    <span class="text-xl font-bold">－</span>
+  </button>
 </template>
 
 <script setup>
-defineEmits(['toggle-base', 'toggle-favorite', 'toggle-search'])
+defineEmits(['toggle-base', 'toggle-favorite', 'toggle-search', 'toggle-maptype', 'zoom'])
 defineProps({
   showBase: Boolean,
   showFavorite: Boolean,
   showSearch: Boolean,
+  mapType: String,
 })
 </script>
