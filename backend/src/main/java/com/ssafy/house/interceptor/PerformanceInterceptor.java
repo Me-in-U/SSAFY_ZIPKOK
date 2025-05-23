@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PerformanceInterceptor implements HandlerInterceptor {
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+    public boolean preHandle(@SuppressWarnings("null") HttpServletRequest request,
+            @SuppressWarnings("null") HttpServletResponse response, @SuppressWarnings("null") Object handler)
             throws Exception {
 
         log.debug("##요청 경로: {}, 요청 방식: {}##", request.getRequestURI(), request.getMethod());
@@ -30,7 +31,8 @@ public class PerformanceInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+    public void postHandle(@SuppressWarnings("null") HttpServletRequest request,
+            @SuppressWarnings("null") HttpServletResponse response, @SuppressWarnings("null") Object handler,
             @Nullable ModelAndView modelAndView) throws Exception {
         long middle = System.currentTimeMillis();
         long start = (Long) request.getAttribute("start");
@@ -39,7 +41,8 @@ public class PerformanceInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
+    public void afterCompletion(@SuppressWarnings("null") HttpServletRequest request,
+            @SuppressWarnings("null") HttpServletResponse response, @SuppressWarnings("null") Object handler,
             @Nullable Exception ex)
             throws Exception {
         long end = System.currentTimeMillis();

@@ -20,24 +20,31 @@
     <result column="longitude" property="longitude"/>
   </resultMap>
 
-  <!-- 1) 단일 조회 -->
+  <resultMap id="HouseInfoSimpleMap" type="com.ssafy.house.model.dto.HouseInfoSimple">
+    <id column="apt_seq" property="aptSeq"/>
+    <result column="apt_nm" property="aptNm"/>
+    <result column="latitude" property="latitude"/>
+    <result column="longitude" property="longitude"/>
+  </resultMap>
+
+  <!-- 단일 조회 -->
   <select id="selectHouseInfo" parameterType="string" resultMap="houseInfoMap">
     SELECT *
     FROM house_info
     WHERE apt_seq = #{aptSeq}
   </select>
 
-  <!-- 2) 범위 조회 -->
-  <select id="selectByBounds" parameterType="map" resultMap="houseInfoMap">
-    SELECT *
+  <!-- 지도 이동 범위 조회 -->
+  <select id="selectByBounds" parameterType="map" resultMap="HouseInfoSimpleMap">
+    SELECT DISTINCT apt_seq, apt_nm, latitude, longitude
     FROM house_info
     WHERE latitude  BETWEEN #{minLat} AND #{maxLat}
       AND longitude BETWEEN #{minLng} AND #{maxLng}
   </select>
 
-  <!-- 3) 리스트 조회 -->
-  <select id="selectBySeqList" parameterType="list" resultMap="houseInfoMap">
-    SELECT *
+  <!-- GPT Filter // seq list -> simple-->
+  <select id="selectBySeqList" parameterType="list" resultMap="HouseInfoSimpleMap">
+    SELECT DISTINCT apt_seq, apt_nm, latitude, longitude
     FROM house_info
     WHERE apt_seq IN
     <foreach item="seq" collection="list" open="(" separator="," close=")">
@@ -45,20 +52,14 @@
     </foreach>
   </select>
 
-  <!-- 4-1) 아파트명 일부 검색 -->
+  <!-- GPT // 아파트명 일부 검색 -->
   <select id="searchByAptName" parameterType="string" resultType="string">
     SELECT DISTINCT apt_seq
     FROM house_info
     WHERE apt_nm LIKE #{partialName}
   </select>
 
-  <!-- 4-2) 아파트명 일부 검색 -->
-  <select id="searchByName" parameterType="string" resultType="com.ssafy.house.model.dto.HouseInfo">
-    SELECT *
-    FROM house_info
-    WHERE apt_nm LIKE #{partialName}
-  </select>
-  <!-- 5) 시도 검색 -->
+  <!-- GPT // 시도 검색 -->
   <select id="findBySido" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
@@ -66,7 +67,8 @@
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
     WHERE dc.sido_name  LIKE CONCAT('%', #{sido}, '%')
   </select>
-  <!-- 5) 시도+구군 검색 -->
+
+  <!-- GPT // 시도+구군 검색 -->
   <select id="findBySidoGugun" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
@@ -76,25 +78,25 @@
       AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
   </select>
 
-  <!-- 6) 시도+구군+동 검색 -->
+  <!-- GPT // 시도+구군+동 검색 -->
   <select id="findBySidoGugunDong" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
-     AND RIGHT(dc.dong_code,5)= hi.umd_cd
+      AND RIGHT(dc.dong_code,5)= hi.umd_cd
     WHERE dc.sido_name  LIKE CONCAT('%', #{sido}, '%')
       AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
       AND dc.dong_name  LIKE CONCAT('%', #{dong}, '%')
   </select>
 
-  <!-- 7) 조합 검색 -->
+  <!-- GPT // 조합 검색 -->
   <select id="findByOptions" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
     JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
-     AND RIGHT(dc.dong_code,5)= hi.umd_cd
+      AND RIGHT(dc.dong_code,5)= hi.umd_cd
     WHERE 1=1
     <if test="sido != null">
       AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
@@ -107,7 +109,7 @@
     </if>
   </select>
 
-  <!-- 8) 조합 + 아파트명 -->
+  <!-- GPT // 조합 + 아파트명 -->
   <select id="findByOptionsAndAptName" parameterType="map" resultType="string">
     SELECT DISTINCT hi.apt_seq
     FROM house_info hi
@@ -126,8 +128,9 @@
     </if>
   </select>
 
-  <select id="searchFilter" parameterType="map" resultType="com.ssafy.house.model.dto.HouseInfo">
-    SELECT *
+  <!-- Filter // 시도군구읍면동동 -->
+  <select id="searchFilter" parameterType="map" resultMap="HouseInfoSimpleMap">
+    SELECT DISTINCT apt_seq, apt_nm, latitude, longitude
     FROM house_info hi
     JOIN dong_code dc
       ON LEFT(dc.dong_code,5) = hi.sgg_cd
@@ -144,8 +147,8 @@
     </if>
   </select>
 
-  <!-- 9) full info 매핑 -->
-  <resultMap id="houseFullInfoMap" type="com.ssafy.house.model.dto.HouseFullInfo">
+  <!-- full info 매핑 -->
+  <resultMap id="HouseInfoFull" type="com.ssafy.house.model.dto.HouseInfoFull">
     <id column="apt_seq" property="aptSeq"/>
     <result column="apt_nm" property="aptNm"/>
     <result column="latitude" property="latitude"/>
@@ -170,8 +173,8 @@
     <result column="latest_description" property="description"/>
   </resultMap>
 
-  <!-- 10) 아파트 상세정보 -->
-  <select id="selectHouseFullInfo" parameterType="string" resultMap="houseFullInfoMap">
+  <!-- 아파트 상세정보 -->
+  <select id="selectHouseInfoFull" parameterType="string" resultMap="HouseInfoFull">
     SELECT
         hi.apt_seq,
         hi.apt_nm,
@@ -227,7 +230,7 @@
     LIMIT 1
   </select>
 
-  <!-- 11) 주변 학교 매핑 -->
+  <!-- 주변 학교 매핑 -->
   <resultMap id="schoolInfoMap" type="com.ssafy.house.model.dto.SchoolInfo">
     <result column="school_name" property="schoolName"/>
     <result column="school_type" property="schoolType"/>

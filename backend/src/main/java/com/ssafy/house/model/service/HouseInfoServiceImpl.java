@@ -7,8 +7,9 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.house.model.dao.HouseInfoDao;
-import com.ssafy.house.model.dto.HouseFullInfo;
+import com.ssafy.house.model.dto.HouseInfoFull;
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.HouseInfoSimple;
 import com.ssafy.house.model.dto.SchoolInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     }
 
     @Override
-    public List<HouseInfo> getHouseInfoBySeqList(List<String> aptSeqList) throws SQLException {
+    public List<HouseInfoSimple> getHouseInfoBySeqList(List<String> aptSeqList) throws SQLException {
         if (aptSeqList == null || aptSeqList.isEmpty()) {
             return List.of();
         }
@@ -40,12 +41,6 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     @Override
     public List<String> searchByAptName(String partialName) throws SQLException {
         return dao.searchByAptName("%" + partialName + "%");
-    }
-
-    @Override
-    public List<HouseInfo> searchByName(String partialName) throws SQLException {
-        String keyword = "%" + partialName + "%";
-        return dao.searchByName(keyword);
     }
 
     @Override
@@ -75,8 +70,8 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     }
 
     @Override
-    public HouseFullInfo getHouseFullInfo(String aptSeq) throws SQLException {
-        return dao.selectHouseFullInfo(aptSeq);
+    public HouseInfoFull getHouseInfoFull(String aptSeq) throws SQLException {
+        return dao.selectHouseInfoFull(aptSeq);
     }
 
     @Override
@@ -90,7 +85,7 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     }
 
     @Override
-    public List<HouseInfo> searchFilter(String sido, String gugun, String dong, String aptNm) {
+    public List<HouseInfoSimple> searchFilter(String sido, String gugun, String dong, String aptNm) {
         return dao.searchFilter(sido, gugun, dong, aptNm);
     }
 }

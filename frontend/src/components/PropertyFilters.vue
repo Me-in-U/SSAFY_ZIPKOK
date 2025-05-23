@@ -48,7 +48,7 @@
           for="search"
           class="absolute left-2 bg-white -top-2 transition-all duration-200 text-xs text-gray-500 peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-emerald-600"
         >
-          단지명 검색
+          아파트/단지명
         </label>
       </div>
       <!-- 검색 버튼 (오른쪽만 둥글게) -->
@@ -61,8 +61,7 @@
     </div>
   </div>
 
-  <!-- 3. 결과 텍스트 -->
-  <!-- 3. 결과 텍스트 -->
+  <!-- 결과 텍스트 -->
   <div class="flex justify-center mt-2 text-sm text-red-600">
     <div v-if="errorMsg">{{ errorMsg }}</div>
     <div v-else-if="noResults">검색결과가 없습니다.</div>
@@ -93,6 +92,7 @@ const emit = defineEmits([
   'toggle-base',
   'toggle-favorite',
   'toggle-search',
+  'search-filter',
 ])
 
 // 검색어와 에러 메시지 상태 관리

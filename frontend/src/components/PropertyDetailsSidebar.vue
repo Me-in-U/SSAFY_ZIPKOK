@@ -241,7 +241,6 @@ watch(
 )
 // dealType 기반으로 보여줄 가격 문자열 생성
 const priceDisplay = computed(() => {
-  console.log('🟢 priceDisplay', detail.value)
   if (!detail.value) return '-'
   const { dealType, deposit, monthlyRent, latestPrice } = detail.value
 
