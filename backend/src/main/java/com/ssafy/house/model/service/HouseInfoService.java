@@ -38,4 +38,6 @@ public interface HouseInfoService {
 
         List<SchoolInfo> getSchoolsByAptSeq(String aptSeq) throws SQLException;
 
+        List<HouseInfo> searchFilter(String sido, String gugun, String dong, String aptNm);
+
 }

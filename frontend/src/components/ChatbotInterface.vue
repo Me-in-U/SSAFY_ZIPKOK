@@ -202,7 +202,7 @@ import { ref, watch, nextTick, onMounted, computed } from 'vue'
 import BotTypingMessage from './BotTypingMessage.vue'
 
 // emit props
-const emit = defineEmits(['search-houses'])
+const emit = defineEmits(['search-gpt'])
 
 // refs
 const isMinimized = ref(false)
@@ -275,7 +275,7 @@ async function sendMessage() {
 
     // 부모(App.vue)로 검색 결과 전달
     if (toolResultList.length > 0) {
-      emit('search-houses', toolResultList || [])
+      emit('search-gpt', toolResultList || [])
     }
   } catch (error) {
     console.error('[Chat Error]', error)

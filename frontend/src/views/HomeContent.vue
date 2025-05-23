@@ -20,18 +20,22 @@
       :class="showDetailInfo ? 'w-4/5' : 'w-full'"
       class="transition-all duration-300 min-w-[320px] ease-in-out flex flex-col rounded-lg overflow-hidden space-y-4"
     >
-      <!-- 상세 필터 -->
-      <PropertyFilters
-        :no-results="!isLoading && searchResults.length === 0 && hasSearched"
-        @filter-change="handleFilterChange"
-        @move-to="handleMoveTo"
-      />
-      <!-- 지도 버튼 래퍼 -->
+      <!-- 필터 지도 버튼 래퍼 -->
       <div class="relative flex-1">
+        <!-- 상세 필터 -->
+        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+          <PropertyFilters
+            :no-results="!isLoading && searchResultsFilter.length === 0 && hasSearched"
+            :has-results="searchResultsFilter.length > 0"
+            @search-filter="onSearchFilter"
+            @move-to="handleMoveTo"
+          />
+        </div>
         <MapComponent
           ref="mapRef"
           :properties="filteredProperties"
-          :search-results="searchResults"
+          :search-results-gpt="searchResultsGpt"
+          :search-results-filter="searchResultsFilter"
           :favorite-seqs="userStore.favoriteSeqs"
           :show-base="showBaseMarkers"
           :show-favorite="showFavoriteMarkers"
@@ -62,13 +66,13 @@
     <aside
       class="flex-shrink-0 flex flex-col w-1/5 min-w-[180px] overflow-auto shadow-lg rounded-lg"
     >
-      <ChatbotInterface class="h-full" @search-houses="onSearchHouses" />
+      <ChatbotInterface class="h-full" @search-gpt="onSearchGpt" />
     </aside>
   </main>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import axios from 'axios'
 import MapComponent from '@/components/MapComponent.vue'
@@ -85,8 +89,8 @@ const selectedMapType = ref('roadmap')
 
 // 지도 & 검색
 const mapRef = ref(null)
-const rawSearchResults = ref([]) // 백엔드 리턴 그대로
-const searchResults = ref([]) // 클라이언트 필터링 후
+const searchResultsGpt = ref([]) // 클라이언트 필터링 후
+const searchResultsFilter = ref([]) // 클라이언트 필터링 후
 
 // 검색 실행 여부 트래킹
 const hasSearched = ref(false)
@@ -161,97 +165,16 @@ function handleMoveTo({ address }) {
   mapRef.value.panToAddress(address)
 }
 
-// activeFilters 변경 시 rawSearchResults 기반 상세 필터 재적용
-watch(
-  activeFilters,
-  () => {
-    if (rawSearchResults.value.length) applyDetailedFilters()
-  },
-  { deep: true },
-)
-
-async function handleFilterChange(filters) {
-  const q = filters.partialName?.trim()
-  const hasRegion = Boolean(filters.sido || filters.gugun || filters.dong)
-
-  // 1) 이름도, 지역도 없으면 초기화
-  if (!q && !hasRegion) {
-    searchResults.value = []
-    showSearchMarkers.value = false
-    showBaseMarkers.value = true
-    hasSearched.value = false
-    return
-  }
-  hasSearched.value = true
-  isLoading.value = true
-  // 2) 서버에 보낼 파라미터
-  const params = { partialName: q }
-  if (filters.sido) params.sido = filters.sido
-  if (filters.gugun) params.gugun = filters.gugun
-  if (filters.dong) params.dong = filters.dong
-
-  // 3) 마커 전용 API 호출
-  let list = []
-  try {
-    const res = await axios.get('https://api.ssafy.blog/api/v1/house/search/markers', { params })
-    list = Array.isArray(res.data) ? res.data : []
-  } catch (e) {
-    console.error('검색(markers) 오류', e)
-  } finally {
-    isLoading.value = false
-  }
-
-  // 4) 결과 반영
-  searchResults.value = list
-  showSearchMarkers.value = list.length > 0
-  showBaseMarkers.value = !showSearchMarkers.value
-
-  // 5) 첫 위치로 맵 이동
-  if (list.length) {
-    mapRef.value.panToCoords({
-      latitude: list[0].latitude,
-      longitude: list[0].longitude,
-    })
-  }
+// 검색결과 마커표시(챗봇)
+function onSearchGpt(houses) {
+  searchResultsGpt.value = houses
+  showSearchMarkers.value = true
 }
 
-// client-side 상세 필터 함수
-function applyDetailedFilters() {
-  let filtered = rawSearchResults.value
-  if (activeFilters.value.propertyType)
-    filtered = filtered.filter((h) => h.propertyType === activeFilters.value.propertyType)
-  if (activeFilters.value.dealType)
-    filtered = filtered.filter((h) => h.dealType === activeFilters.value.dealType)
-
-  const [minP, maxP] = activeFilters.value.priceRange
-  filtered = filtered.filter((h) => h.latestPrice >= minP * 1e8 && h.latestPrice <= maxP * 1e8)
-
-  if (activeFilters.value.area) {
-    switch (activeFilters.value.area) {
-      case 'small':
-        filtered = filtered.filter((h) => h.areaMax <= 20)
-        break
-      case 'medium':
-        filtered = filtered.filter((h) => h.areaMin >= 20 && h.areaMax <= 30)
-        break
-      case 'large':
-        filtered = filtered.filter((h) => h.areaMin >= 30 && h.areaMax <= 40)
-        break
-      case 'xlarge':
-        filtered = filtered.filter((h) => h.areaMin >= 40)
-        break
-    }
-  }
-  if (activeFilters.value.builtYear)
-    filtered = filtered.filter((h) => h.buildYear >= Number(activeFilters.value.builtYear))
-
-  searchResults.value = filtered
-  showSearchMarkers.value = filtered.length > 0
-}
-
-// 챗봇 연동
-function onSearchHouses(houses) {
-  searchResults.value = houses
+// 검색결과 마커표시(마커)
+function onSearchFilter(houses) {
+  console.log('[검색결과]: ', houses)
+  searchResultsFilter.value = houses
   showSearchMarkers.value = true
 }
 
