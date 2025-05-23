@@ -20,14 +20,6 @@ public interface HouseInfoService {
 
         List<String> searchByAptName(String partialName) throws SQLException;
 
-        List<String> findBySido(String sido) throws SQLException;
-
-        List<String> findBySidoGugun(String sido, String gugun) throws SQLException;
-
-        List<String> findBySidoGugunDong(String sido, String gugun, String dong) throws SQLException;
-
-        List<String> findByOptions(String sido, String gugun, String dong) throws SQLException;
-
         List<String> findByOptionsAndAptName(
                         String sido, String gugun, String dong, String aptNm) throws SQLException;
 

@@ -50,7 +50,7 @@ public class AIChatController implements RestControllerHelper {
     @PostMapping("/user-controlled")
     @Operation(summary = "아파트 정보, 멤버, 시간 등을 관리하는 Chat API", description = "아파트 정보, 멤버, 시간 등을 관리하는 Chat API")
     public ResponseEntity<?> userControlledChat(@RequestBody Map<String, String> body) {
-        CustomChatResponseDto dto = chatService.userControlledChat(body.get("message"));
+        CustomChatResponseDto dto = chatService.userControlledChat(body.get("message"), body.get("convoId"));
         return ResponseEntity.ok(dto);
     }
 }

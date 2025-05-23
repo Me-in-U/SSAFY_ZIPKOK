@@ -44,26 +44,6 @@ public class HouseInfoServiceImpl implements HouseInfoService {
     }
 
     @Override
-    public List<String> findBySido(String sido) throws SQLException {
-        return dao.findBySido(sido);
-    }
-
-    @Override
-    public List<String> findBySidoGugun(String sido, String gugun) throws SQLException {
-        return dao.findBySidoGugun(sido, gugun);
-    }
-
-    @Override
-    public List<String> findBySidoGugunDong(String sido, String gugun, String dong) throws SQLException {
-        return dao.findBySidoGugunDong(sido, gugun, dong);
-    }
-
-    @Override
-    public List<String> findByOptions(String sido, String gugun, String dong) throws SQLException {
-        return dao.findByOptions(sido, gugun, dong);
-    }
-
-    @Override
     public List<String> findByOptionsAndAptName(
             String sido, String gugun, String dong, String aptNm) throws SQLException {
         return dao.findByOptionsAndAptName(sido, gugun, dong, aptNm);

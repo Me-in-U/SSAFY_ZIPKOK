@@ -1,5 +1,5 @@
 <template>
-  <main class="container mx-auto mt-3 pb-3 flex h-[calc(100vh-6rem)] overflow-hidden gap-3.5">
+  <main class="container mx-auto mt-3 pb-2 flex h-[calc(100vh-7rem)] overflow-hidden gap-3.5">
     <!-- 왼쪽 사이드바 -->
     <div
       :class="showDetailInfo ? 'w-2/5 min-w-[220px] rounded-lg bg-white shadow-lg' : 'w-0'"

@@ -15,4 +15,5 @@ public class ChatResponseDto {
         private String message;
         private List<String> aptSeqList;
         private List<String> relatedQuestionList;
+        private String convoId;
 }

@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CustomChatResponseDto {
     private String message;
-    private List<Object> toolResultList;
+    private List<String> aptSeqList;
     private List<String> relatedQuestionList;
+    private String convoId;
 }
