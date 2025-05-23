@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.house.model.dao.CommunityPostDao">
+
+    <resultMap id="PostMap" type="com.ssafy.house.model.dto.Post">
+    <id     property="postId"           column="post_id"/>
+    <result property="categoryId"       column="category_id"/>
+    <result property="authorId"         column="author_id"/>
+    <result property="authorName"       column="author_name"/>
+    <result property="title"            column="title"/>
+    <result property="content"          column="content"/>
+    <result property="createdAt"        column="created_at" jdbcType="TIMESTAMP"/>
+    <result property="views"            column="views"/>
+    </resultMap>
+
+    <!-- 게시글 목록 -->
+    <select id="selectPosts" parameterType="map" resultMap="PostMap">
+    SELECT
+        p.post_id,
+        p.category_id,
+        p.author_id,
+        m.name          AS author_name,
+        p.title,
+        p.content,
+        p.created_at,
+        p.views
+    FROM community_post p
+    JOIN member m
+        ON p.author_id = m.mno
+    <where>
+        <if test="categoryId != null and categoryId != 'all'">
+        AND p.category_id = #{categoryId}
+        </if>
+        <if test="searchQuery != null and searchQuery != ''">
+        AND (
+            LOWER(p.title)   LIKE CONCAT('%', LOWER(#{searchQuery}), '%')
+            OR LOWER(p.content) LIKE CONCAT('%', LOWER(#{searchQuery}), '%')
+        )
+        </if>
+    </where>
+    ORDER BY p.created_at DESC
+    LIMIT #{offset}, #{size}
+    </select>
+    <!-- 게시글 목록 개수 -->
+    <select id="selectPostsCount" parameterType="map" resultType="int">
+    SELECT COUNT(*) 
+        FROM community_post p
+    <where>
+        <if test="categoryId != null and categoryId != 'all'">
+        AND p.category_id = #{categoryId}
+        </if>
+        <if test="searchQuery != null and searchQuery != ''">
+        AND (LOWER(p.title)   LIKE CONCAT('%', LOWER(#{searchQuery}), '%')
+            OR LOWER(p.content) LIKE CONCAT('%', LOWER(#{searchQuery}), '%'))
+        </if>
+    </where>
+    </select>
+    <!-- 게시글 단건 + 조회수 증가는 서비스 레이어에서 트랜잭션으로 묶어서 호출 -->
+    <select id="selectPostById" parameterType="int" resultMap="PostMap">
+    SELECT
+        p.post_id,
+        p.category_id,
+        p.author_id,
+        m.name        AS author_name,      
+        p.title,
+        p.content,
+        p.created_at,
+        p.views
+    FROM community_post p
+    JOIN member m
+        ON p.author_id = m.mno           
+    WHERE p.post_id = #{postId}
+    </select>
+
+    <update id="incrementViews" parameterType="int">
+        UPDATE community_post
+        SET views = views + 1
+        WHERE post_id = #{postId}
+    </update>
+
+    <insert id="insertPost" parameterType="com.ssafy.house.model.dto.Post">
+        INSERT INTO community_post(category_id, author_id, title, content)
+        VALUES (#{categoryId}, #{authorId}, #{title}, #{content})
+    </insert>
+</mapper>
