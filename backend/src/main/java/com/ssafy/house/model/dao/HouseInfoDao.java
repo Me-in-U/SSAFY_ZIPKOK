@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.house.model.dto.HouseInfoFull;
@@ -12,6 +13,7 @@ import com.ssafy.house.model.dto.HouseInfo;
 import com.ssafy.house.model.dto.HouseInfoSimple;
 import com.ssafy.house.model.dto.SchoolInfo;
 
+@Mapper
 public interface HouseInfoDao {
         // 단일 조회
         HouseInfo selectHouseInfo(@Param("aptSeq") String aptSeq) throws SQLException;
