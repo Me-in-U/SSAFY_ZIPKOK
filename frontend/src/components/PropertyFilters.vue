@@ -16,7 +16,7 @@
       v-model="filters.gugun"
       @change="onGugunChange"
       @mousedown="onGugunMouseDown"
-      class="flex-shrink-0 p-1.5 border border-r-0 border-l-0 focus:ring-emerald-500 disabled:opacity-100 disabled:cursor-not-allowed"
+      class="flex-shrink-0 p-1.5 border focus:ring-emerald-500 disabled:opacity-100 disabled:cursor-not-allowed"
     >
       <option value="">시·군·구 선택</option>
       <option v-for="g in gugunList" :key="g" :value="g">{{ g }}</option>
@@ -27,7 +27,7 @@
       v-model="filters.dong"
       @change="onDongChange"
       @mousedown="onDongMouseDown"
-      class="flex-shrink-0 p-1.5 border border-r-0 border-l-0 focus:ring-emerald-500 disabled:opacity-100 disabled:cursor-not-allowed"
+      class="flex-shrink-0 p-1.5 border border-l-0 focus:ring-emerald-500 disabled:opacity-100 disabled:cursor-not-allowed"
     >
       <option value="">읍·면·동·리 선택</option>
       <option v-for="d in dongList" :key="d" :value="d">{{ d }}</option>
