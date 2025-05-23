@@ -23,7 +23,7 @@
           <path d="M15 13v2" />
           <path d="M9 13v2" />
         </svg>
-        <h3 class="font-medium">부동산 투자 AI 챗봇</h3>
+        <h3 class="font-medium">부동산 AI 챗봇</h3>
       </div>
       <div class="flex items-center gap-2">
         <button
@@ -223,9 +223,9 @@ onMounted(() => {
   // 첫 렌더링 시 기본 인삿말 세팅
   messages.value = [
     {
-      content: '안녕하세요! 부동산 투자 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
+      content: '안녕하세요! 부동산 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
       sender: 'bot',
-      options: ['투자 추천 매물 보여줘', '요즘 부동산 시장 어때?', '투자 수익률 높은 지역은?'],
+      options: ['반포자이 찾아줘', '요즘 부동산 시장 어때?', '마린시티자이 매매 가격 알려줘'],
       showOptions: true,
     },
   ]
@@ -314,9 +314,9 @@ function handleAnimationEnd(evt) {
     // 메시지 초기화
     messages.value = [
       {
-        content: '안녕하세요! 부동산 투자 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
+        content: '안녕하세요! 부동산 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
         sender: 'bot',
-        options: ['투자 추천 매물 보여줘', '요즘 부동산 시장 어때?', '투자 수익률 높은 지역은?'],
+        options: ['반포자이 찾아줘', '요즘 부동산 시장 어때?', '마린시티자이 매매 가격 알려줘'],
         showOptions: true,
       },
     ]

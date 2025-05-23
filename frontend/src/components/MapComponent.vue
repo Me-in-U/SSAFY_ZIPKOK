@@ -524,7 +524,7 @@ function showMarkers(list) {
           <div style="
             padding:2px 4px;
             background:rgba(255,245,235,0.9);
-            border:3px solid #a0d2f0;
+            border:4px solid #8b00ee;
             border-radius:4px;
             font-size:12px;
             color:#000000
