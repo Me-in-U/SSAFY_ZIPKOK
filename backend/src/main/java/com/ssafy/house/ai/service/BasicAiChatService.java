@@ -1,5 +1,7 @@
 package com.ssafy.house.ai.service;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,8 +26,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ssafy.house.ai.tools.DateTimeTools;
 import com.ssafy.house.ai.tools.HouseTools;
 import com.ssafy.house.ai.tools.MemberTools;
@@ -51,6 +53,7 @@ public class BasicAiChatService implements AiChatService {
     private final ChatModel chatModel;
     private final ToolCallingManager toolCallingManager;
     private final ChatMemory chatMemory;
+    private String lastToolRaw = "";
 
     // 아파트 정보 변환
     private final BeanOutputConverter<ChatResponseDto> dtoConverter = new BeanOutputConverter<>(
@@ -111,6 +114,7 @@ public class BasicAiChatService implements AiChatService {
         ChatResponse chatResponse = chatModel.call(prompt);
         chatMemory.add(convoId, chatResponse.getResult().getOutput());
 
+        CustomChatResponseDto dto;
         // 툴 호출 루프
         while (chatResponse.hasToolCalls()) {
             ToolExecutionResult exec = toolCallingManager.executeToolCalls(prompt, chatResponse);
@@ -124,16 +128,27 @@ public class BasicAiChatService implements AiChatService {
                     .orElseThrow(() -> new IllegalStateException("툴 응답이 없습니다"));
 
             // ToolResponseMessage.getResponses() 에서 첫 번째 응답을 꺼내고 .responseData()로 원시 문자열 추출
-            String raw = toolResponseMessage.getResponses().get(0).responseData();
-            logger.warn("[툴 호출 결과 원본]: " + raw);
-            chatMemory.add(convoId, new UserMessage(raw));
+            lastToolRaw = toolResponseMessage.getResponses().get(0).responseData();
+            logger.warn("[툴 호출 결과 원본]: " + lastToolRaw);
+            chatMemory.add(convoId, new UserMessage(lastToolRaw));
             // ─────────────────────────
 
             // 모델 재호출
             prompt = new Prompt(exec.conversationHistory(), opts);
-            chatResponse = chatModel.call(prompt);
-            chatMemory.add(convoId, chatResponse.getResult().getOutput());
-            logger.warn("[툴 호출 결과로 GPT 반응 원본]: " + chatResponse.getResult().getOutput());
+            try {
+                // 툴 호출 결과를 포함한 프롬프트로 모델 호출
+                chatResponse = chatModel.call(prompt);
+                chatMemory.add(convoId, chatResponse.getResult().getOutput());
+                logger.warn("[툴 호출 결과로 GPT 반응 원본]: " + chatResponse.getResult().getOutput());
+            } catch (Exception e) {
+                logger.error("모델 호출 중 오류 발생: {}", e.getMessage());
+                // 오류 발생 시 툴 호출 결과를 포함한 프롬프트로 모델 호출
+                prompt = new Prompt(chatMemory.get(convoId), opts);
+                dto = CustomChatResponseDto.builder()
+                        .message("모델 호출 중 오류 발생")
+                        .toolResultList(List.of())
+                        .build();
+            }
         }
         // 마지막 AssistantMessage 텍스트 추출해 반환
         String lastResponse = chatMemory.get(convoId).stream()
@@ -141,15 +156,29 @@ public class BasicAiChatService implements AiChatService {
                 .map(m -> ((AssistantMessage) m).getText())
                 .reduce((first, second) -> second)
                 .orElse("");
-
-        CustomChatResponseDto dto;
+        logger.warn("[최종 AssistantMessage]: " + lastResponse);
         try {
-            dto = customDtoConverter.convert(lastResponse);
+            if (lastResponse.startsWith("{") && lastResponse.endsWith("}")) {
+                dto = customDtoConverter.convert(lastResponse);
+            } else {
+                throw new Exception("JSON 형식이 아닙니다.");
+            }
         } catch (Exception e) {
             log.error("CustomChatResponseDto 변환 실패", e);
+            List<Object> fallbackList = new ArrayList<>();
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                List<String> list = mapper.readValue(
+                        lastToolRaw,
+                        new TypeReference<List<String>>() {
+                        });
+                fallbackList.addAll(list);
+            } catch (IOException ex) {
+                log.error("raw JSON 파싱 실패", ex);
+            }
             dto = CustomChatResponseDto.builder()
-                    .message("정보 파싱에 실패했어요.")
-                    .toolResultList(List.of())
+                    .message("결과가 너무 많아요.. ㅠㅠㅠ" + fallbackList.size() + "개 찾았어요.")
+                    .toolResultList(fallbackList)
                     .build();
         }
         return dto;

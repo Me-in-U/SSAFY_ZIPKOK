@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HouseFullInfo {
+public class HouseInfoFull {
     private String aptSeq;
     private String aptNm;
-    private String latitude; 
+    private String latitude;
     private String longitude;
     private String roadAddress;
     private String jibunAddress;
@@ -33,13 +33,13 @@ public class HouseFullInfo {
     private String imgPath;
 
     // 최신 거래 정보
-    private String dealType;        // 거래 유형 (월세, 전세, 매매)
-    private Long deposit;           // 보증금 (월세용)
-    private Long monthlyRent;       // 월세 금액 (월세용)
-    private Long latestPrice;       // 매매가 또는 보증금(전세)
+    private String dealType; // 거래 유형 (월세, 전세, 매매)
+    private Long deposit; // 보증금 (월세용)
+    private Long monthlyRent; // 월세 금액 (월세용)
+    private Long latestPrice; // 매매가 또는 보증금(전세)
     private String latestSpec;
 
     // 추가된 필드
-    private String propertyType;  // house_deal.property_type
-    private String description;   // house_deal.description
+    private String propertyType; // house_deal.property_type
+    private String description; // house_deal.description
 }

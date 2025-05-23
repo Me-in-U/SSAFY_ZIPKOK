@@ -69,6 +69,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/house/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/house/**")
+                        .permitAll()
                         // 시군구동읍면리 셀릭트 로딩
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/sidogungu/**")

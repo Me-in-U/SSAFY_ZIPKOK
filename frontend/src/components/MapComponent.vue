@@ -439,8 +439,8 @@ async function loadFavorites(seqs) {
     return updateVisibility()
   }
   console.log('[즐겨찾기] 마커 추가')
-  const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
-    params: { seqs: seqs.join(',') },
+  const { data: list } = await axios.post('http://localhost:8080/api/v1/house/batch', seqs, {
+    headers: { 'Content-Type': 'application/json' },
   })
   list.forEach((h) => {
     const pos = new window.kakao.maps.LatLng(h.latitude, h.longitude)
@@ -476,14 +476,16 @@ watch(
       return updateVisibility()
     }
     // String 배열-> HouseInfo 배열
+    // 프론트 (Vue watch 내부)
     const houseInfoList =
       typeof searchResultsGpt[0] === 'string'
         ? (
-            await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
-              params: { seqs: searchResultsGpt.join(',') },
+            await axios.post('http://localhost:8080/api/v1/house/batch', searchResultsGpt, {
+              headers: { 'Content-Type': 'application/json' },
             })
           ).data
         : searchResultsGpt
+
     showMarkers(houseInfoList)
   },
   { immediate: true, deep: true },
@@ -550,9 +552,11 @@ watch(
   async (aptSeq) => {
     if (!aptSeq || !mapInstance.value) return
     try {
-      const { data: list } = await axios.get('https://api.ssafy.blog/api/v1/house/batch', {
-        params: { seqs: aptSeq },
-      })
+      const { data: list } = await axios.post(
+        'http://localhost:8080/api/v1/house/batch',
+        [aptSeq],
+        { headers: { 'Content-Type': 'application/json' } },
+      )
       console.log('단일 매물 좌표 조회', list)
       const house = Array.isArray(list) ? list[0] : null
       if (house) panToCoords(house)

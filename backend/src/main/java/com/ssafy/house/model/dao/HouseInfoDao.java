@@ -7,8 +7,9 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.ssafy.house.model.dto.HouseFullInfo;
+import com.ssafy.house.model.dto.HouseInfoFull;
 import com.ssafy.house.model.dto.HouseInfo;
+import com.ssafy.house.model.dto.HouseInfoSimple;
 import com.ssafy.house.model.dto.SchoolInfo;
 
 public interface HouseInfoDao {
@@ -23,13 +24,10 @@ public interface HouseInfoDao {
                         @Param("maxLng") String maxLng) throws SQLException;
 
         // apt_seq 리스트 조회
-        List<HouseInfo> selectBySeqList(List<String> aptSeqList) throws SQLException;
+        List<HouseInfoSimple> selectBySeqList(List<String> aptSeqList) throws SQLException;
 
         // 아파트명 일부 검색(GPT)
         List<String> searchByAptName(@Param("partialName") String partialName) throws SQLException;
-
-        // 아파트명 일부 검색(GPT)
-        List<HouseInfo> searchByName(@Param("partialName") String partialName) throws SQLException;
 
         // 시도 검색(GPT)
         List<String> findBySido(
@@ -72,8 +70,8 @@ public interface HouseInfoDao {
                         @Param("maxPrice") Long maxPrice,
                         @Param("areaOption") String areaOption) throws SQLException;
 
-        // HouseFullInfo 전체 조회
-        HouseFullInfo selectHouseFullInfo(@Param("aptSeq") String aptSeq) throws SQLException;
+        // selectHouseInfoFull 전체 조회
+        HouseInfoFull selectHouseInfoFull(@Param("aptSeq") String aptSeq) throws SQLException;
 
         // 마커용 조회
         List<HouseInfo> searchMarkersByOptionsAndName(Map<String, Object> params) throws SQLException;
@@ -81,6 +79,6 @@ public interface HouseInfoDao {
         // 주변 학교 조회
         List<SchoolInfo> selectSchoolsByAptSeq(@Param("aptSeq") String aptSeq) throws SQLException;
 
-        List<HouseInfo> searchFilter(String sido, String gugun, String dong, String aptNm);
+        List<HouseInfoSimple> searchFilter(String sido, String gugun, String dong, String aptNm);
 
 }
