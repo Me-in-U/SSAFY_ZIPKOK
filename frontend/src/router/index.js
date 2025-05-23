@@ -6,6 +6,7 @@ import LoginForm from '@/components/LoginForm.vue'
 import RegisterForm from '@/components/RegisterForm.vue'
 import RecommendedPropertiesModal from '@/components/RecommendedPropertiesModal.vue'
 import MyPage from '@/components/MyPage.vue'
+import CommunityBoard from '@/components/CommunityBoard.vue'
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,10 @@ export default createRouter({
         {
           path: 'mypage',
           components: { default: HomeContent, modal: MyPage },
+        },
+        {
+          path: 'community',
+          components: { default: HomeContent, modal: CommunityBoard },
         }
       ],
     },

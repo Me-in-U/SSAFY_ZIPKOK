@@ -13,5 +13,6 @@ public class HouseRecommend {
     private String listingName;
     private Long   price;
     private String spec;
+    private String propertyType;
     private String description;
 }

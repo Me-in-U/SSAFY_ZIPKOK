@@ -24,7 +24,8 @@
       img.img_path                                      AS imgPath,
       hd.price                                          AS price,
       hd.spec                                           AS spec,
-      CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description
+      CAST(hd.description AS CHAR CHARACTER SET utf8mb4) AS description,
+      hd.property_type                               AS propertyType
     FROM member_favorite mf
     -- 기본 아파트 정보는 반드시 있어야 하니 INNER JOIN
     JOIN house_info hi
