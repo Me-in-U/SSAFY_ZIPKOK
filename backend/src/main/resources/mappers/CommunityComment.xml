@@ -10,7 +10,9 @@
     <result property="authorId"   column="author_id"/>
     <result property="authorName" column="author_name"/>
     <result property="content"    column="content"/>
-    <result property="createdAt"  column="created_at"/>
+    <result property="createdAt"
+          column="created_at"
+          jdbcType="TIMESTAMP"/>
   </resultMap>
 
   <!-- 댓글 목록 조회 -->
