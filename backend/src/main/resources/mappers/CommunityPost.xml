@@ -60,17 +60,10 @@
     <!-- 게시글 단건 + 조회수 증가는 서비스 레이어에서 트랜잭션으로 묶어서 호출 -->
     <select id="selectPostById" parameterType="int" resultMap="PostMap">
     SELECT
-        p.post_id,
-        p.category_id,
-        p.author_id,
-        m.name        AS author_name,      
-        p.title,
-        p.content,
-        p.created_at,
-        p.views
+        p.post_id, p.category_id, p.author_id, m.name AS author_name,
+        p.title, p.content, p.created_at, p.views
     FROM community_post p
-    JOIN member m
-        ON p.author_id = m.mno           
+    JOIN member m ON p.author_id = m.mno
     WHERE p.post_id = #{postId}
     </select>
 
@@ -80,8 +73,30 @@
         WHERE post_id = #{postId}
     </update>
 
+    <!-- 전체 목록 -->
+    <select id="selectAllPosts" resultMap="PostMap">
+    SELECT … FROM community_post p
+    JOIN member m ON p.author_id = m.mno
+    <where>
+        <if test="categoryId != null and categoryId != '' and categoryId != 'all'">
+        AND p.category_id = #{categoryId}
+        </if>
+    </where>
+    ORDER BY p.created_at DESC
+    </select>
+
     <insert id="insertPost" parameterType="com.ssafy.house.model.dto.Post">
-        INSERT INTO community_post(category_id, author_id, title, content)
-        VALUES (#{categoryId}, #{authorId}, #{title}, #{content})
+    INSERT INTO community_post(category_id, author_id, title, content)
+    VALUES(#{categoryId},#{authorId},#{title},#{content})
     </insert>
+
+    <update id="updatePost" parameterType="com.ssafy.house.model.dto.Post">
+    UPDATE community_post
+        SET category_id=#{categoryId}, title=#{title}, content=#{content}
+    WHERE post_id=#{postId}
+    </update>
+
+    <delete id="deletePost" parameterType="int">
+    DELETE FROM community_post WHERE post_id=#{postId}
+    </delete>
 </mapper>

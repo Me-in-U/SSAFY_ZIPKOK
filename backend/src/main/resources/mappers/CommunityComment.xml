@@ -8,28 +8,59 @@
     <id     property="commentId" column="comment_id"/>
     <result property="postId"     column="post_id"/>
     <result property="authorId"   column="author_id"/>
-    <result property="authorName"       column="author_name"/>
+    <result property="authorName" column="author_name"/>
     <result property="content"    column="content"/>
     <result property="createdAt"  column="created_at"/>
   </resultMap>
 
-    <select id="selectCommentsByPostId" parameterType="int" resultMap="CommentMap">
+  <!-- 댓글 목록 조회 -->
+  <select id="selectCommentsByPostId" parameterType="int" resultMap="CommentMap">
     SELECT
-        c.comment_id,
-        c.post_id,
-        c.author_id,
-        m.name        AS author_name,
-        c.content,
-        c.created_at
+      c.comment_id,
+      c.post_id,
+      c.author_id,
+      m.name       AS author_name,
+      c.content,
+      c.created_at
     FROM community_comment c
     JOIN member m
-        ON c.author_id = m.mno
+      ON c.author_id = m.mno
     WHERE c.post_id = #{postId}
     ORDER BY c.created_at ASC
-    </select>
+  </select>
 
+  <!-- 댓글 단건 조회 -->
+  <select id="selectCommentById" parameterType="int" resultMap="CommentMap">
+    SELECT
+      c.comment_id,
+      c.post_id,
+      c.author_id,
+      m.name       AS author_name,
+      c.content,
+      c.created_at
+    FROM community_comment c
+    JOIN member m
+      ON c.author_id = m.mno
+    WHERE c.comment_id = #{commentId}
+  </select>
+
+  <!-- 댓글 작성 -->
   <insert id="insertComment" parameterType="com.ssafy.house.model.dto.Comment">
     INSERT INTO community_comment(post_id, author_id, content)
     VALUES (#{postId}, #{authorId}, #{content})
   </insert>
+
+  <!-- 댓글 수정 -->
+  <update id="updateComment" parameterType="com.ssafy.house.model.dto.Comment">
+    UPDATE community_comment
+       SET content = #{content}
+     WHERE comment_id = #{commentId}
+  </update>
+
+  <!-- 댓글 삭제 -->
+  <delete id="deleteComment" parameterType="int">
+    DELETE FROM community_comment
+     WHERE comment_id = #{commentId}
+  </delete>
+
 </mapper>
