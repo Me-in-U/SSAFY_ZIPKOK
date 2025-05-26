@@ -6,6 +6,8 @@
       v-model="filters.sido"
       @change="onSidoChange"
       class="flex-shrink-0 p-1.5 border border-r-0 rounded-l-full focus:ring-emerald-500"
+      title="시도 선택"
+      aria-label="시도 선택 필터"
     >
       <option value="">시·도 선택</option>
       <option v-for="s in sidoList" :key="s" :value="s">{{ s }}</option>
@@ -17,6 +19,8 @@
       @change="onGugunChange"
       @mousedown="onGugunMouseDown"
       class="flex-shrink-0 p-1.5 border focus:ring-emerald-500 disabled:opacity-100 disabled:cursor-not-allowed"
+      title="시군구 선택"
+      aria-label="시군구 선택 필터"
     >
       <option value="">시·군·구 선택</option>
       <option v-for="g in gugunList" :key="g" :value="g">{{ g }}</option>
@@ -28,6 +32,8 @@
       @change="onDongChange"
       @mousedown="onDongMouseDown"
       class="flex-shrink-0 p-1.5 border border-l-0 focus:ring-emerald-500 disabled:opacity-100 disabled:cursor-not-allowed"
+      title="읍·면·동·리 선택"
+      aria-label="읍·면·동·리 선택 필터"
     >
       <option value="">읍·면·동·리 선택</option>
       <option v-for="d in dongList" :key="d" :value="d">{{ d }}</option>
@@ -55,6 +61,8 @@
       <button
         @click="onSearch"
         class="px-3 py-1.5 mr-4 bg-emerald-600 border text-white rounded-r-full hover:bg-emerald-700 transition"
+        title="검색"
+        aria-label="검색 버튼"
       >
         검색
       </button>

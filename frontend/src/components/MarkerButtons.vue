@@ -1,8 +1,10 @@
 <template>
   <button
     @click="$emit('toggle-base')"
-    class="relative w-10 h-10 rounded-full flex items-center justify-center transition"
+    class="relative w-10 h-10 rounded-full flex items-center justify-center transition transform active:scale-95 hover:ring-2 focus:outline-none"
     :class="showBase ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+    title="기본 매물 표시"
+    aria-label="기본 매물 표시 토글"
   >
     <!-- 기본 아이콘 -->
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -30,8 +32,10 @@
 
   <button
     @click="$emit('toggle-favorite')"
-    class="relative w-10 h-10 rounded-full flex items-center justify-center transition"
+    class="relative w-10 h-10 rounded-full flex items-center justify-center transition transform active:scale-95 hover:ring-2 focus:outline-none"
     :class="showFavorite ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+    title="즐겨찾기 매물 표시"
+    aria-label="즐겨찾기 매물 표시 토글"
   >
     <!-- 즐겨찾기 아이콘 -->
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -58,8 +62,10 @@
 
   <button
     @click="$emit('toggle-search')"
-    class="relative w-10 h-10 rounded-full flex items-center justify-center transition"
+    class="relative w-10 h-10 rounded-full flex items-center justify-center transition transform active:scale-95 hover:ring-2 focus:outline-none"
     :class="showSearch ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
+    title="검색 매물 표시"
+    aria-label="검색 매물 표시 토글"
   >
     <!-- 검색 아이콘 -->
     <svg
@@ -94,6 +100,8 @@
     @click="$emit('toggle-maptype', mapType === 'roadmap' ? 'skyview' : 'roadmap')"
     :class="mapType === 'roadmap' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'"
     class="w-10 h-10 rounded-full flex items-center justify-center transition transform active:scale-95 hover:ring-2 focus:outline-none"
+    title="지도 모드 토글"
+    aria-label="지도 모드 토글"
   >
     <!-- 지형도 아이콘 -->
     <svg
@@ -134,6 +142,8 @@
   <button
     @click="$emit('zoom', 'in')"
     class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center transition transform active:scale-95 hover:ring-2 hover:ring-gray-400 focus:outline-none"
+    title="지도 확대"
+    aria-label="지도 확대 버튼"
   >
     <span class="text-xl font-bold">＋</span>
   </button>
@@ -142,6 +152,8 @@
   <button
     @click="$emit('zoom', 'out')"
     class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center transition transform active:scale-95 hover:ring-2 hover:ring-gray-400 focus:outline-none"
+    title="지도 축소"
+    aria-label="지도 축소 버튼"
   >
     <span class="text-xl font-bold">－</span>
   </button>
