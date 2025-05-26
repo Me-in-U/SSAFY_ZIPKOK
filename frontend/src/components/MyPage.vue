@@ -2,7 +2,7 @@
   <transition name="fade">
     <div
       v-if="visible"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
     >
       <div
         class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden relative flex flex-col"
