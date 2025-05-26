@@ -1,21 +1,19 @@
 package com.ssafy.house.model.service;
 
-
+import com.ssafy.house.model.dto.Post;
 import com.ssafy.house.model.dto.Comment;
 import com.ssafy.house.model.dto.PageResult;
-import com.ssafy.house.model.dto.Post;
 
+import java.util.List;
 
-/**
- * 커뮤니티 서비스
- * - 게시글 목록 조회
- * - 게시글 상세 조회
- * - 게시글 작성
- * - 댓글 작성
- */
 public interface CommunityService {
     PageResult<Post> getPosts(String categoryId, String searchQuery, int page, int size);
     Post             getPostDetail(int postId);
-    void             createPost(Post post);
-    void             addComment(Comment comment);
+    void             createPost(Post post, String userEmail);
+    void             updatePost(int postId, Post post, String userEmail);
+    void             deletePost(int postId, String userEmail);
+
+    void             addComment(int postId, Comment comment, String userEmail);
+    void             updateComment(int postId, int commentId, Comment comment, String userEmail);
+    void             deleteComment(int postId, int commentId, String userEmail);
 }

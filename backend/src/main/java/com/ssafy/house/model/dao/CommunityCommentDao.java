@@ -9,5 +9,8 @@ import com.ssafy.house.model.dto.Comment;
 @Mapper
 public interface CommunityCommentDao {
     List<Comment> selectCommentsByPostId(int postId);
+    Comment       selectCommentById(int commentId);
     int           insertComment(Comment comment);
+    int           updateComment(Comment comment);
+    int           deleteComment(int commentId);
 }
