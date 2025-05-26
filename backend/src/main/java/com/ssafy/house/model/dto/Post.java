@@ -20,4 +20,5 @@ public class Post {
     private Timestamp createdAt;
     private int    views;
     private List<Comment> comments;  // 상세조회 시 주입
+    private int commentCount;
 }
