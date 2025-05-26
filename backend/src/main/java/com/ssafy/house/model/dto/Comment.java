@@ -1,6 +1,6 @@
 package com.ssafy.house.model.dto;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +15,5 @@ public class Comment {
     private int    authorId;
     private String authorName;
     private String content;
-    private Date   createdAt;
+    private Timestamp   createdAt;
 }
