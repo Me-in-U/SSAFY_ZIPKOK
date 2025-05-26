@@ -1,8 +1,7 @@
 package com.ssafy.house.restcontroller;
 
-import java.security.Principal;             // <- 수정
+import java.security.Principal; // <- 수정
 import org.springframework.http.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.ssafy.house.model.dao.MemberDao;
@@ -12,23 +11,22 @@ import com.ssafy.house.model.dto.Post;
 import com.ssafy.house.model.dto.PageResult; // <- 추가
 import com.ssafy.house.model.service.CommunityService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/community")
 public class CommunityRestController {
-
-    @Autowired
-    private CommunityService communityService;
-    @Autowired
-    private MemberDao        memberDao;
+    private final CommunityService communityService;
+    private final MemberDao memberDao;
 
     /** 1) 게시글 목록 (페이징 포함) */
     @GetMapping("/posts")
     public ResponseEntity<PageResult<Post>> list(
             @RequestParam(defaultValue = "all") String category,
-            @RequestParam(required = false)     String search,
-            @RequestParam(defaultValue = "0")   int page,
-            @RequestParam(defaultValue = "10")  int size
-    ) {
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         PageResult<Post> result = communityService.getPosts(category, search, page, size);
         return ResponseEntity.ok(result);
     }
@@ -44,7 +42,7 @@ public class CommunityRestController {
     @PostMapping("/posts")
     public ResponseEntity<Void> create(
             @RequestBody Post post,
-            Principal principal             // <- java.security.Principal
+            Principal principal // <- java.security.Principal
     ) {
         // 1) 로그인한 email
         String email = principal.getName();
@@ -65,8 +63,7 @@ public class CommunityRestController {
     public ResponseEntity<Void> comment(
             @PathVariable int postId,
             @RequestBody Comment comment,
-            Principal principal
-    ) {
+            Principal principal) {
         // 1) postId 세팅
         comment.setPostId(postId);
 

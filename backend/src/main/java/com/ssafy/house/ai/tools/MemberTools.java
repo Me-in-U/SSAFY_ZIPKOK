@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Component;
 
 import com.ssafy.house.model.dto.Member;
 import com.ssafy.house.model.dto.Page;
@@ -16,7 +15,8 @@ import com.ssafy.house.model.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
+// @Component
+@Deprecated
 @RequiredArgsConstructor
 public class MemberTools {
     private final MemberService mService;

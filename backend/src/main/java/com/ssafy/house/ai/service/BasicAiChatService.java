@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
-import org.springframework.ai.chat.client.ChatClient;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -22,7 +22,6 @@ import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.support.ToolCallbacks;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +29,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.house.ai.tools.DateTimeTools;
 import com.ssafy.house.ai.tools.HouseTools;
-import com.ssafy.house.ai.tools.MemberTools;
-import com.ssafy.house.model.dto.ChatResponseDto;
 import com.ssafy.house.model.dto.CustomChatResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -44,10 +41,8 @@ public class BasicAiChatService implements AiChatService {
     @Value("${ssafy.ai.custom-system-prompt}")
     String customSystemPrompt;
 
-    @Qualifier("advisedChatClient")
-    private final ChatClient advisedChatClient;
     private final DateTimeTools dateTimeTools;
-    private final MemberTools memberTools;
+    // private final MemberTools memberTools; // 미사용
     private final HouseTools houseTools;
 
     private final ChatModel chatModel;
@@ -56,39 +51,10 @@ public class BasicAiChatService implements AiChatService {
     private String lastToolRaw = "";
 
     // 아파트 정보 변환
-    private final BeanOutputConverter<ChatResponseDto> dtoConverter = new BeanOutputConverter<>(
-            ChatResponseDto.class);
     private final BeanOutputConverter<CustomChatResponseDto> customDtoConverter = new BeanOutputConverter<>(
             CustomChatResponseDto.class);
 
-    private Logger logger = org.slf4j.LoggerFactory.getLogger(BasicAiChatService.class);
-
-    @SuppressWarnings("null")
-    @Override
-    public ChatResponseDto houseToolGeneration(String userInput) {
-        String format = dtoConverter.getFormat();
-        String json = advisedChatClient
-                .prompt()
-                .system(c -> c.param("language", "Korean").param("character", "Chill한"))
-                .user(userInput + "\n\n" + format)
-                .tools(houseTools)
-                .tools(dateTimeTools)
-                .tools(memberTools)
-                .call()
-                .content();
-
-        ChatResponseDto dto;
-        try {
-            dto = dtoConverter.convert(json);
-        } catch (Exception e) {
-            log.error("ChatResponseDto 변환 실패", e);
-            dto = ChatResponseDto.builder()
-                    .message("아파트 정보 파싱에 실패했어요.")
-                    .aptSeqList(List.of())
-                    .build();
-        }
-        return dto;
-    }
+    private Logger logger = LoggerFactory.getLogger(BasicAiChatService.class);
 
     @Override
     public CustomChatResponseDto userControlledChat(String userInput, String convoId) {
@@ -97,7 +63,7 @@ public class BasicAiChatService implements AiChatService {
 
         // 옵션 준비 (memberTools: CustomerTools 대체)
         ChatOptions opts = ToolCallingChatOptions.builder()
-                .toolCallbacks(ToolCallbacks.from(houseTools, dateTimeTools, memberTools))
+                .toolCallbacks(ToolCallbacks.from(houseTools, dateTimeTools))
                 .internalToolExecutionEnabled(false)
                 .build();
 
