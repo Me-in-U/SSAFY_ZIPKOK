@@ -68,6 +68,8 @@
             <button
               type="button"
               @click="showPassword = !showPassword"
+              :aria-pressed="showPassword.toString()"
+              aria-label="비밀번호 {{ showPassword ? '숨기기' : '보기' }}"
               class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
             >
               {{ showPassword ? '숨기기' : '보기' }}
@@ -167,6 +169,8 @@
               ? 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500'
               : 'bg-gray-400 cursor-not-allowed'
           "
+          title="회원가입"
+          aria-label="회원가입 버튼"
         >
           <span v-if="isLoading" class="mr-2">⏳</span>
           {{ isLoading ? '가입 중...' : '회원가입' }}
@@ -176,7 +180,13 @@
         <div class="text-center">
           <p class="text-sm text-gray-600">
             이미 계정이 있나요?
-            <button type="button" @click="goLogin" class="text-emerald-600 hover:underline">
+            <button
+              type="button"
+              @click="goLogin"
+              class="text-emerald-600 hover:underline"
+              title="로그인 페이지로 이동"
+              aria-label="로그인 페이지로 이동"
+            >
               로그인
             </button>
           </p>

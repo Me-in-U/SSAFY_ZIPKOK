@@ -3,26 +3,46 @@
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <!-- 로고 -->
       <div class="flex items-center">
-        <img src="/favicon.ico" alt="Logo" class="mt-1 w-9 h-8 mr-2" />
-        <router-link to="/" class="text-xl font-bold text-gray-800">집콕(ZIPKOK)</router-link>
+        <img src="/favicon-96x96.png" alt="Logo" class="mt-1 w-9 h-8 mr-2" />
+        <router-link
+          to="/"
+          class="text-xl font-bold text-gray-800"
+          title="홈으로 이동"
+          aria-label="홈으로 이동"
+          >집콕(ZIPKOK)</router-link
+        >
       </div>
       <!-- 네비게이션 -->
       <nav class="hidden md:flex items-center space-x-6">
-        <router-link to="/community" class="text-gray-600 hover:text-emerald-600 font-medium"
+        <router-link
+          to="/community"
+          class="text-gray-600 hover:text-emerald-600 font-medium"
+          title="커뮤니티"
+          aria-label="커뮤니티로 이동"
           >커뮤니티</router-link
         >
         <button
           @click.prevent="goRecommended"
           class="text-gray-600 hover:text-emerald-600 font-medium"
+          title="추천 매물"
+          aria-label="추천 매물 표시"
         >
           추천 매물
         </button>
 
         <template v-if="!userStore.isLogged">
-          <router-link to="/login" class="text-gray-600 hover:text-emerald-600 font-medium"
+          <router-link
+            to="/login"
+            class="text-gray-600 hover:text-emerald-600 font-medium"
+            title="로그인"
+            aria-label="로그인 페이지로 이동"
             >로그인</router-link
           >
-          <router-link to="/register" class="text-gray-600 hover:text-emerald-600 font-medium"
+          <router-link
+            to="/register"
+            class="text-gray-600 hover:text-emerald-600 font-medium"
+            title="회원가입"
+            aria-label="회원가입 페이지로 이동"
             >회원가입</router-link
           >
         </template>
@@ -31,7 +51,12 @@
           <router-link to="/mypage" class="text-gray-600 hover:text-emerald-600 font-medium"
             >마이페이지</router-link
           >
-          <button @click="emitLogout" class="text-gray-600 hover:text-emerald-600 font-medium">
+          <button
+            @click="emitLogout"
+            class="text-gray-600 hover:text-emerald-600 font-medium"
+            title="로그아웃"
+            aria-label="로그아웃 버튼"
+          >
             로그아웃
           </button>
         </template>
@@ -58,12 +83,18 @@
     <!-- 모바일 메뉴 -->
     <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t">
       <div class="container mx-auto px-4 py-2 space-y-2">
-        <router-link to="/community" class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+        <router-link
+          to="/community"
+          class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+          title="커뮤니티"
+          aria-label="커뮤니티로 이동"
           >커뮤니티</router-link
         >
         <button
           @click.prevent="goRecommended"
           class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+          title="추천 매물"
+          aria-label="추천 매물 표시"
         >
           추천 매물
         </button>
@@ -72,11 +103,15 @@
           <router-link
             to="/login"
             class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            title="로그인"
+            aria-label="로그인 페이지로 이동"
             >로그인</router-link
           >
           <router-link
             to="/register"
             class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            title="회원가입"
+            aria-label="회원가입 페이지로 이동"
             >회원가입</router-link
           >
         </template>
@@ -84,11 +119,15 @@
           <router-link
             to="/mypage"
             class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            title="마이페이지"
+            aria-label="마이페이지로 이동"
             >마이페이지</router-link
           >
           <button
             @click="emitLogout"
             class="block py-2 text-gray-600 hover:text-emerald-600 font-medium"
+            title="로그아웃"
+            aria-label="로그아웃 버튼"
           >
             로그아웃
           </button>

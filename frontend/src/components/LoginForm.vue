@@ -25,7 +25,7 @@
         <img src="/favicon.ico" alt="Logo" class="mx-auto w-8 h-8" />
         <h2 class="mt-4 text-3xl font-extrabold text-gray-900">부동산 AI</h2>
         <p class="mt-2 text-sm text-gray-600">
-          계정에 로그인하고<br />맞춤형 부동산 정보를 받아보세요
+          계정에 로그인하고<br />부동산 커뮤니티에 참여해보세요
         </p>
       </div>
 

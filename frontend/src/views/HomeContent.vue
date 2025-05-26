@@ -1,14 +1,16 @@
 <template>
-  <main class="container mx-auto mt-3 pb-2 flex h-[calc(100vh-7rem)] overflow-hidden gap-3.5">
+  <main
+    class="container mx-auto pt-4 pb-2 pl-2 pr-2 flex h-[calc(100vh-7rem)] overflow-hidden gap-3.5"
+  >
     <!-- 왼쪽 사이드바 -->
     <div
-      :class="showDetailInfo ? 'w-2/5 min-w-[220px] rounded-lg bg-white shadow-lg' : 'w-0'"
+      :class="showDetailInfo ? 'w-2/5 min-w-[220px] rounded-lg bg-white shadow-4way' : 'w-0'"
       class="transition-[width] duration-300 ease-in-out overflow-hidden"
     >
       <PropertyDetailsSidebar
         v-if="showDetailInfo"
         :aptSeq="selectedAptSeq"
-        :isOpen="showDetailInfo"
+        :is-open="showDetailInfo"
         :is-favorite="userStore.favoriteSeqs.includes(selectedAptSeq)"
         @close="showDetailInfo = false"
         @toggle-favorite="onToggleFavorite"
@@ -18,7 +20,7 @@
     <!-- 중간영역 -->
     <section
       :class="showDetailInfo ? 'w-4/5' : 'w-full'"
-      class="transition-all duration-300 min-w-[320px] ease-in-out flex flex-col rounded-lg overflow-hidden space-y-4"
+      class="transition-all duration-300 min-w-[320px] ease-in-out flex flex-col rounded-lg overflow-hidden space-y-4 shadow-4way"
     >
       <!-- 필터 지도 버튼 래퍼 -->
       <div class="relative flex-1">
@@ -64,7 +66,7 @@
 
     <!-- 오른쪽 챗봇 -->
     <aside
-      class="flex-shrink-0 flex flex-col w-1/5 min-w-[180px] overflow-auto shadow-lg rounded-lg"
+      class="flex-shrink-0 flex flex-col w-1/5 min-w-[180px] overflow-auto rounded-lg shadow-4way"
     >
       <ChatbotInterface class="h-full" @search-gpt="onSearchGpt" />
     </aside>
@@ -182,6 +184,7 @@ function onSearchFilter(houses) {
 function handleSelectProperty(house) {
   selectedAptSeq.value = house.aptSeq
   showDetailInfo.value = true
+  console.log('[선택된 매물]: ', house)
 }
 
 // 즐겨찾기 토글

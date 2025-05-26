@@ -5,7 +5,30 @@
       class="flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out w-full"
       :class="isOpen ? 'translate-x-0' : 'translate-x-full'"
     >
-      <div class="h-full overflow-auto p-4">
+      <div v-if="detail">
+        <!-- 헤더 -->
+        <div
+          class="flex pt-4 pl-4 pr-4 items-center justify-between sticky top-0 bg-opacity-0 z-10"
+        >
+          <h3 class="font-semibold text-lg">{{ detail.aptNm }}</h3>
+          <button class="p-2 rounded-full hover:bg-gray-100" @click="closeSidebar">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="h-full overflow-auto pl-4 pr-4 pb-4 mt-2">
         <!-- 1) 로딩 스피너 -->
         <div v-if="loading" class="flex items-center justify-center h-full">
           <svg
@@ -33,28 +56,6 @@
 
         <!-- 3) 상세 정보 -->
         <div v-else-if="detail">
-          <!-- 헤더 -->
-          <div
-            class="pt-1 pb-1 pl-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 border rounded-lg"
-          >
-            <h3 class="font-semibold text-lg">{{ detail.aptNm }}</h3>
-            <button class="p-2 rounded-full hover:bg-gray-100" @click="closeSidebar">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </svg>
-            </button>
-          </div>
-
           <!-- 이미지 -->
           <img
             :src="detail.imgPath || catPlaceholder"
@@ -199,10 +200,7 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-  isOpen: {
-    type: Boolean,
-    default: false,
-  },
+  isOpen: Boolean,
   isFavorite: { type: Boolean, default: false },
   aptSeq: { type: String, required: true },
 })
@@ -230,15 +228,6 @@ const tabs = [
 ]
 let chartInstance = null
 
-// 사이드바 열림/닫힘 로그
-watch(
-  () => props.isOpen,
-  (open) => {
-    if (open) {
-      console.log('🛈 사이드바 열림, aptSeq=', props.aptSeq)
-    }
-  },
-)
 // dealType 기반으로 보여줄 가격 문자열 생성
 const priceDisplay = computed(() => {
   if (!detail.value) return '-'
@@ -282,12 +271,14 @@ watch(
   { immediate: true },
 )
 
-// 탭이 info 로 바뀔 때
+// 탭이 info 로 바뀔 때 and 면적 필터가 바뀔 때 차트 다시 그리기
 watch([activeTab, areaFilter], ([tab]) => {
   if (tab === 'info') {
     drawChart()
   }
 })
+
+//  차트 그리기 함수
 async function drawChart() {
   if (activeTab.value !== 'info') return
   await nextTick()

@@ -29,6 +29,8 @@
         <button
           class="p-1 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
           @click="clearChat"
+          title="채팅 초기화"
+          aria-label="채팅 초기화 버튼"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -138,6 +140,8 @@
                     class="px-3 py-1 text-xs bg-white text-emerald-600 border rounded-lg hover:bg-emerald-50 transform"
                     @click="quickReply(opt)"
                     :style="{ transitionDelay: `${i * 100}ms` }"
+                    title="추천 질문"
+                    aria-label="추천 질문 버튼"
                   >
                     {{ i + 1 }}. {{ opt }}
                   </button>
@@ -173,6 +177,7 @@
               class="flex-none p-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition"
               @click="sendMessage"
               title="메시지 전송"
+              aria-label="메시지 전송 버튼"
             >
               <!-- 검색 아이콘 -->
               <svg
