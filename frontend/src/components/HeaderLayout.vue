@@ -3,7 +3,7 @@
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <!-- 로고 -->
       <div class="flex items-center">
-        <img src="/favicon-96x96.png" alt="Logo" class="mt-1 w-9 h-8 mr-2" />
+        <img src="/favicon-96x96.png" alt="Logo" class="mt-1 w-[2.125rem] h-8 mr-2" />
         <router-link
           to="/"
           class="text-xl font-bold text-gray-800"
