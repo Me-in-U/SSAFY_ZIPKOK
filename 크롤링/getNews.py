@@ -1,7 +1,5 @@
 # 네이버 검색 API 크롤링 → MySQL 저장 (최대 10,000건)
 import json
-import os
-import sys
 import urllib.request
 from datetime import datetime
 
