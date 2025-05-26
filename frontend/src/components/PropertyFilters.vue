@@ -46,6 +46,7 @@
           id="search"
           v-model="searchQuery"
           @keyup.enter="onSearch"
+          @input="emit('search-reset')"
           type="text"
           placeholder=" "
           class="peer border-l-0 border-r-0 w-48 h-full pl-3 border focus:outline-none focus:ring-emerald-500"
@@ -72,11 +73,12 @@
   <!-- 결과 텍스트 -->
   <div class="flex justify-center mt-2 text-sm text-red-600">
     <div v-if="errorMsg">{{ errorMsg }}</div>
-    <div v-else-if="noResults">검색결과가 없습니다.</div>
-    <div v-else-if="hasResults" class="text-gray-700">
+    <div v-else-if="searched && noResults">검색결과가 없습니다.</div>
+    <div v-else-if="searched && hasResults" class="text-red-600">
       {{ filters.sido }} {{ filters.gugun }} {{ filters.dong }} {{ searchQuery }}에 대한 검색
       결과입니다.
     </div>
+    <div v-else></div>
   </div>
 </template>
 
@@ -88,6 +90,7 @@ import axios from 'axios'
 const props = defineProps({
   noResults: Boolean,
   hasResults: Boolean,
+  searched: Boolean,
   showBase: Boolean,
   showFavorite: Boolean,
   showSearch: Boolean,
@@ -101,6 +104,7 @@ const emit = defineEmits([
   'toggle-favorite',
   'toggle-search',
   'search-filter',
+  'search-reset',
 ])
 
 // 검색어와 에러 메시지 상태 관리
@@ -143,6 +147,7 @@ async function onSidoChange() {
   }
   emit('move-to', { address: buildAddress() })
   setMessage('')
+  emit('search-reset')
 }
 
 // 구·군 변경
@@ -158,12 +163,14 @@ async function onGugunChange() {
   }
   emit('move-to', { address: buildAddress() })
   setMessage('')
+  emit('search-reset')
 }
 
 // 읍·면·동 변경
 function onDongChange() {
   emit('move-to', { address: buildAddress() })
   setMessage('')
+  emit('search-reset')
 }
 
 // 검색 실행
@@ -172,7 +179,7 @@ async function onSearch() {
     setMessage('검색어가 없습니다.')
     return
   }
-
+  setMessage('')
   try {
     // response.data가 바로 HouseInfo[] 배열
     const response = await axios.get('http://localhost:8080/api/v1/house/filter', {

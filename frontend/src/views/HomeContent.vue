@@ -27,9 +27,11 @@
         <!-- 상세 필터 -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
           <PropertyFilters
-            :no-results="!isLoading && searchResultsFilter.length === 0 && hasSearched"
+            :no-results="searchResultsFilter.length === 0"
             :has-results="searchResultsFilter.length > 0"
+            :searched="hasFilterSearched"
             @search-filter="onSearchFilter"
+            @search-reset="onSearchReset"
             @move-to="handleMoveTo"
           />
         </div>
@@ -94,11 +96,11 @@ const mapRef = ref(null)
 const searchResultsGpt = ref([]) // 클라이언트 필터링 후
 const searchResultsFilter = ref([]) // 클라이언트 필터링 후
 
-// 검색 실행 여부 트래킹
-const hasSearched = ref(false)
-const isLoading = ref(false)
 // 전체 매물
 const properties = ref([])
+
+// 검색 시도(try)를 추적하는 플래그
+const hasFilterSearched = ref(false)
 
 // client-side 상세 필터 상태
 const activeFilters = ref({
@@ -177,7 +179,13 @@ function onSearchGpt(houses) {
 function onSearchFilter(houses) {
   console.log('[검색결과]: ', houses)
   searchResultsFilter.value = houses
+  hasFilterSearched.value = true
   showSearchMarkers.value = true
+}
+
+function onSearchReset() {
+  hasFilterSearched.value = false
+  searchResultsFilter.value = []
 }
 
 // 매물 클릭 → 사이드바 열기
