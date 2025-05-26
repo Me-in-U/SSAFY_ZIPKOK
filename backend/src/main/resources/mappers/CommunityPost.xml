@@ -13,6 +13,7 @@
     <result property="content"          column="content"/>
     <result property="createdAt"        column="created_at" jdbcType="TIMESTAMP"/>
     <result property="views"            column="views"/>
+    <result property="commentCount"     column="comment_count"/>
     </resultMap>
 
     <!-- 게시글 목록 -->
@@ -25,7 +26,8 @@
         p.title,
         p.content,
         p.created_at,
-        p.views
+        p.views,
+        (SELECT COUNT(*) FROM community_comment c WHERE c.post_id = p.post_id) AS comment_count
     FROM community_post p
     JOIN member m
         ON p.author_id = m.mno
