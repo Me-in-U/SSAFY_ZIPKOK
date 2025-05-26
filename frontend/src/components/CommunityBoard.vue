@@ -635,7 +635,7 @@ const editCommentText = ref('')
 async function fetchPosts() {
   loading.value = true
   try {
-    const res = await axios.get('http://localhost:8080/api/v1/community/posts', {
+    const res = await axios.get('https://api.ssafy.blog/api/v1/community/posts', {
       params: {
         category: activeCategory.value === 'all' ? '' : activeCategory.value,
         search: searchQuery.value,
@@ -676,7 +676,7 @@ async function fetchPosts() {
 
 // 상세 & 댓글
 async function openPostDetail(post) {
-  const { data: p } = await axios.get(`http://localhost:8080/api/v1/community/posts/${post.id}`)
+  const { data: p } = await axios.get(`https://api.ssafy.blog/api/v1/community/posts/${post.id}`)
   selectedPost.value = { ...p, id: p.postId }
   comments.value = p.comments.map((c) => ({
     id: c.commentId,
@@ -691,7 +691,7 @@ async function openPostDetail(post) {
 async function addComment() {
   if (!commentText.value.trim()) return
   await axios.post(
-    `http://localhost:8080/api/v1/community/posts/${selectedPost.value.id}/comments`,
+    `https://api.ssafy.blog/api/v1/community/posts/${selectedPost.value.id}/comments`,
     { content: commentText.value },
   )
   commentText.value = ''
@@ -711,7 +711,7 @@ function cancelEditComment() {
 async function saveEditComment(id) {
   if (!editCommentText.value.trim()) return
   await axios.put(
-    `http://localhost:8080/api/v1/community/posts/${selectedPost.value.id}/comments/${id}`,
+    `https://api.ssafy.blog/api/v1/community/posts/${selectedPost.value.id}/comments/${id}`,
     { content: editCommentText.value },
   )
   cancelEditComment()
@@ -721,7 +721,7 @@ async function saveEditComment(id) {
 async function deleteComment(id) {
   if (!confirm('댓글을 삭제하시겠습니까?')) return
   await axios.delete(
-    `http://localhost:8080/api/v1/community/posts/${selectedPost.value.id}/comments/${id}`,
+    `https://api.ssafy.blog/api/v1/community/posts/${selectedPost.value.id}/comments/${id}`,
   )
   await openPostDetail(selectedPost.value)
 }
@@ -754,11 +754,11 @@ function cancelEditPost() {
 async function submitPost() {
   if (editingPost.value) {
     await axios.put(
-      `http://localhost:8080/api/v1/community/posts/${editingPost.value.id}`,
+      `https://api.ssafy.blog/api/v1/community/posts/${editingPost.value.id}`,
       newPost.value,
     )
   } else {
-    await axios.post('http://localhost:8080/api/v1/community/posts', newPost.value)
+    await axios.post('https://api.ssafy.blog/api/v1/community/posts', newPost.value)
   }
   cancelEditPost()
   await fetchPosts()
@@ -766,7 +766,7 @@ async function submitPost() {
 async function deletePost(id) {
   if (!confirm('게시글을 삭제하시겠습니까?')) return
   try {
-    await axios.delete(`http://localhost:8080/api/v1/community/posts/${id}`)
+    await axios.delete(`https://api.ssafy.blog/api/v1/community/posts/${id}`)
     // 상세 모달이 열려 있었다면 닫아주기
     if (selectedPost.value?.id === id) {
       selectedPost.value = null

@@ -281,9 +281,9 @@ onMounted(async () => {
   loading.value = true
   try {
     const [r, m, c] = await Promise.all([
-      axios.get('http://localhost:8080/api/v1/house/recommend/recent?limit=6'),
-      axios.get('http://localhost:8080/api/v1/house/recommend/nearstation?limit=6'),
-      axios.get('http://localhost:8080/api/v1/house/recommend/newlyweds?limit=6'),
+      axios.get('https://api.ssafy.blog/api/v1/house/recommend/recent?limit=6'),
+      axios.get('https://api.ssafy.blog/api/v1/house/recommend/nearstation?limit=6'),
+      axios.get('https://api.ssafy.blog/api/v1/house/recommend/newlyweds?limit=6'),
     ])
     recent.value = r.data
     nearstation.value = m.data
