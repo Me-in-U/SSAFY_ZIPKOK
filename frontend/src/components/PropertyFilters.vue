@@ -182,7 +182,7 @@ async function onSearch() {
   setMessage('')
   try {
     // response.data가 바로 HouseInfo[] 배열
-    const response = await axios.get('http://localhost:8080/api/v1/house/filter', {
+    const response = await axios.get('https://api.ssafy.blog/api/v1/house/filter', {
       params: {
         sido: filters.sido || undefined,
         gugun: filters.gugun || undefined,

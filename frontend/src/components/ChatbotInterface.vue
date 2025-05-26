@@ -256,7 +256,7 @@ async function sendMessage() {
 
   try {
     // API 호출
-    const res = await fetch('http://localhost:8080/ai/user-controlled', {
+    const res = await fetch('https://api.ssafy.blog/ai/user-controlled', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: sanitizedText, convoId: CurrentConvoId.value }),

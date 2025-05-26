@@ -439,7 +439,7 @@ async function loadFavorites(seqs) {
     return updateVisibility()
   }
   console.log('[즐겨찾기] 마커 추가')
-  const { data: list } = await axios.post('http://localhost:8080/api/v1/house/batch', seqs, {
+  const { data: list } = await axios.post('https://api.ssafy.blog/api/v1/house/batch', seqs, {
     headers: { 'Content-Type': 'application/json' },
   })
   list.forEach((h) => {
@@ -480,7 +480,7 @@ watch(
     const houseInfoList =
       typeof searchResultsGpt[0] === 'string'
         ? (
-            await axios.post('http://localhost:8080/api/v1/house/batch', searchResultsGpt, {
+            await axios.post('https://api.ssafy.blog/api/v1/house/batch', searchResultsGpt, {
               headers: { 'Content-Type': 'application/json' },
             })
           ).data
@@ -553,7 +553,7 @@ watch(
     if (!aptSeq || !mapInstance.value) return
     try {
       const { data: list } = await axios.post(
-        'http://localhost:8080/api/v1/house/batch',
+        'https://api.ssafy.blog/api/v1/house/batch',
         [aptSeq],
         { headers: { 'Content-Type': 'application/json' } },
       )

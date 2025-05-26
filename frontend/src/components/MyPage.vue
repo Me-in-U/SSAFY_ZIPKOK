@@ -449,7 +449,7 @@ onMounted(async () => {
   try {
     const mno = userStore.profile.mno
     // 백엔드에서 리스트 가져오기
-    const res = await axios.get(`http://localhost:8080/api/v1/members/${mno}/favorites`)
+    const res = await axios.get(`https://api.ssafy.blog/api/v1/members/${mno}/favorites`)
     console.log('[즐겨찾기 목록 로드 성공]:', res.data)
     favorites.value = res.data.data.result
     console.log('[즐겨찾기 목록]:', favorites.value)
@@ -468,7 +468,7 @@ async function updateProfile() {
       currentPassword: form.currentPassword,
       newPassword: form.newPassword,
     }
-    await axios.put('http://localhost:8080/api/v1/members', payload)
+    await axios.put('https://api.ssafy.blog/api/v1/members', payload)
 
     // 성공 메시지 표시
     const successMessage = document.createElement('div')
@@ -534,7 +534,7 @@ function formatCurrency(val) {
 async function removeFavorite(aptSeq) {
   try {
     const mno = userStore.profile.mno
-    await axios.delete(`http://localhost:8080/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.delete(`https://api.ssafy.blog/api/v1/members/${mno}/favorites/${aptSeq}`)
 
     // 로컬 상태 업데이트
     favorites.value = favorites.value.filter((item) => item.aptSeq !== aptSeq)
