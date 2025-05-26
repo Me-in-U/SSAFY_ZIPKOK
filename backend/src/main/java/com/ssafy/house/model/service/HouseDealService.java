@@ -16,4 +16,32 @@ public interface HouseDealService {
      */
     List<HouseDeal> findDealsByOptionsAndType(String sido, String gugun, String dong, String aptNm, String tradeType)
             throws SQLException;
+
+    // 1. 예산 이하 매매/전세 매물
+    List<HouseDeal> findDealsByBudget(
+            String sido, String gugun, String dong, String aptNm,
+            long maxPrice)
+            throws SQLException;
+
+    // 2. 보증금·월세 한도 월세 매물
+    List<HouseDeal> findRentDeals(
+            String sido, String gugun, String dong, String aptNm,
+            long maxDeposit, int maxRent)
+            throws SQLException;
+
+    // 3. 옵션 지역별 최저가 매물
+    HouseDeal findLowestDeal(
+            String sido, String gugun, String dong, String aptNm,
+            String tradeType) throws SQLException;
+
+    // 3. 옵션 지역별 최고가 매물
+    HouseDeal findHighestDeal(
+            String sido, String gugun, String dong, String aptNm,
+            String tradeType) throws SQLException;
+
+    // 4. 옵션 지역별 가격 범위 매물
+    List<HouseDeal> findDealsByPriceRange(
+            String sido, String gugun, String dong, String aptNm,
+            long minPrice, long maxPrice) throws SQLException;
+
 }

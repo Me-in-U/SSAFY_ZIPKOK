@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.house.model.dao.HouseDealDao">
-    <resultMap id="DealMap" type="com.ssafy.house.model.dto.HouseDeal">
-        <id column="deal_id" property="dealId"/>
-        <result column="apt_seq" property="aptSeq"/>
-        <result column="listing_name" property="listingName"/>
-        <result column="trade_type" property="dealType"/>
-        <result column="price" property="price"/>
-        <result column="property_type" property="propertyType"/>
-        <result column="spec" property="spec"/>
-        <result column="description" property="description"/>
-        <result column="confirmed_at" property="confirmedAt"/>
-        <result column="deposit" property="deposit"/>
-        <result column="monthly_rent" property="monthlyRent"/>
-    </resultMap>
+  <resultMap id="DealMap" type="com.ssafy.house.model.dto.HouseDeal">
+    <id column="deal_id" property="dealId"/>
+    <result column="apt_seq" property="aptSeq"/>
+    <result column="listing_name" property="listingName"/>
+    <result column="trade_type" property="dealType"/>
+    <result column="price" property="price"/>
+    <result column="property_type" property="propertyType"/>
+    <result column="spec" property="spec"/>
+    <result column="description" property="description"/>
+    <result column="confirmed_at" property="confirmedAt"/>
+    <result column="deposit" property="deposit"/>
+    <result column="monthly_rent" property="monthlyRent"/>
+  </resultMap>
 
-    <select id="findDealsByOptionsAndType" resultMap="DealMap" parameterType="map">
+  <select id="findDealsByOptionsAndType" resultMap="DealMap" parameterType="map">
   SELECT
     hd.deal_id,
     hd.apt_seq,
@@ -32,9 +32,9 @@
   JOIN (
     SELECT apt_seq, MAX(confirmed_at) AS max_dt
     FROM house_deal
-        <if test="tradeType != null">
+    <if test="tradeType != null">
       WHERE trade_type = #{tradeType}
-        </if>
+    </if>
     GROUP BY apt_seq
   ) latest
     ON hd.apt_seq = latest.apt_seq
@@ -45,19 +45,199 @@
     ON LEFT(dc.dong_code,5) = hi.sgg_cd
    AND RIGHT(dc.dong_code,5)= hi.umd_cd
   WHERE 1=1
-        <if test="sido != null">
+    <if test="sido != null">
       AND dc.sido_name LIKE CONCAT('%', #{sido}, '%')
-        </if>
-        <if test="gugun != null">
+    </if>
+    <if test="gugun != null">
       AND dc.gugun_name LIKE CONCAT('%', #{gugun}, '%')
-        </if>
-        <if test="dong != null">
+    </if>
+    <if test="dong != null">
       AND dc.dong_name LIKE CONCAT('%', #{dong}, '%')
-        </if>
-        <if test="aptNm != null">
+    </if>
+    <if test="aptNm != null">
       AND hi.apt_nm LIKE CONCAT('%', #{aptNm}, '%')
-        </if>
-    </select>
+    </if>
+  </select>
 
+  <select id="findDealsByBudget" resultMap="DealMap" parameterType="map">
+  SELECT hd.* 
+  FROM house_deal hd
+  JOIN (
+    SELECT apt_seq, MAX(confirmed_at) AS max_dt
+    FROM house_deal
+    WHERE trade_type IN ('매매','전세')
+    GROUP BY apt_seq
+  ) latest 
+    ON hd.apt_seq = latest.apt_seq 
+   AND hd.confirmed_at = latest.max_dt
+  JOIN house_info hi ON hi.apt_seq = hd.apt_seq
+  JOIN dong_code dc 
+    ON LEFT(dc.dong_code,5)=hi.sgg_cd 
+   AND RIGHT(dc.dong_code,5)=hi.umd_cd
+  WHERE hd.trade_type IN ('매매','전세')
+    AND hd.price &lt;= #{maxPrice}
+    <if test="sido != null">
+      AND dc.sido_name LIKE CONCAT('%',#{sido},'%')
+    </if>
+    <if test="gugun != null">
+      AND dc.gugun_name LIKE CONCAT('%',#{gugun},'%')
+    </if>
+    <if test="dong != null">
+      AND dc.dong_name LIKE CONCAT('%',#{dong},'%')
+    </if>
+    <if test="aptNm != null">
+      AND hi.apt_nm LIKE CONCAT('%',#{aptNm},'%')
+    </if>
+  ORDER BY ABS(hd.price - #{maxPrice})
+  LIMIT 100
+  </select>
+
+  <select id="findRentDeals" resultMap="DealMap" parameterType="map">
+    SELECT hd.* 
+    FROM house_deal hd
+    JOIN (
+      SELECT apt_seq, MAX(confirmed_at) AS max_dt
+      FROM house_deal
+      WHERE trade_type = '월세'
+      GROUP BY apt_seq
+    ) latest 
+      ON hd.apt_seq=latest.apt_seq 
+     AND hd.confirmed_at=latest.max_dt
+    JOIN house_info hi ON hi.apt_seq=hd.apt_seq
+    JOIN dong_code dc 
+      ON LEFT(dc.dong_code,5)=hi.sgg_cd 
+     AND RIGHT(dc.dong_code,5)=hi.umd_cd
+    WHERE hd.trade_type = '월세'
+      AND hd.deposit &lt;= #{maxDeposit}
+      AND hd.monthly_rent &lt;= #{maxRent}
+    <if test="sido != null">
+        AND dc.sido_name LIKE CONCAT('%',#{sido},'%')
+    </if>
+    <if test="gugun != null">
+        AND dc.gugun_name LIKE CONCAT('%',#{gugun},'%')
+    </if>
+    <if test="dong != null">
+        AND dc.dong_name LIKE CONCAT('%',#{dong},'%')
+    </if>
+    <if test="aptNm != null">
+        AND hi.apt_nm LIKE CONCAT('%',#{aptNm},'%')
+    </if>
+    ORDER BY 
+    ABS(hd.deposit   - #{maxDeposit})
+  + ABS(hd.monthly_rent - #{maxRent})
+  LIMIT 100
+  </select>
+
+  <!-- 3. 옵션 지역별 최저가 매물 (tradeType: 매매/전세/월세) -->
+  <select id="findLowestDeal" resultMap="DealMap" parameterType="map">
+    SELECT hd.* 
+    FROM house_deal hd
+    JOIN (
+      SELECT apt_seq, MAX(confirmed_at) AS max_dt
+      FROM house_deal
+      WHERE trade_type = #{tradeType}
+      GROUP BY apt_seq
+    ) latest
+      ON hd.apt_seq = latest.apt_seq 
+     AND hd.confirmed_at = latest.max_dt
+    JOIN house_info hi ON hi.apt_seq = hd.apt_seq
+    JOIN dong_code dc 
+      ON LEFT(dc.dong_code,5)=hi.sgg_cd 
+     AND RIGHT(dc.dong_code,5)=hi.umd_cd
+    WHERE hd.trade_type = #{tradeType}
+    <if test="sido != null">
+        AND dc.sido_name LIKE CONCAT('%',#{sido},'%')
+    </if>
+    <if test="gugun != null">
+        AND dc.gugun_name LIKE CONCAT('%',#{gugun},'%')
+    </if>
+    <if test="dong != null">
+        AND dc.dong_name LIKE CONCAT('%',#{dong},'%')
+    </if>
+    <if test="aptNm != null">
+        AND hi.apt_nm LIKE CONCAT('%',#{aptNm},'%')
+    </if>
+    ORDER BY
+    <choose>
+      <when test="tradeType=='월세'">
+          hd.monthly_rent
+      </when>
+      <otherwise>
+          hd.price
+      </otherwise>
+    </choose>
+    LIMIT 1
+  </select>
+  <!-- 옵션 지역별 최고가 매물 (tradeType: 매매/전세/월세) -->
+  <select id="findHighestDeal" resultMap="DealMap" parameterType="map">
+    SELECT hd.* 
+    FROM house_deal hd
+    JOIN (
+      SELECT apt_seq, MAX(confirmed_at) AS max_dt
+      FROM house_deal
+      WHERE trade_type = #{tradeType}
+      GROUP BY apt_seq
+    ) latest
+      ON hd.apt_seq = latest.apt_seq
+     AND hd.confirmed_at = latest.max_dt
+    JOIN house_info hi ON hi.apt_seq = hd.apt_seq
+    JOIN dong_code dc 
+      ON LEFT(dc.dong_code,5)=hi.sgg_cd 
+     AND RIGHT(dc.dong_code,5)=hi.umd_cd
+    WHERE hd.trade_type = #{tradeType}
+    <if test="sido != null">
+        AND dc.sido_name LIKE CONCAT('%',#{sido},'%')
+    </if>
+    <if test="gugun != null">
+        AND dc.gugun_name LIKE CONCAT('%',#{gugun},'%')
+    </if>
+    <if test="dong != null">
+        AND dc.dong_name LIKE CONCAT('%',#{dong},'%')
+    </if>
+    <if test="aptNm != null">
+        AND hi.apt_nm LIKE CONCAT('%',#{aptNm},'%')
+    </if>
+    ORDER BY
+    <choose>
+      <when test="tradeType == '월세'">
+          hd.monthly_rent DESC
+      </when>
+      <otherwise>
+          hd.price DESC
+      </otherwise>
+    </choose>
+    LIMIT 1
+  </select>
+
+  <!-- 4. 옵션 지역별 가격 범위 매물 -->
+  <select id="findDealsByPriceRange" resultMap="DealMap" parameterType="map">
+    SELECT hd.* 
+    FROM house_deal hd
+    JOIN (
+      SELECT apt_seq, MAX(confirmed_at) AS max_dt
+      FROM house_deal
+      GROUP BY apt_seq
+    ) latest
+      ON hd.apt_seq = latest.apt_seq 
+     AND hd.confirmed_at = latest.max_dt
+    JOIN house_info hi ON hi.apt_seq = hd.apt_seq
+    JOIN dong_code dc 
+      ON LEFT(dc.dong_code,5)=hi.sgg_cd 
+     AND RIGHT(dc.dong_code,5)=hi.umd_cd
+    WHERE hd.price BETWEEN #{minPrice} AND #{maxPrice}
+    <if test="sido != null">
+        AND dc.sido_name LIKE CONCAT('%',#{sido},'%')
+    </if>
+    <if test="gugun != null">
+        AND dc.gugun_name LIKE CONCAT('%',#{gugun},'%')
+    </if>
+    <if test="dong != null">
+        AND dc.dong_name LIKE CONCAT('%',#{dong},'%')
+    </if>
+    <if test="aptNm != null">
+        AND hi.apt_nm LIKE CONCAT('%',#{aptNm},'%')
+    </if>
+    LIMIT 100
+  </select>
 
 </mapper>

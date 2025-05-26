@@ -40,7 +40,8 @@ public class HouseTools {
         }
     }
 
-    @Tool(description = SIDO_DESC + "로 아파트 검색")
+    @Tool(description = SIDO_DESC +
+            "로 아파트 검색")
     public List<String> searchBySido(
             @ToolParam(description = SIDO_DESC) String sido)
             throws SQLException {
@@ -48,7 +49,8 @@ public class HouseTools {
         return houseInfoService.findByOptionsAndAptName(sido, null, null, null);
     }
 
-    @Tool(description = SIDO_DESC + GUGUN_DESC + "로 아파트 검색")
+    @Tool(description = SIDO_DESC + GUGUN_DESC +
+            "로 아파트 검색")
     public List<String> searchByGugun(
             @ToolParam(description = SIDO_DESC) String sido,
             @ToolParam(description = GUGUN_DESC) String gugun) throws SQLException {
@@ -56,7 +58,8 @@ public class HouseTools {
         return houseInfoService.findByOptionsAndAptName(sido, gugun, null, null);
     }
 
-    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + "로 아파트 검색")
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC +
+            "로 아파트 검색")
     public List<String> searchByDong(
             @ToolParam(description = DONG_DESC) String dong,
             @ToolParam(description = GUGUN_DESC) String gugun,
@@ -65,7 +68,8 @@ public class HouseTools {
         return houseInfoService.findByOptionsAndAptName(sido, gugun, dong, null);
     }
 
-    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC + "로 아파트 검색")
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC +
+            "로 아파트 검색")
     public List<String> searchByOptionsAndName(
             @ToolParam(description = SIDO_DESC) String sido,
             @ToolParam(description = GUGUN_DESC) String gugun,
@@ -75,14 +79,80 @@ public class HouseTools {
         return houseInfoService.findByOptionsAndAptName(sido, gugun, dong, aptNm);
     }
 
-    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC + TRADE_TYPE_DESC + "로 매물 조회")
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC + TRADE_TYPE_DESC +
+            "로 매물 조회")
     public List<HouseDeal> searchDealsByOptionsAndType(
-            @ToolParam(description = SIDO_DESC) String sido,
-            @ToolParam(description = GUGUN_DESC) String gugun,
-            @ToolParam(description = DONG_DESC) String dong,
-            @ToolParam(description = APT_NM_DESC) String aptNm,
+            @ToolParam(description = SIDO_DESC + " (nullable)") String sido,
+            @ToolParam(description = GUGUN_DESC + " (nullable)") String gugun,
+            @ToolParam(description = DONG_DESC + " (nullable)") String dong,
+            @ToolParam(description = APT_NM_DESC + " (nullable)") String aptNm,
             @ToolParam(description = TRADE_TYPE_DESC) String tradeType) throws SQLException {
         logger.warn("시도구군읍면동아파트명거래유형으로 매물 조회");
         return houseDealService.findDealsByOptionsAndType(sido, gugun, dong, aptNm, tradeType);
+    }
+
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC
+            + "예산 이하 매매/전세 매물 조회")
+    public List<HouseDeal> searchDealsByBudget(
+            @ToolParam(description = SIDO_DESC + " (nullable)") String sido,
+            @ToolParam(description = GUGUN_DESC + " (nullable)") String gugun,
+            @ToolParam(description = DONG_DESC + " (nullable)") String dong,
+            @ToolParam(description = APT_NM_DESC + " (nullable)") String aptNm,
+            @ToolParam(description = "최대 가격 (원)") long maxPrice)
+            throws SQLException {
+        return houseDealService.findDealsByBudget(sido, gugun, dong, aptNm, maxPrice);
+    }
+
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC
+            + "보증금·월세 한도로 월세 매물 조회")
+    public List<HouseDeal> searchRentDeals(
+            @ToolParam(description = SIDO_DESC + " (nullable)") String sido,
+            @ToolParam(description = GUGUN_DESC + " (nullable)") String gugun,
+            @ToolParam(description = DONG_DESC + " (nullable)") String dong,
+            @ToolParam(description = APT_NM_DESC + " (nullable)") String aptNm,
+            @ToolParam(description = "최대 보증금 (원)") long maxDeposit,
+            @ToolParam(description = "최대 월세 (원)") int maxRent)
+            throws SQLException {
+        return houseDealService.findRentDeals(sido, gugun, dong, aptNm, maxDeposit, maxRent);
+    }
+
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC
+            + "옵션 지역별 최저가 매물 조회")
+    public HouseDeal searchLowestDeal(
+            @ToolParam(description = SIDO_DESC + " (nullable)") String sido,
+            @ToolParam(description = GUGUN_DESC + " (nullable)") String gugun,
+            @ToolParam(description = DONG_DESC + " (nullable)") String dong,
+            @ToolParam(description = APT_NM_DESC + " (nullable)") String aptNm,
+            @ToolParam(description = "거래유형 (매매/전세/월세)") String tradeType)
+            throws SQLException {
+        return houseDealService.findLowestDeal(
+                sido, gugun, dong, aptNm, tradeType);
+    }
+
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC
+            + "옵션 지역별 가격 범위 매물 조회")
+    public List<HouseDeal> searchDealsByPriceRange(
+            @ToolParam(description = SIDO_DESC + " (nullable)") String sido,
+            @ToolParam(description = GUGUN_DESC + " (nullable)") String gugun,
+            @ToolParam(description = DONG_DESC + " (nullable)") String dong,
+            @ToolParam(description = APT_NM_DESC + " (nullable)") String aptNm,
+            @ToolParam(description = "최소 가격 (원)") long minPrice,
+            @ToolParam(description = "최대 가격 (원)") long maxPrice)
+            throws SQLException {
+        return houseDealService.findDealsByPriceRange(
+                sido, gugun, dong, aptNm, minPrice, maxPrice);
+    }
+
+    @Tool(description = SIDO_DESC + GUGUN_DESC + DONG_DESC + APT_NM_DESC
+            + "옵션 지역별 최고가 매물 조회")
+    public HouseDeal searchHighestDeal(
+            @ToolParam(description = SIDO_DESC + " (nullable)") String sido,
+            @ToolParam(description = GUGUN_DESC + " (nullable)") String gugun,
+            @ToolParam(description = DONG_DESC + " (nullable)") String dong,
+            @ToolParam(description = APT_NM_DESC + " (nullable)") String aptNm,
+            @ToolParam(description = "거래유형 (매매/전세/월세)") String tradeType)
+            throws SQLException {
+        return houseDealService.findHighestDeal(
+                sido, gugun, dong, aptNm, tradeType);
     }
 }
