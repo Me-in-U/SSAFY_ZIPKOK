@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import com.ssafy.house.model.dto.HouseDeal;
 import com.ssafy.house.model.dao.HouseDealDao;
-import com.ssafy.house.model.service.HouseDealService;
 
 @Service
 @RequiredArgsConstructor

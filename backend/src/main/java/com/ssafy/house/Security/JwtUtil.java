@@ -15,6 +15,7 @@ public class JwtUtil {
     @Value("${jwt.expirationMs}")
     private long expirationMs;
 
+    @SuppressWarnings("deprecation")
     public String generateToken(String username) {
         Date now = new Date();
         return Jwts.builder()
@@ -25,6 +26,7 @@ public class JwtUtil {
                 .compact();
     }
 
+    @SuppressWarnings("deprecation")
     public String validateAndGetUsername(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey)
