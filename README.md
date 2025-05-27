@@ -637,15 +637,15 @@ CREATE TABLE real_estate_news (
 
 └ 매물 상세정보 화면3 학교 정보
 
-![image.png](img/image%202.png)
+![image.png](img/6_1_커뮤니티.png)
 
 └ 커뮤니티(게시판)
 
-![6_게시글_작성.png](img/6_%EA%B2%8C%EC%8B%9C%EA%B8%80_%EC%9E%91%EC%84%B1.png)
+![6_게시글_작성.png](img/6_2_커뮤니티_게시글_작성.png)
 
 └ 커뮤니티(게시글 작성)
 
-![7_게시글_수정.png](img/7_%EA%B2%8C%EC%8B%9C%EA%B8%80_%EC%88%98%EC%A0%95.png)
+![7_게시글_수정.png](img/6_3_커뮤니티_게시글_수정.png)
 
 └ 커뮤니티(게시글 수정)
 
@@ -672,3 +672,23 @@ CREATE TABLE real_estate_news (
 ![12_필터검색.png](img/12_%ED%95%84%ED%84%B0%EA%B2%80%EC%83%89.png)
 
 └ 검색 필터 사용(지도 이동 및 마커 표시)
+
+## 🔳 7. 클래스 다이어그램
+
+![1_Ai.png](img/classDiagram/Ai.png)
+
+![2_dao.png](img/classDiagram/dao.png)
+
+![3_dto_builder.png](img/classDiagram/dto_builder.png)
+
+![4_dto_member.png](img/classDiagram/dto_member.png)
+
+![5_dto_post.png](img/classDiagram/dto_post.png)
+
+![6_etc.png](img/classDiagram/etc.png)
+
+![7_rest.png](img/classDiagram/rest.png)
+
+![8_Scheduler.png](img/classDiagram/Scheduler.png)
+
+![9_service.png](img/classDiagram/service.png)
