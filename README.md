@@ -792,4 +792,4 @@ CREATE TABLE real_estate_news (
 
 ![9_service.png](img/classDiagram/service.png)
 
-..
+....
