@@ -793,3 +793,5 @@ CREATE TABLE real_estate_news (
 ![8_Scheduler.png](img/classDiagram/Scheduler.png)
 
 ![9_service.png](img/classDiagram/service.png)
+
+.
