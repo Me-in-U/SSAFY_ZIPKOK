@@ -1,23 +1,31 @@
 # 네이버 검색 API 크롤링 → MySQL 저장 (최대 10,000건)
 import json
+import urllib.parse
 import urllib.request
 from datetime import datetime
 
 import pymysql
 
+from env_loader import get_env, require_env
+
 # 1) 설정
-CLIENT_ID = "replace-with-naver-client-id"
-CLIENT_SECRET = "replace-with-naver-client-secret"
-SERVICE_ID = "news"
-QUERY = urllib.parse.quote("부동산")
-SORT = "sim"  # sim, date
-MAX_START = 1000  # start 최대값
-BATCH = 100  # display 최대값
-COMMIT_BATCH = 500  # 몇 건마다 DB 커밋할지
+CLIENT_ID = require_env("NAVER_NEWS_CLIENT_ID")
+CLIENT_SECRET = require_env("NAVER_NEWS_CLIENT_SECRET")
+SERVICE_ID = get_env("NAVER_NEWS_SERVICE_ID", "news")
+QUERY = urllib.parse.quote(get_env("NAVER_NEWS_QUERY", "부동산"))
+SORT = get_env("NAVER_NEWS_SORT", "sim")  # sim, date
+MAX_START = int(get_env("NAVER_NEWS_MAX_START", "1000"))  # start 최대값
+BATCH = int(get_env("NAVER_NEWS_BATCH", "100"))  # display 최대값
+COMMIT_BATCH = int(get_env("NAVER_NEWS_COMMIT_BATCH", "500"))  # 몇 건마다 커밋할지
 
 # 2) DB 연결
 conn = pymysql.connect(
-    host="replace-with-db-host", user="replace-with-user-name", password="replace-with-user-password", db="ssafyproj", charset="utf8mb4"
+    host=require_env("CRAWLING_DB_HOST"),
+    port=int(get_env("CRAWLING_DB_PORT", "3306")),
+    user=require_env("CRAWLING_DB_USER"),
+    password=require_env("CRAWLING_DB_PASSWORD"),
+    db=require_env("CRAWLING_DB_NAME"),
+    charset="utf8mb4",
 )
 try:
     with conn.cursor() as cur:

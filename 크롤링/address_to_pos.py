@@ -7,16 +7,19 @@ import time
 import pymysql
 import requests
 
+from env_loader import get_env, require_env
+
 # ——— 환경 설정 —————————————————————————————
 DB_CONFIG = {
-    "host": "ssafy.blog",
-    "user": "replace-with-user-name",
-    "password": "replace-with-user-password",
-    "db": "ssafyproj",
+    "host": require_env("CRAWLING_DB_HOST"),
+    "port": int(get_env("CRAWLING_DB_PORT", "3306")),
+    "user": require_env("CRAWLING_DB_USER"),
+    "password": require_env("CRAWLING_DB_PASSWORD"),
+    "db": require_env("CRAWLING_DB_NAME"),
     "charset": "utf8mb4",
 }
 API_URL = "https://api.vworld.kr/req/address?"
-API_KEY = "replace-with-vworld-api-key"
+API_KEY = require_env("VWORLD_API_KEY")
 BASE_PARAMS = {
     "service": "address",
     "request": "getcoord",
@@ -25,9 +28,9 @@ BASE_PARAMS = {
     "type": "PARCEL",
     "key": API_KEY,
 }
-RESUME_FILE = "last_resume.json"
-MAX_PER_RUN = 40000
-DELAY_SEC = 0.05
+RESUME_FILE = get_env("CRAWLING_RESUME_FILE", "last_resume.json")
+MAX_PER_RUN = int(get_env("CRAWLING_MAX_PER_RUN", "40000"))
+DELAY_SEC = float(get_env("CRAWLING_DELAY_SEC", "0.05"))
 # —————————————————————————————————————————————
 
 # 마지막으로 처리한 apt_seq 로드

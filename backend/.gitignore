@@ -29,6 +29,9 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+bin/
+bootrun.out
+bootrun.err
 
 ### VS Code ###
 .vscode/

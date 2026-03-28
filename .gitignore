@@ -1,6 +1,8 @@
 /.venv2
 /크롤링/.venv
 /크롤링/.vscode
+/크롤링/.env
+/크롤링/__pycache__/
 크롤링/last_resume.json
 크롤링/last_resume.json
 *.zip

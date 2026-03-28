@@ -1,11 +1,14 @@
 import pymysql
 
+from env_loader import get_env, require_env
+
 # 1) MySQL 접속 정보 설정
 conn = pymysql.connect(
-    host="replace-with-db-host",  # 예: 'localhost'
-    user="replace-with-user-name",  # 예: 'root'
-    password="replace-with-user-password",
-    db="ssafyproj",  # 예: 'real_estate'
+    host=require_env("CRAWLING_DB_HOST"),
+    port=int(get_env("CRAWLING_DB_PORT", "3306")),
+    user=require_env("CRAWLING_DB_USER"),
+    password=require_env("CRAWLING_DB_PASSWORD"),
+    db=require_env("CRAWLING_DB_NAME"),
     charset="utf8mb4",
 )
 
