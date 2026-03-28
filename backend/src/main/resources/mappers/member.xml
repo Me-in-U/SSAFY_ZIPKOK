@@ -8,7 +8,7 @@
     </insert>
 
     <!-- 2. 회원정보 수정 -->
-    <update id="update" parameterType="com.ssafy.house.model.dto.Member">
+    <update id="update" parameterType="Member">
     UPDATE member
         <set>
             <if test="name != null">

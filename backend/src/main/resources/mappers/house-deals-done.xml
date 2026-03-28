@@ -3,7 +3,7 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.house.model.dao.HouseDealDoneDao">
-    <resultMap id="dealDoneResult" type="com.ssafy.house.model.dto.HouseDealDone">
+    <resultMap id="dealDoneResult" type="HouseDealDone">
         <id property="no" column="no"/>
         <result property="aptSeq" column="apt_seq"/>
         <result property="aptDong" column="apt_dong"/>

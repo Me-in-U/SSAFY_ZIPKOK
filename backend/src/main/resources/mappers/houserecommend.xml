@@ -8,7 +8,7 @@
   <!-- 1) 최근 거래 매물: 최근 confirmed_at 기준, 상위 6개 -->
   <select id="selectRecentProperties"
           parameterType="int"
-          resultType="com.ssafy.house.model.dto.HouseRecommend">
+          resultType="HouseRecommend">
     SELECT
       p.apt_seq        AS aptSeq,
       hi.img_path      AS imgPath,
@@ -38,7 +38,7 @@
 
   <!-- 2) 역세권 매물: 상위 6개 -->
   <select id="selectNearStationProperties"
-          resultType="com.ssafy.house.model.dto.HouseRecommend">
+          resultType="HouseRecommend">
     SELECT
       hd.apt_seq,
       hi.img_path,
@@ -62,7 +62,7 @@
   <!-- 3) 학교와 가까운 신혼 추천 매물: 상위 6개 -->
   <select id="selectNewlywedsProperties"
           parameterType="int"
-          resultType="com.ssafy.house.model.dto.HouseRecommend">
+          resultType="HouseRecommend">
     SELECT
       hd.apt_seq,
       hi.img_path,

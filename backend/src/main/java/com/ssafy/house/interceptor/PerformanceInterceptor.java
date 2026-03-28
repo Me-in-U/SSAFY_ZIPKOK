@@ -2,7 +2,6 @@ package com.ssafy.house.interceptor;
 
 import java.util.Arrays;
 
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -33,7 +32,7 @@ public class PerformanceInterceptor implements HandlerInterceptor {
     @Override
     public void postHandle(@SuppressWarnings("null") HttpServletRequest request,
             @SuppressWarnings("null") HttpServletResponse response, @SuppressWarnings("null") Object handler,
-            @Nullable ModelAndView modelAndView) throws Exception {
+            ModelAndView modelAndView) throws Exception {
         long middle = System.currentTimeMillis();
         long start = (Long) request.getAttribute("start");
         request.setAttribute("middle", middle);
@@ -43,7 +42,7 @@ public class PerformanceInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(@SuppressWarnings("null") HttpServletRequest request,
             @SuppressWarnings("null") HttpServletResponse response, @SuppressWarnings("null") Object handler,
-            @Nullable Exception ex)
+            Exception ex)
             throws Exception {
         long end = System.currentTimeMillis();
         long start = (Long) request.getAttribute("start");

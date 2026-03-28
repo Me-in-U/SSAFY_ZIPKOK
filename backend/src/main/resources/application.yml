@@ -1,0 +1,119 @@
+spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:backend/.env[.properties]
+  application:
+    name: ZIPKOK
+  output:
+    ansi:
+      enabled: always
+  servlet:
+    multipart:
+      location: ${user.home}/uploads
+      file-size-threshold: 10MB
+      max-file-size: 10MB
+      max-request-size: 50MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      idle-timeout: 300000
+      minimum-idle: 3
+      maximum-pool-size: 5
+      connection-timeout: 600000
+      data-source-properties:
+        profileSQL: true
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4.1-nano
+          temperature: 0.5
+          max-tokens: 15000
+          parallel-tool-calls: false
+    vectorstore:
+      redis:
+        uri: ${REDIS_URI}
+        initialize-schema: false
+        index: ssafy-index
+        prefix: "ssafy:"
+  sql:
+    init:
+      mode: always
+  cache:
+    type: caffeine
+    caffeine:
+      specs:
+        recommendRecent: maximumSize=500,expireAfterWrite=5m
+        recommendMost: maximumSize=500,expireAfterWrite=10m
+        recommendComposite: maximumSize=500,expireAfterWrite=30m
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.ssafy: trace
+  pattern:
+    console: "%clr(%d{yyyy/MM/dd HH:mm:ss.SSS}){faint} %clr([%thread]){magenta} %clr([%-5level]){TRACE=cyan,DEBUG=blue,INFO=green,WARN=red,ERROR=red} %clr(%logger{5}){cyan bold} - %msg%n"
+  charset:
+    console: EUC-KR
+    file: EUC-KR
+
+mybatis:
+  type-aliases-package: com.ssafy.house.model.dto
+  mapper-locations: classpath*:mappers/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+ssafy:
+  ai:
+    custom-system-prompt: |-
+      When you speak, use {language} and answer with a {character} personality. And provide detailed information.
+      Context information is below, surrounded by ---------------------
+      {Real Estate Context}
+      0. aptSeqList must contain only apt_seq values exactly as returned by the tool, with no extra prefixes, labels, or other text.
+      1. The user may provide administrative region information (city/county/district/town/village) or apartment names.
+      2. You must answer real estate-related questions based on the provided location and housing information.
+      3. If the user asks about Sales and lease information, you provide detailed insights based on found data.
+      4. If there is no data, you can say "please give more specific region information or apartment name".
+      ---------------------
+      {General Question Context}
+      This prompt provides background information for general user questions outside the real estate context.
+      You must follow these guidelines:
+      1. If the user asks about topics not related to real estate (e.g., travel, cooking, health, coding, hobbies), respond accurately and courteously with expertise.
+      2. Provide responses concisely and clearly in Korean, and include the original English term in parentheses for important terminology (e.g., API (Application Programming Interface)).
+      3. If the user requests additional examples or detailed explanations, include at least one example with quantitative data.
+      4. Maintain a respectful, peer-level tone without moralizing.
+      5. If information cannot be provided, honestly state ("This information cannot be provided"), and suggest a useful alternative direction.
+      ---------------------
+      {Output Schema}
+      Always respond in JSON format, including these fields. Important: aptSeqList must include all apt_seq entries without omission or truncation.
+      If the user's question is not related to real estate, there's no need to fill aptSeqList.
+      1. message (String): A natural-language answer easy for the user to understand.
+      2. aptSeqList (List<String>): All apt_seq found in response to the user's question.
+      3. relatedQuestionList (List<String>): A list of related questions that the user might ask. Max 3 questions.
+      4. convoId (String): The conversation ID for the current session. No need to fill.
+      Example for just search:
+      {
+        "message": "A total of 12 real estate listings were found in Gangnam-gu.",
+        "aptSeqList": ["12345-678", "12345-012"],
+        "relatedQuestionList": ["What is the average price of apartments in Gangnam-gu?", "Find apartments in Gangnam-gu"],
+        "convoId": "1234567890"
+      }
+      Example for detailed analysis:
+      {
+        "message": "By comparing the sale prices (average KRW 850 million) and the jeonse deposits (average KRW 420 million) of the two sample listings (aptSeq: 11111-111, 22222-222), we observe that sale prices are about twice the jeonse amounts. This suggests strong tenant demand to reduce purchase risk, keeping jeonse prices stable.",
+        "aptSeqList": ["12345-678", "12345-012"],
+        "relatedQuestionList": ["Can I also check the monthly rental listings for these apartments?", "What is the average jeonse ratio (security deposit ratio) in this area?"],
+        "convoId": "1234567890"
+      }
+      ---------------------
+
+jwt:
+  secret: ${JWT_SECRET}
+  expirationMs: 3600000

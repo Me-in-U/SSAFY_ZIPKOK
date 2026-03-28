@@ -4,7 +4,7 @@
          "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.house.model.dao.HouseInfoDao">
   <!-- resultMap -->
-  <resultMap id="houseInfoMap" type="com.ssafy.house.model.dto.HouseInfo">
+  <resultMap id="houseInfoMap" type="HouseInfo">
     <id column="apt_seq" property="aptSeq"/>
     <result column="sgg_cd" property="sggCd"/>
     <result column="umd_cd" property="umdCd"/>
@@ -20,7 +20,7 @@
     <result column="longitude" property="longitude"/>
   </resultMap>
 
-  <resultMap id="HouseInfoSimpleMap" type="com.ssafy.house.model.dto.HouseInfoSimple">
+  <resultMap id="HouseInfoSimpleMap" type="HouseInfoSimple">
     <id column="apt_seq" property="aptSeq"/>
     <result column="apt_nm" property="aptNm"/>
     <result column="latitude" property="latitude"/>
@@ -101,7 +101,7 @@
   </select>
 
   <!-- full info 매핑 -->
-  <resultMap id="HouseInfoFull" type="com.ssafy.house.model.dto.HouseInfoFull">
+  <resultMap id="HouseInfoFull" type="HouseInfoFull">
     <id column="apt_seq" property="aptSeq"/>
     <result column="apt_nm" property="aptNm"/>
     <result column="latitude" property="latitude"/>
@@ -184,7 +184,7 @@
   </select>
 
   <!-- 주변 학교 매핑 -->
-  <resultMap id="schoolInfoMap" type="com.ssafy.house.model.dto.SchoolInfo">
+  <resultMap id="schoolInfoMap" type="SchoolInfo">
     <result column="school_name" property="schoolName"/>
     <result column="school_type" property="schoolType"/>
     <result column="distance" property="distance"/>

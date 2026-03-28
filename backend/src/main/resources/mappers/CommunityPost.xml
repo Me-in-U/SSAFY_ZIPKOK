@@ -4,7 +4,7 @@
          "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.house.model.dao.CommunityPostDao">
 
-    <resultMap id="PostMap" type="com.ssafy.house.model.dto.Post">
+    <resultMap id="PostMap" type="Post">
     <id     property="postId"           column="post_id"/>
     <result property="categoryId"       column="category_id"/>
     <result property="authorId"         column="author_id"/>
@@ -87,12 +87,12 @@
     ORDER BY p.created_at DESC
     </select>
 
-    <insert id="insertPost" parameterType="com.ssafy.house.model.dto.Post">
+    <insert id="insertPost" parameterType="Post">
     INSERT INTO community_post(category_id, author_id, title, content)
     VALUES(#{categoryId},#{authorId},#{title},#{content})
     </insert>
 
-    <update id="updatePost" parameterType="com.ssafy.house.model.dto.Post">
+    <update id="updatePost" parameterType="Post">
     UPDATE community_post
         SET category_id=#{categoryId}, title=#{title}, content=#{content}
     WHERE post_id=#{postId}
