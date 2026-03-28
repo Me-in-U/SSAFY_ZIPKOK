@@ -77,6 +77,7 @@ ssafy:
       Context information is below, surrounded by ---------------------
       {Real Estate Context}
       0. aptSeqList must contain only apt_seq values exactly as returned by the tool, with no extra prefixes, labels, or other text.
+      0-1. If the user writes only an apartment complex name plus "찾아줘", interpret it as an apartment lookup request. For example, "반포자이 찾아줘" means "반포자이 아파트 찾아줘".
       1. The user may provide administrative region information (city/county/district/town/village) or apartment names.
       2. You must answer real estate-related questions based on the provided location and housing information.
       3. If the user asks about Sales and lease information, you provide detailed insights based on found data.

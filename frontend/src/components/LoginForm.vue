@@ -183,7 +183,7 @@ async function handleLogin() {
   error.value = ''
   isLoading.value = true
   try {
-    const res = await axios.post('https://api.ssafy.blog/api/v1/members/login', {
+    const res = await axios.post('/v1/members/login', {
       email: email.value,
       password: password.value,
     })

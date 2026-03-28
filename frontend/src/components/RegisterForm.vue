@@ -244,7 +244,7 @@ async function handleRegister() {
   error.value = ''
   isLoading.value = true
   try {
-    const res = await axios.post('https://api.ssafy.blog/api/v1/members/regist', {
+    const res = await axios.post('/v1/members/regist', {
       name: name.value,
       email: email.value,
       password: password.value,

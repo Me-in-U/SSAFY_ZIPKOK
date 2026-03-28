@@ -200,10 +200,10 @@ async function onToggleFavorite(aptSeq) {
   console.log('[유저 정보]: ', userStore.profile)
   const mno = userStore.profile.mno
   if (userStore.favoriteSeqs.includes(aptSeq)) {
-    await axios.delete(`https://api.ssafy.blog/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.delete(`/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs = userStore.favoriteSeqs.filter((s) => s !== aptSeq)
   } else {
-    await axios.post(`https://api.ssafy.blog/api/v1/members/${mno}/favorites/${aptSeq}`)
+    await axios.post(`/v1/members/${mno}/favorites/${aptSeq}`)
     userStore.favoriteSeqs.push(aptSeq)
   }
 }

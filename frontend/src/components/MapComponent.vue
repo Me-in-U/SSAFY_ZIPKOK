@@ -401,7 +401,7 @@ function fetchBase() {
   // console.log('[기본 매물] 마커 추가')
   const bounds = mapInstance.value.getBounds()
   axios
-    .get('https://api.ssafy.blog/api/v1/house/search', {
+    .get('/v1/house/search', {
       params: {
         minLat: bounds.getSouthWest().getLat(),
         maxLat: bounds.getNorthEast().getLat(),
@@ -439,7 +439,7 @@ async function loadFavorites(seqs) {
     return updateVisibility()
   }
   console.log('[즐겨찾기] 마커 추가')
-  const { data: list } = await axios.post('https://api.ssafy.blog/api/v1/house/batch', seqs, {
+  const { data: list } = await axios.post('/v1/house/batch', seqs, {
     headers: { 'Content-Type': 'application/json' },
   })
   list.forEach((h) => {
@@ -480,7 +480,7 @@ watch(
     const houseInfoList =
       typeof searchResultsGpt[0] === 'string'
         ? (
-            await axios.post('https://api.ssafy.blog/api/v1/house/batch', searchResultsGpt, {
+            await axios.post('/v1/house/batch', searchResultsGpt, {
               headers: { 'Content-Type': 'application/json' },
             })
           ).data
@@ -553,7 +553,7 @@ watch(
     if (!aptSeq || !mapInstance.value) return
     try {
       const { data: list } = await axios.post(
-        'https://api.ssafy.blog/api/v1/house/batch',
+        '/v1/house/batch',
         [aptSeq],
         { headers: { 'Content-Type': 'application/json' } },
       )

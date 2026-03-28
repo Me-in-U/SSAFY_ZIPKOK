@@ -123,7 +123,7 @@ const gugunList = ref([])
 const dongList = ref([])
 
 onMounted(async () => {
-  const { data } = await axios.get('https://api.ssafy.blog/api/v1/sidogungu/sido')
+  const { data } = await axios.get('/v1/sidogungu/sido')
   sidoList.value = data
 })
 
@@ -139,7 +139,7 @@ async function onSidoChange() {
   dongList.value = []
   if (filters.sido) {
     const { data } = await axios.get(
-      `https://api.ssafy.blog/api/v1/sidogungu/gugun/${filters.sido}`,
+      `/v1/sidogungu/gugun/${filters.sido}`,
     )
     gugunList.value = data
   } else {
@@ -155,7 +155,7 @@ async function onGugunChange() {
   filters.dong = ''
   if (filters.gugun) {
     const { data } = await axios.get(
-      `https://api.ssafy.blog/api/v1/sidogungu/dong/${filters.sido}/${filters.gugun}`,
+      `/v1/sidogungu/dong/${filters.sido}/${filters.gugun}`,
     )
     dongList.value = data
   } else {
@@ -182,7 +182,7 @@ async function onSearch() {
   setMessage('')
   try {
     // response.data가 바로 HouseInfo[] 배열
-    const response = await axios.get('https://api.ssafy.blog/api/v1/house/filter', {
+    const response = await axios.get('/v1/house/filter', {
       params: {
         sido: filters.sido || undefined,
         gugun: filters.gugun || undefined,

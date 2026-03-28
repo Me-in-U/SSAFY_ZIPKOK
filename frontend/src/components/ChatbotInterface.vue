@@ -204,6 +204,7 @@
 
 <script setup>
 import { ref, watch, nextTick, onMounted, computed } from 'vue'
+import axios from 'axios'
 import BotTypingMessage from './BotTypingMessage.vue'
 
 // emit props
@@ -230,7 +231,7 @@ onMounted(() => {
     {
       content: '안녕하세요! 부동산 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
       sender: 'bot',
-      options: ['반포자이 찾아줘', '요즘 부동산 시장 어때?', '마린시티자이 매매 가격 알려줘'],
+      options: ['반포자이 아파트 찾아줘', '요즘 부동산 시장 어때?', '마린시티자이 매매 가격 알려줘'],
       showOptions: true,
     },
   ]
@@ -256,18 +257,10 @@ async function sendMessage() {
 
   try {
     // API 호출
-    const res = await fetch('https://api.ssafy.blog/ai/user-controlled', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: sanitizedText, convoId: CurrentConvoId.value }),
+    const { data: result } = await axios.post('/v1/ai/user-controlled', {
+      message: sanitizedText,
+      convoId: CurrentConvoId.value,
     })
-
-    if (!res.ok) {
-      throw new Error(`서버 응답 실패: ${res.status} ${res.statusText}`)
-    }
-
-    // 결과 분해: 이제 ChatResponseDto 에는 message + aptSeqList 가 옵니다.
-    const result = await res.json()
     console.log('[Chat Result]', result)
     const { message, aptSeqList, relatedQuestionList, convoId } = result
     CurrentConvoId.value = convoId
@@ -286,7 +279,7 @@ async function sendMessage() {
   } catch (error) {
     console.error('[Chat Error]', error)
     messages.value.push({
-      content: '❗ 서버 오류가 발생했습니다. 콘솔을 확인해주세요.',
+      content: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
       sender: 'bot',
     })
   } finally {
@@ -321,7 +314,7 @@ function handleAnimationEnd(evt) {
       {
         content: '안녕하세요! 부동산 AI 어시스턴트입니다. 어떤 도움이 필요하신가요?',
         sender: 'bot',
-        options: ['반포자이 찾아줘', '요즘 부동산 시장 어때?', '마린시티자이 매매 가격 알려줘'],
+        options: ['반포자이 아파트 찾아줘', '요즘 부동산 시장 어때?', '마린시티자이 매매 가격 알려줘'],
         showOptions: true,
       },
     ]

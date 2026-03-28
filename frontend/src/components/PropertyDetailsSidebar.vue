@@ -250,9 +250,9 @@ watch(
     try {
       // (1) 기존 detail & schools API 호출
       const [dRes, sRes, dealsRes] = await Promise.all([
-        axios.get(`https://api.ssafy.blog/api/v1/house/${seq}/detail`),
-        axios.get(`https://api.ssafy.blog/api/v1/house/${seq}/schools`),
-        axios.get(`https://api.ssafy.blog/api/v1/house/${seq}/dealsDone`),
+        axios.get(`/v1/house/${seq}/detail`),
+        axios.get(`/v1/house/${seq}/schools`),
+        axios.get(`/v1/house/${seq}/dealsDone`),
       ])
       detail.value = dRes.data
       schools.value = sRes.data

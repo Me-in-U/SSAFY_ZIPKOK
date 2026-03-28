@@ -19,15 +19,6 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/house")
-@CrossOrigin(origins = {
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://ssafy.blog",
-        "http://api.ssafy.blog",
-        "http://192.168.204.108:5173",
-        "http://172.22.16.1:5173",
-        "http://localhost:8080"
-}, allowedHeaders = "*", allowCredentials = "true", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 @RequiredArgsConstructor
 public class HouseInfoRestController {
     private final HouseInfoService houseInfoService;

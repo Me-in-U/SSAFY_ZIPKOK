@@ -27,7 +27,7 @@ export const useUserStore = defineStore('user', {
     async fetchUser() {
       if (!this.token) return
       try {
-        const { data } = await axios.get('https://api.ssafy.blog/api/v1/members/me', {
+        const { data } = await axios.get('/v1/members/me', {
           headers: { Authorization: `Bearer ${this.token}` },
         })
         console.log('[유저 데이터 패치완료]:', data)
@@ -41,7 +41,7 @@ export const useUserStore = defineStore('user', {
       // 즐겨찾기 불러오기 액션
       if (!this.profile) return
       const { mno } = this.profile
-      const { data } = await axios.get(`https://api.ssafy.blog/api/v1/members/${mno}/favorites`, {
+      const { data } = await axios.get(`/v1/members/${mno}/favorites`, {
         headers: { Authorization: `Bearer ${this.token}` },
       })
       this.favoriteSeqs = data.data.result.map((item) => item.aptSeq)

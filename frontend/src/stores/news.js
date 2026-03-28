@@ -13,7 +13,7 @@ export const useNewsStore = defineStore('news', {
      */
     async fetchLatest(options = { limit: 20, offset: 0 }) {
       try {
-        const response = await axios.get('https://api.ssafy.blog/api/v1/news/latest', {
+        const response = await axios.get('/v1/news/latest', {
           params: {
             limit: options.limit,
             offset: options.offset || 0,

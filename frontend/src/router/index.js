@@ -1,5 +1,5 @@
 // src/router/index.js
-import { createRouter, createWebHireplace-with-user-password } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '@/views/AppLayout.vue'
 import HomeContent from '@/views/HomeContent.vue'
 import LoginForm from '@/components/LoginForm.vue'
@@ -9,7 +9,7 @@ import MyPage from '@/components/MyPage.vue'
 import CommunityBoard from '@/components/CommunityBoard.vue'
 
 export default createRouter({
-  hireplace-with-user-password: createWebHireplace-with-user-password(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',

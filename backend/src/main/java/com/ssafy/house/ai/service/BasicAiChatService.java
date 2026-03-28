@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -19,7 +20,6 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.converter.BeanOutputConverter;
-import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.openai.OpenAiChatOptions;
@@ -44,9 +44,17 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicAiChatService implements AiChatService {
     private static final String MODEL_ERROR_MESSAGE = "모델 호출 중 오류가 발생했습니다.";
     private static final String FALLBACK_MESSAGE = "응답을 구조화하지 못해 도구 결과만 반환합니다.";
+    private static final List<String> SIMPLE_SEARCH_SUFFIXES = List.of("찾아줘", "찾아 줘", "찾아봐", "찾아 봐");
+    private static final List<String> APARTMENT_NAME_HINTS = List.of(
+            "아파트", "자이", "래미안", "푸르지오", "아이파크", "더샵", "롯데캐슬", "힐스테이트",
+            "e편한세상", "이편한세상", "주공", "캐슬", "하이츠", "팰리스", "타워", "맨션",
+            "단지", "1차", "2차", "3차", "우성", "현대", "대림", "한신", "삼성");
+    private static final List<String> SIMPLE_SEARCH_EXCLUSIONS = List.of(
+            "맛집", "식당", "카페", "영화", "노래", "사람", "책", "코드", "주식", "날씨", "병원");
+    private static final int MAX_SIMPLE_SEARCH_KEYWORD_LENGTH = 20;
 
     @Value("${ssafy.ai.custom-system-prompt}")
-    String customSystemPrompt;
+    private String customSystemPrompt;
 
     private final DateTimeTools dateTimeTools;
     // private final MemberTools memberTools; // 미사용
@@ -63,18 +71,17 @@ public class BasicAiChatService implements AiChatService {
 
     @Override
     public CustomChatResponseDto userControlledChat(String userInput, String convoId) {
+        convoId = initializeConversation(convoId);
+
+        CustomChatResponseDto shortcutResponse = tryHandleSimpleApartmentSearch(userInput, convoId);
+        if (shortcutResponse != null) {
+            return shortcutResponse;
+        }
+
         ChatOptions opts = createChatOptions();
         List<String> toolPayloads = new ArrayList<>();
-
-        if (convoId == null || convoId.isBlank()) {
-            convoId = UUID.randomUUID().toString();
-            // 최초 호출일 땐 시스템 메시지도 한 번만 저장
-            chatMemory.add(convoId, SystemMessage.builder()
-                    .text(customSystemPrompt)
-                    .metadata(Map.of("language", "Korean", "character", "Chill한"))
-                    .build());
-        }
-        chatMemory.add(convoId, new UserMessage(userInput));
+        String normalizedUserInput = normalizeUserInput(userInput);
+        chatMemory.add(convoId, new UserMessage(normalizedUserInput));
 
         Prompt prompt = new Prompt(chatMemory.get(convoId), opts);
         ChatResponse chatResponse;
@@ -88,7 +95,7 @@ public class BasicAiChatService implements AiChatService {
 
         while (chatResponse.hasToolCalls()) {
             ToolExecutionResult exec = toolCallingManager.executeToolCalls(prompt, chatResponse);
-            ToolResponseMessage toolResponseMessage = exec.conversationHireplace-with-user-password().stream()
+            ToolResponseMessage toolResponseMessage = exec.conversationHistory().stream()
                     .filter(m -> m instanceof ToolResponseMessage)
                     .map(m -> (ToolResponseMessage) m)
                     .reduce((first, second) -> second)
@@ -101,7 +108,7 @@ public class BasicAiChatService implements AiChatService {
             log.warn("[툴 호출 결과 원본]: {}", toolPayloads);
             chatMemory.add(convoId, toolResponseMessage);
 
-            prompt = new Prompt(exec.conversationHireplace-with-user-password(), opts);
+            prompt = new Prompt(exec.conversationHistory(), opts);
             try {
                 chatResponse = chatModel.call(prompt);
                 chatMemory.add(convoId, chatResponse.getResult().getOutput());
@@ -132,6 +139,108 @@ public class BasicAiChatService implements AiChatService {
             log.error("CustomChatResponseDto 변환 실패", e);
             return fallbackResponse(convoId, FALLBACK_MESSAGE, toolPayloads);
         }
+    }
+
+    private String initializeConversation(String convoId) {
+        if (convoId != null && !convoId.isBlank()) {
+            return convoId;
+        }
+
+        String newConvoId = UUID.randomUUID().toString();
+        chatMemory.add(newConvoId, SystemMessage.builder()
+                .text(customSystemPrompt)
+                .metadata(Map.of("language", "Korean", "character", "Chill한"))
+                .build());
+        return newConvoId;
+    }
+
+    private CustomChatResponseDto tryHandleSimpleApartmentSearch(String userInput, String convoId) {
+        String keyword = extractSimpleSearchKeyword(userInput);
+        if (keyword == null) {
+            return null;
+        }
+
+        try {
+            List<String> aptSeqList = houseTools.searchHouseByPartialName(keyword);
+            if (aptSeqList == null || aptSeqList.isEmpty()) {
+                return null;
+            }
+
+            String apartmentKeyword = buildApartmentKeyword(keyword);
+            CustomChatResponseDto dto = CustomChatResponseDto.builder()
+                    .message(buildSimpleSearchMessage(apartmentKeyword, aptSeqList.size()))
+                    .aptSeqList(aptSeqList)
+                    .relatedQuestionList(List.of(
+                            apartmentKeyword + " 매매 가격 알려줘",
+                            apartmentKeyword + " 전세 매물 찾아줘",
+                            apartmentKeyword + " 주변 학교 알려줘"))
+                    .build();
+            dto.setConvoId(convoId);
+
+            chatMemory.add(convoId, new UserMessage(userInput));
+            chatMemory.add(convoId, new AssistantMessage(toAssistantMessagePayload(dto)));
+            return dto;
+        } catch (Exception e) {
+            log.debug("단순 아파트 검색 단축 경로 실패: {}", userInput, e);
+            return null;
+        }
+    }
+
+    private String normalizeUserInput(String userInput) {
+        String keyword = extractSimpleSearchKeyword(userInput);
+        if (keyword == null || !containsApartmentNameHint(keyword)) {
+            return userInput;
+        }
+        return buildApartmentKeyword(keyword) + " 찾아줘";
+    }
+
+    private String extractSimpleSearchKeyword(String userInput) {
+        if (userInput == null || userInput.isBlank()) {
+            return null;
+        }
+
+        String trimmed = userInput.trim();
+        for (String suffix : SIMPLE_SEARCH_SUFFIXES) {
+            if (!trimmed.endsWith(suffix)) {
+                continue;
+            }
+
+            String keyword = trimmed.substring(0, trimmed.length() - suffix.length()).trim();
+            if (keyword.isBlank()
+                    || keyword.length() > MAX_SIMPLE_SEARCH_KEYWORD_LENGTH
+                    || keyword.split("\\s+").length > 2
+                    || containsSimpleSearchExclusion(keyword)) {
+                return null;
+            }
+            return keyword;
+        }
+        return null;
+    }
+
+    private boolean containsSimpleSearchExclusion(String keyword) {
+        return SIMPLE_SEARCH_EXCLUSIONS.stream().anyMatch(keyword::contains);
+    }
+
+    private boolean containsApartmentNameHint(String keyword) {
+        return APARTMENT_NAME_HINTS.stream().anyMatch(keyword::contains);
+    }
+
+    private String buildApartmentKeyword(String keyword) {
+        if (keyword.contains("아파트")) {
+            return keyword;
+        }
+        return keyword + " 아파트";
+    }
+
+    private String buildSimpleSearchMessage(String apartmentKeyword, int resultCount) {
+        if (resultCount == 1) {
+            return apartmentKeyword + "를 찾았어요.";
+        }
+        return apartmentKeyword + "를 " + resultCount + "개 찾았어요.";
+    }
+
+    private String toAssistantMessagePayload(CustomChatResponseDto dto) throws IOException {
+        return objectMapper.writeValueAsString(dto);
     }
 
     private ChatOptions createChatOptions() {

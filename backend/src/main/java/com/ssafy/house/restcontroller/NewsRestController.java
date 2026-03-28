@@ -22,15 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/news")
-@CrossOrigin(origins = {
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://ssafy.blog",
-        "http://api.ssafy.blog",
-        "http://192.168.204.108:5173",
-        "http://172.22.16.1:5173",
-        "http://localhost:8080"
-}, allowedHeaders = "*", allowCredentials = "true", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 @Tag(name = "NewsRestController", description = "크롤링된 뉴스 제공")
 public class NewsRestController implements RestControllerHelper {
     private final NewsService newsService;

@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,10 +31,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/members")
-@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174", "https://ssafy.blog",
-        "http://api.ssafy.blog",
-        "http://192.168.204.108:5173/",
-        "http://172.22.16.1:5173/", "http://localhost:8080/" })
 @Tag(name = "AuthRestController", description = "로그인 인증 관련 기능 제공")
 public class AuthRestController implements RestControllerHelper {
     private final MemberService memberService;

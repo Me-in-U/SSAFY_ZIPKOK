@@ -82,6 +82,8 @@ public class SecurityConfig {
                         .permitAll()
                         // AI 채팅
                         .requestMatchers(HttpMethod.POST,
+                                "/ai/house",
+                                "/ai/user-controlled",
                                 "/api/v1/ai/house",
                                 "/api/v1/ai/user-controlled")
                         .permitAll()
@@ -114,11 +116,11 @@ public class SecurityConfig {
         cors.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:5174",
-                "https://api.ssafy.blog",
-                "https://ssafy.blog",
-                "http://api.ssafy.blog",
+                "https://ssafy.ios.kr",
+                "http://ssafy.ios.kr",
                 "http://192.168.204.108:5173",
-                "http://172.22.16.1:5173"));
+                "http://172.22.16.1:5173",
+                "http://localhost:8080"));
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cors.setAllowedHeaders(List.of("*"));
         cors.setAllowCredentials(true);
