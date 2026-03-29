@@ -2,6 +2,8 @@
 /크롤링/.venv
 /크롤링/.vscode
 /크롤링/.env
+/backend/.env.local
+.env.local
 /크롤링/__pycache__/
 크롤링/last_resume.json
 크롤링/last_resume.json

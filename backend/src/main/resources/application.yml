@@ -2,7 +2,9 @@ spring:
   config:
     import:
       - optional:file:.env[.properties]
+      - optional:file:.env.local[.properties]
       - optional:file:backend/.env[.properties]
+      - optional:file:backend/.env.local[.properties]
   application:
     name: ZIPKOK
   output:

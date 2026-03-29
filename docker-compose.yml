@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: zipkok-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      SERVER_PORT: 8085
+      REDIS_URI: redis://redis:6379
+    ports:
+      - "127.0.0.1:8085:8085"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - zipkok-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://ssafy.ios.kr/api
+    container_name: zipkok-frontend
+    ports:
+      - "8086:85"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - zipkok-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: zipkok-redis
+    restart: unless-stopped
+    networks:
+      - zipkok-network
+
+networks:
+  zipkok-network:
+    driver: bridge
