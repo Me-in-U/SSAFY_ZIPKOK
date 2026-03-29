@@ -6,3 +6,15 @@
 크롤링/last_resume.json
 크롤링/last_resume.json
 *.zip
+backend/target/
+backend/.settings/
+backend/.classpath
+backend/.project
+backend/.factorypath
+backend/bootrun-*.out
+backend/bootrun-*.err
+backend/jar-*.out
+backend/jar-*.err
+.github/java-upgrade/**/logs/
+backend/.github/java-upgrade/**/logs/
+*.log

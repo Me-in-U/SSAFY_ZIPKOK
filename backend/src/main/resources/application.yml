@@ -26,6 +26,10 @@ spring:
       connection-timeout: 600000
       data-source-properties:
         profileSQL: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
@@ -63,12 +67,6 @@ logging:
   charset:
     console: EUC-KR
     file: EUC-KR
-
-mybatis:
-  type-aliases-package: com.ssafy.house.model.dto
-  mapper-locations: classpath*:mappers/**/*.xml
-  configuration:
-    map-underscore-to-camel-case: true
 
 ssafy:
   ai:

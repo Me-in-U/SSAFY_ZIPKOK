@@ -20,7 +20,7 @@ export const useNewsStore = defineStore('news', {
           },
         })
         // 페이지별로 가져온 뉴스를 상태에 설정
-        this.list = response.data.data.news
+        this.list = response.data.result?.news ?? []
         // console.log(`뉴스 목록 (page ${options.offset / options.limit}):`, this.list)
       } catch (error) {
         console.error('뉴스 불러오기 실패:', error)

@@ -36,11 +36,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 
     runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -64,6 +63,7 @@ dependencies {
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

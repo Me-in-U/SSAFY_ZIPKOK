@@ -281,13 +281,13 @@ onMounted(async () => {
   loading.value = true
   try {
     const [r, m, c] = await Promise.all([
-      axios.get('/v1/house/recommend/recent?limit=6'),
-      axios.get('/v1/house/recommend/nearstation?limit=6'),
-      axios.get('/v1/house/recommend/newlyweds?limit=6'),
+      axios.get('/v1/recommend/recent?limit=6'),
+      axios.get('/v1/recommend/nearstation?limit=6'),
+      axios.get('/v1/recommend/newlyweds?limit=6'),
     ])
-    recent.value = r.data
-    nearstation.value = m.data
-    newlyweds.value = c.data
+    recent.value = r.data.result?.properties ?? []
+    nearstation.value = m.data.result?.properties ?? []
+    newlyweds.value = c.data.result?.properties ?? []
   } catch (e) {
     console.error(e)
   } finally {

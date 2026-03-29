@@ -123,8 +123,8 @@ const gugunList = ref([])
 const dongList = ref([])
 
 onMounted(async () => {
-  const { data } = await axios.get('/v1/sidogungu/sido')
-  sidoList.value = data
+  const { data } = await axios.get('/v1/region/sidos')
+  sidoList.value = data.result?.items ?? []
 })
 
 // 지도 이동용 주소 문자열 생성
@@ -139,9 +139,9 @@ async function onSidoChange() {
   dongList.value = []
   if (filters.sido) {
     const { data } = await axios.get(
-      `/v1/sidogungu/gugun/${filters.sido}`,
+      `/v1/region/sidos/${filters.sido}/guguns`,
     )
-    gugunList.value = data
+    gugunList.value = data.result?.items ?? []
   } else {
     gugunList.value = []
   }
@@ -155,9 +155,9 @@ async function onGugunChange() {
   filters.dong = ''
   if (filters.gugun) {
     const { data } = await axios.get(
-      `/v1/sidogungu/dong/${filters.sido}/${filters.gugun}`,
+      `/v1/region/sidos/${filters.sido}/guguns/${filters.gugun}/dongs`,
     )
-    dongList.value = data
+    dongList.value = data.result?.items ?? []
   } else {
     dongList.value = []
   }
@@ -181,7 +181,6 @@ async function onSearch() {
   }
   setMessage('')
   try {
-    // response.data가 바로 HouseInfo[] 배열
     const response = await axios.get('/v1/house/filter', {
       params: {
         sido: filters.sido || undefined,
@@ -190,7 +189,7 @@ async function onSearch() {
         aptNm: searchQuery.value || undefined,
       },
     })
-    const houses = response.data
+    const houses = response.data.result?.houses ?? []
     console.log('[검색결과]:', houses, `(${houses.length}개)`)
     // 부모 컴포넌트로 결과 전달
     emit('search-filter', houses || [])

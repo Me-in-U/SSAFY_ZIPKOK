@@ -262,7 +262,8 @@ async function sendMessage() {
       convoId: CurrentConvoId.value,
     })
     console.log('[Chat Result]', result)
-    const { message, aptSeqList, relatedQuestionList, convoId } = result
+    const payload = result.result ?? result
+    const { message, aptSeqList = [], relatedQuestionList, convoId } = payload
     CurrentConvoId.value = convoId
     // 채팅에는 message 만 보여주기
     messages.value.push({
